@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Yomogi&display=swap" rel="stylesheet">
   <title>tabi — 旅程プランナー</title>
-  <link rel="stylesheet" href="styles.css?v=20261011-36">
+  <link rel="stylesheet" href="styles.css?v=20261011-37">
 </head>
 <body>
   <div class="app-shell">
@@ -57,7 +57,7 @@
   <div class="modal-backdrop groups-backdrop" id="groupsBackdrop" aria-hidden="true"><section class="edit-sheet groups-sheet" role="dialog" aria-modal="true" aria-labelledby="groupsTitle"><div class="sheet-grabber"></div><header class="sheet-header"><div><p class="eyebrow">GROUPS</p><h2 id="groupsTitle">グループ</h2></div><button class="icon-button" id="closeGroups" type="button" aria-label="グループ編集を閉じる">×</button></header><form id="groupForm" class="group-add-form"><input id="groupName" name="groupName" maxlength="32" autocomplete="off" placeholder="グループ名" aria-label="新しいグループ名" required><button type="submit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>追加</span></button></form><p class="group-note">削除したグループの場所は「未分類」に移動します。</p><div id="groupEditList" class="group-edit-list"></div></section></div>
   <div class="toast" id="appToast" role="status"></div>
   <div class="modal-backdrop partner-backdrop" id="partnerBackdrop" aria-hidden="true"><section class="edit-sheet partner-sheet" role="dialog" aria-modal="true" aria-labelledby="partnerTitle"><div class="sheet-grabber"></div><header class="sheet-header"><div><p class="eyebrow">TOGETHER</p><h2 id="partnerTitle">パートナーと共同編集</h2></div><button class="icon-button" id="closePartner" aria-label="閉じる">×</button></header><div class="partner-body"><p id="partnerDescription">招待リンクを送ると、場所・旅程・宿泊先・持ち物を一緒に編集できます。</p><p class="partner-status" id="partnerStatus" role="status"></p><div id="partnerLinkRow" hidden><label class="field"><span>招待リンク</span><textarea id="partnerLink" readonly rows="2" aria-label="共同編集の招待リンク"></textarea></label><p class="field-hint">このリンクを知っている人は閲覧・編集できます。</p></div><p class="partner-error" id="partnerError" role="alert" hidden></p><div class="partner-actions"><button class="primary-button" id="partnerCreate">共有リンクを作成</button><button class="primary-button" id="partnerJoin" hidden>この旅行に参加する</button><button class="primary-button" id="partnerNative" hidden>招待リンクを共有</button><button class="secondary-button" id="partnerCopy" hidden>リンクをコピー</button><button class="secondary-button" id="partnerSync" hidden>今すぐ同期</button></div><p class="field-hint partner-offline-note">オフラインの変更は端末に保存し、接続が戻ったら同期します。</p><button class="partner-leave" id="partnerLeave" hidden>この端末で共有を終了</button></div></section></div>
-  <script src="sync.js?v=20261011-36" defer></script>
-  <script src="app.js?v=20261011-36" defer></script>
+  <script src="sync.js?v=20261011-37" defer></script>
+  <script src="app.js?v=20261011-37" defer></script>
 </body>
 </html>
