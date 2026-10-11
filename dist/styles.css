@@ -526,3 +526,50 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 .adjuster-buttons{gap:5px}
 .adjuster-buttons button{height:22px;min-height:22px;min-width:48px;padding:0 6px;border-radius:7px;font-size:10px;line-height:20px}
 .adjuster-buttons .adjuster-close{height:22px;min-height:22px;min-width:28px;font-size:17px;line-height:22px}
+
+/* One spacing, type, and control scale for the mobile collection. */
+:root{--collection-label:11px;--collection-meta:9px;--collection-control:32px;--collection-radius:9px;--collection-gap:8px}
+.topbar{height:52px;padding:0 14px;gap:8px}
+.brand{min-width:0;gap:7px;flex:none}
+.brand-mark{width:28px;height:28px;border-radius:var(--collection-radius)}
+.brand-mark svg{width:19px;height:19px}
+.brand b{font-size:16px}
+.brand small{font-size:7px;margin-top:3px;letter-spacing:.1em}
+.trip-summary{flex:1;min-width:0;max-width:none;min-height:32px;margin:0;padding:0;justify-content:center;gap:4px;font-size:var(--collection-label)}
+.trip-summary #tripSummary{min-width:0;max-width:180px}
+.trip-summary #travelerCount,.summary-separator{flex:none;white-space:nowrap}
+.topbar-actions{gap:4px}
+.topbar-actions .stay-shortcut,.topbar-actions .icon-button{height:32px;min-height:32px;border-radius:var(--collection-radius);font-size:var(--collection-label)}
+.topbar-actions .stay-shortcut{padding:0 9px;gap:5px}
+.topbar-actions .icon-button{width:32px}
+.topbar-actions svg{width:16px;height:16px}
+.topbar .connection-status{position:absolute;top:50px;right:14px;padding:3px 6px;background:var(--surface);border-radius:6px;z-index:2}
+.wishlist-page{padding:16px 14px}
+.wishlist-page .page-heading{align-items:center;margin:0 0 12px;gap:8px}
+.wishlist-page .page-heading .eyebrow#placeHeading{font-size:var(--collection-label);line-height:14px;margin:0 0 3px;letter-spacing:.12em}
+.wishlist-page .places-caption{font-size:var(--collection-meta);line-height:13px;margin:0}
+.wishlist-page .place-count{margin:0;font-size:var(--collection-meta);letter-spacing:.04em}
+.wishlist-page .wishlist-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:var(--collection-gap);margin:0 0 var(--collection-gap);width:100%}
+.wishlist-page .searchbox,.wishlist-page .filter-button,.wishlist-page .register-place-button{height:var(--collection-control);min-height:var(--collection-control);border-radius:var(--collection-radius);font-size:var(--collection-label);box-shadow:none}
+.wishlist-page .searchbox{max-width:none;min-width:0;padding:0 10px;gap:7px;overflow:hidden}
+.wishlist-page .searchbox>svg,.wishlist-page .filter-button svg,.wishlist-page .register-place-button svg{width:15px;height:15px;flex:none}
+.wishlist-page .search-input-wrap{position:relative;flex:1;min-width:0;height:22px;overflow:hidden}
+.wishlist-page .search-input-wrap input{position:absolute;top:0;left:0;width:145.455%;height:32px;min-height:0;padding:0;line-height:32px;font-size:16px;transform:scale(.6875);transform-origin:top left}
+.wishlist-page .filter-button{min-width:74px;padding:0 10px;gap:6px}
+.wishlist-page .register-place-button{margin:0 0 var(--collection-gap);padding:0 10px;gap:7px;color:var(--ink)}
+.wishlist-page .register-place-button small{font-size:var(--collection-meta);letter-spacing:.04em}
+.wishlist-page .category-chips{gap:4px;margin:0 0 var(--collection-gap);align-items:center}
+.wishlist-page .chip{height:32px;min-height:32px;display:inline-flex;align-items:center;justify-content:center;padding:0 10px;border-radius:var(--collection-radius);font-size:var(--collection-label);line-height:16px}
+.wishlist-page .place-grid{gap:6px}
+.wishlist-page .place-card{height:23px;min-height:23px}
+.wishlist-page .place-body{grid-template-rows:11px 9px;padding:1px 6px}
+.wishlist-page .place-name{font-size:var(--collection-label);line-height:11px;padding-right:80px}
+.wishlist-page .place-meta{font-size:var(--collection-meta);line-height:11px}
+.wishlist-page .category-tag,.wishlist-page .must-badge,.wishlist-page .reservation-badge{font-size:8px;line-height:9px}
+.bottom-nav{height:54px;padding-top:3px}
+.nav-item{min-height:40px;font-size:var(--collection-label);gap:2px}
+.nav-item .nav-icon{height:23px}
+.nav-item .nav-icon svg{width:18px;height:18px}
+.nav-item.active .nav-icon{width:34px;height:23px;border-radius:8px}
+@media(min-width:760px){.wishlist-page{padding:20px 24px}.wishlist-page .page-heading,.wishlist-page .wishlist-toolbar,.wishlist-page .register-place-button,.wishlist-page .category-chips,.wishlist-page .place-grid{max-width:1200px;margin-left:auto;margin-right:auto}.wishlist-page .register-place-button{width:100%}}
+@media(max-width:360px){.topbar{padding:0 10px;gap:6px}.brand small{display:none}.topbar-actions .stay-shortcut{padding:0 7px}.trip-summary{font-size:10px}.wishlist-page{padding-left:12px;padding-right:12px}}
