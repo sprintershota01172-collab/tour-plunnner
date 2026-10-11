@@ -36,3 +36,23 @@ html,body{background:var(--bg);color:var(--ink);font-size:15px}
 @media(prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#111214;--surface:#1c1d20;--surface-2:#26272b;--ink:#f5f5f7;--muted:#a0a0a6;--line:#323338;--teal:#91b3d8;--teal-dark:#a4c4e5;--teal-soft:#242e39;--coral:#e59780;--shadow:0 12px 32px rgba(0,0,0,.28)}.topbar{background:rgba(20,21,23,.9);border-color:#303136}.brand-mark,.date-badge{background:#26313e;color:#a9c5e4}.brand small,.trip-summary,.place-address{color:#a2a2a8}.searchbox,.filter-button,.chip,.day-tab,.share-button{background:#1c1d20;border-color:#34353a;color:#c4c4ca}.chip.active{background:#e0e1e6;border-color:#e0e1e6;color:#1d1d1f}.day-tab.selected{background:var(--teal);border-color:var(--teal);color:#17202b}.day-tab.selected .day-week{color:#334252}.day-context{background:#20252b;border-color:#343940;color:#c2c6cc}.timeline-card,.tray-card,.itinerary-day{background:#1c1d20;border-color:#34353a}.timeline-toolbar{border-color:#34353a}.timeline-inner{background:repeating-linear-gradient(to bottom,transparent 0,transparent 55px,#303136 56px,#303136 57px)}.timeline-hour-line{background:#36373c}.itinerary-day-head{background:linear-gradient(100deg,#222326,#1c1d20)}.edit-sheet{background:#1c1d20;border-color:#34353a}.field input,.field textarea,.field select,.photo-drop{background:#141518;border-color:#38393e;color:#f5f5f7}.priority-toggle{border-color:#38393e}.bottom-nav{background:rgba(26,27,30,.92);border-color:#34353a}.share-panel button{background:#1c1d20;color:#f5f5f7;border-color:#34353a}.candidate-box,.paste-suggestion{background:#202a35;color:#c7d2df}.candidate-actions button,.photo-add,.paste-button{background:#25272a;color:#b4c9e1;border-color:#3b3d42}.connection-status{color:#e6a28c}}
 @media(prefers-reduced-motion:reduce){.pages{transition:none!important}}
 .candidate-map-frame{display:block;width:100%;height:92px;border:0;border-radius:10px;background:#e6eeeb;margin:9px 0 2px}
+
+/* Modern app polish: crisp blue accent, quieter chrome, clearer touch targets */
+:root{--bg:#f5f6fa;--surface:#fff;--surface-2:#eff1f7;--line:#e4e7ef;--teal:#586fe8;--teal-dark:#465cdb;--teal-soft:#edf0ff;--shadow:0 10px 30px rgba(38,49,87,.07)}
+.topbar{background:rgba(255,255,255,.84);border-bottom-color:rgba(221,224,234,.8)}
+.brand-mark{background:linear-gradient(145deg,#eef0ff,#e5eaff);color:#586fe8}
+.trip-summary{min-height:30px;padding:0 11px;border:1px solid #e7e9f0;border-radius:999px;background:rgba(255,255,255,.72)}
+.primary-button{background:linear-gradient(135deg,#6178f4,#5167df);box-shadow:0 5px 14px rgba(81,103,223,.2)}
+.primary-button:hover{background:linear-gradient(135deg,#526be9,#4359d3)}
+.chip{border-color:transparent;background:#fff;box-shadow:0 1px 4px rgba(31,43,72,.045)}
+.chip.active{background:#252a36;border-color:#252a36;box-shadow:0 4px 10px rgba(32,38,56,.15)}
+.place-card{border-color:#e9ebf2;box-shadow:0 4px 15px rgba(37,47,78,.045)}
+.day-tab.selected{background:linear-gradient(145deg,#687df0,#5369df);border-color:#586fe8;box-shadow:0 6px 16px rgba(81,103,223,.22)}
+.day-context{background:linear-gradient(100deg,#f0f2ff,#f7f8fc);border-color:#e9ebf5}
+.timeline-card,.tray-card,.itinerary-day{border-color:#e7e9f0;box-shadow:0 4px 16px rgba(37,47,78,.04)}
+.date-badge{background:#edf0ff;color:#5369df}
+.bottom-nav{background:rgba(255,255,255,.94);box-shadow:0 -5px 22px rgba(31,42,75,.04)}
+.nav-item.active .nav-icon{width:42px;height:29px;border-radius:999px;background:#edf0ff}
+.empty-orbit{background:linear-gradient(145deg,#edf0ff,#e8f5f4);border-radius:25px;box-shadow:0 8px 20px rgba(76,104,182,.08)}
+.edit-sheet{box-shadow:0 -18px 55px rgba(31,40,68,.16)}
+@media(prefers-color-scheme:dark){:root{--bg:#111319;--surface:#191c24;--surface-2:#232735;--line:#303443;--teal:#aeb9ff;--teal-dark:#c0c9ff;--teal-soft:#282e48;--shadow:0 12px 32px rgba(0,0,0,.32)}.topbar{background:rgba(20,22,29,.9);border-bottom-color:#2b2f3d}.brand-mark{background:#282e48;color:#b9c3ff}.trip-summary{background:rgba(28,31,41,.8);border-color:#303443}.chip{background:#1c202a;box-shadow:none}.chip.active{background:#e7eaff;border-color:#e7eaff;color:#20243a}.day-context{background:#202432;border-color:#303443}.date-badge{background:#282e48;color:#c0c9ff}.bottom-nav{background:rgba(25,28,36,.95)}.nav-item.active .nav-icon{background:#282e48}.empty-orbit{background:linear-gradient(145deg,#282e48,#203634)}}
