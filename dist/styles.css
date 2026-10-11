@@ -517,3 +517,12 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 .wishlist-page .reservation-badge{min-height:9px;padding:0 3px;font-size:7px;line-height:9px}
 .wishlist-page .place-meta{top:2px;right:6px;font-size:8px;line-height:11px;gap:4px}
 .wishlist-page .place-meta svg{width:9px;height:9px}
+
+/* Compact selected-piece time controls. */
+.timeline-adjuster{height:32px;min-height:32px;padding:3px 10px;gap:6px}
+.adjuster-details{gap:0}
+.adjuster-details b{font-size:10px;line-height:11px}
+.adjuster-details>span{font-size:9px;line-height:11px}
+.adjuster-buttons{gap:5px}
+.adjuster-buttons button{height:22px;min-height:22px;min-width:48px;padding:0 6px;border-radius:7px;font-size:10px;line-height:20px}
+.adjuster-buttons .adjuster-close{height:22px;min-height:22px;min-width:28px;font-size:17px;line-height:22px}
