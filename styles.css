@@ -361,3 +361,24 @@ button,input,textarea,select{font-family:inherit;letter-spacing:inherit}
 }
 @media(prefers-reduced-motion:reduce){.empty-add,.packing-progress span,.timeline-piece.swipe-away,.itinerary-stop.swipe-away{transition:none}}
 .packing-sheet .sheet-header{grid-template-columns:minmax(0,1fr) 40px}
+
+/* A friendlier, quieter place-entry header and clearer reservation control */
+.places-caption{margin:2px 0 0;color:#8b918a;font-size:10px;letter-spacing:.025em}
+#addPlace{width:auto;min-width:112px;height:36px;padding:0 13px;gap:7px;border:1px solid #dedbd0;background:rgba(252,250,245,.82);color:#4f7774;box-shadow:none;border-radius:999px}
+#addPlace svg{width:14px;height:14px}#addPlace span{font:650 8px "DM Sans",sans-serif;letter-spacing:.12em}
+.sheet-header h2,.page h1,.empty-state h2,.itinerary-day-title h2{font-family:ui-rounded,"Hiragino Maru Gothic ProN","M PLUS Rounded 1c","Hiragino Sans","Yu Gothic UI",sans-serif;font-weight:650;letter-spacing:.015em}
+.sheet-header h2{font-size:19px;line-height:1.35}
+.sheet-header .eyebrow{font-size:8px;letter-spacing:.16em}
+.sheet-illustration{width:42px;height:42px;border-radius:15px}.sheet-illustration svg{width:27px;height:27px}
+.lower-fields{align-items:center;gap:9px}
+.reservation-status-field{align-self:center;gap:4px}
+.reservation-status-field>span{font-size:9px;color:#7c817a;font-weight:650}
+.reservation-status-field select{height:39px;min-height:39px;padding:0 28px 0 11px;border-radius:12px;font-size:16px;font-weight:600;color:#4d6663}
+.reservation-badge{display:inline-flex;align-items:center;min-height:18px;padding:2px 7px;border-radius:999px;background:#f6eee0;color:#9a7541;font-size:8px;font-weight:650;white-space:nowrap}
+.reservation-badge.booked{background:#e4f0eb;color:#477a70}
+.place-topline{flex-wrap:wrap}
+.empty-add{width:auto;height:36px;padding:0 13px;display:inline-flex;gap:7px;border-radius:999px}
+.empty-add span{font:650 8px "DM Sans",sans-serif;letter-spacing:.12em}
+@media(max-width:600px){.places-caption{font-size:9px}#addPlace{min-width:104px;height:34px;padding:0 11px}.sheet-header h2{font-size:18px}.reservation-status-field select{font-size:16px}}
+@media(prefers-color-scheme:dark){.places-caption{color:#b1b3ab}#addPlace{background:#222a34;border-color:#46525d;color:#a9d0c7}.reservation-status-field>span{color:#b2b4ad}.reservation-status-field select{background:#1b232d;border-color:#3d4955;color:#d7e2dc}.reservation-badge{background:#3c3328;color:#e2c694}.reservation-badge.booked{background:#293e3a;color:#abd1c5}}
+@media(max-width:600px){.reservation-status-field select{font-size:16px}}
