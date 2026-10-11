@@ -1,0 +1,13 @@
+{
+  "name": "mālie — Honeymoon Planner",
+  "short_name": "mālie",
+  "description": "ふたりのハワイ旅行をパズルのように組み立てる旅程アプリ",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f8f7",
+  "theme_color": "#f6f8f7",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
