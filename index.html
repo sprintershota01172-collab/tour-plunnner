@@ -8,7 +8,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <title>tabi — 旅程プランナー</title>
-  <link rel="stylesheet" href="styles.css?v=20261011-12">
+  <link rel="stylesheet" href="styles.css?v=20261011-13">
 </head>
 <body>
   <div class="app-shell">
@@ -50,6 +50,6 @@
   <div class="modal-backdrop settings-backdrop" id="settingsBackdrop" aria-hidden="true"><section class="edit-sheet settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="sheet-grabber"></div><header class="sheet-header"><div><p class="eyebrow">TRIP DETAILS</p><h2 id="settingsTitle">旅行の設定</h2></div><button class="icon-button" id="closeSettings" aria-label="閉じる">×</button></header><form id="settingsForm"><div class="form-grid"><label class="field"><span>旅行先</span><input name="destination" required></label><label class="field"><span>人数</span><input name="travelers" type="number" min="1" max="20"></label><label class="field"><span>出発日</span><input name="startDate" type="date" required></label><label class="field"><span>帰着日</span><input name="endDate" type="date" required></label><label class="field full"><span>ホテル①</span><input name="hotel1" placeholder="ホテル名"></label><div class="field"><span>宿泊開始</span><input name="hotel1Start" type="date"></div><div class="field"><span>宿泊終了</span><input name="hotel1End" type="date"></div><label class="field full"><span>ホテル②</span><input name="hotel2" placeholder="ホテル名"></label><div class="field"><span>宿泊開始</span><input name="hotel2Start" type="date"></div><div class="field"><span>宿泊終了</span><input name="hotel2End" type="date"></div><label class="field full"><span>ホテル③（任意）</span><input name="hotel3" placeholder="ホテル名"></label><div class="field"><span>宿泊開始</span><input name="hotel3Start" type="date"></div><div class="field"><span>宿泊終了</span><input name="hotel3End" type="date"></div></div><div class="sheet-footer"><span class="footer-spacer"></span><button type="button" class="secondary-button" id="cancelSettings">閉じる</button><button class="primary-button" type="submit">保存する</button></div></form></section></div>
   <div class="modal-backdrop trips-backdrop" id="tripsBackdrop" aria-hidden="true"><section class="edit-sheet trips-sheet" role="dialog" aria-modal="true" aria-labelledby="tripsTitle"><div class="sheet-grabber"></div><header class="sheet-header"><div><p class="eyebrow">YOUR JOURNEYS</p><h2 id="tripsTitle">旅行を選ぶ</h2></div><button class="icon-button" id="closeTrips" aria-label="閉じる">×</button></header><div class="trip-list" id="tripList"></div><button class="new-trip-button" id="newTripButton" type="button"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>新しい旅を登録</span></button></section></div>
   <div class="toast" id="appToast" role="status"></div>
-  <script src="app.js?v=20261011-9" defer></script>
+  <script src="app.js?v=20261011-10" defer></script>
 </body>
 </html>
