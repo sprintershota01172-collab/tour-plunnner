@@ -1,13 +1,13 @@
 {
-  "name": "mālie — Honeymoon Planner",
-  "short_name": "mālie",
-  "description": "ふたりのハワイ旅行をパズルのように組み立てる旅程アプリ",
+  "name": "tabi — 旅程プランナー",
+  "short_name": "tabi",
+  "description": "行きたい場所を集めて、日ごとの旅程を組み立てるプランナー",
   "lang": "ja",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f6f8f7",
-  "theme_color": "#f6f8f7",
+  "background_color": "#f6f6f8",
+  "theme_color": "#f6f6f8",
   "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }
