@@ -583,3 +583,26 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 .wishlist-page .place-topline{line-height:10px}
 .wishlist-page .category-tag,.wishlist-page .must-badge,.wishlist-page .reservation-badge{min-height:10px;line-height:10px}
 .wishlist-page .place-meta{top:4px;right:8px;line-height:14px}
+
+/* Editable trip-local collection groups. */
+.wishlist-page .category-row{display:flex;align-items:center;gap:8px;margin:0 0 8px;max-width:1200px;margin-left:auto;margin-right:auto}
+.wishlist-page .category-row .category-chips{flex:1;min-width:0;margin:0}
+.group-manage-button{display:flex;flex:none;align-items:center;justify-content:center;gap:5px;height:32px;padding:0 8px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font:inherit;font-size:11px;white-space:nowrap;cursor:pointer;touch-action:manipulation}
+.group-manage-button svg,.group-add-form svg,.group-delete-button svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.groups-sheet{display:flex;flex-direction:column;width:min(480px,100%);max-height:min(82dvh,650px);overflow:hidden;padding-left:16px;padding-right:16px}
+.groups-sheet .sheet-header{grid-template-columns:minmax(0,1fr) 32px;gap:8px;margin-bottom:12px;flex:none}
+.groups-sheet .sheet-header h2{font-size:16px}
+.groups-sheet .sheet-header .icon-button{width:32px;height:32px;font-size:19px;border-radius:9px}
+.group-add-form{display:flex;align-items:center;gap:8px;flex:none}
+.group-add-form input{flex:1;min-width:0;height:38px;padding:0 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font:inherit;font-size:16px;outline:none}
+.group-add-form input:focus{border-color:var(--teal)}
+.group-add-form button{display:flex;align-items:center;justify-content:center;gap:5px;flex:none;height:38px;padding:0 12px;border:0;border-radius:9px;background:#477a78;color:#fff;font:inherit;font-size:12px;cursor:pointer;touch-action:manipulation}
+.group-note{font-size:10px;line-height:1.5;color:var(--muted);margin:10px 0;flex:none}
+.group-edit-list{overflow-y:auto;min-height:0;overscroll-behavior:contain}
+.group-edit-row{display:flex;align-items:center;gap:8px;min-height:40px;border-bottom:1px solid var(--line);font-size:12px}
+.group-color{width:6px;height:6px;border-radius:50%;flex:none}
+.group-edit-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.group-edit-row small{font-size:10px;color:var(--muted)}
+.group-delete-button{display:grid;place-items:center;width:32px;height:32px;flex:none;border:0;border-radius:9px;background:transparent;color:var(--muted);cursor:pointer;touch-action:manipulation}
+.group-delete-button:active{background:var(--surface-2);color:#b86a5c}
+.group-empty{font-size:11px;color:var(--muted);text-align:center;padding:16px 0}
