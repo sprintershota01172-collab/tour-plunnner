@@ -385,3 +385,4 @@ button,input,textarea,select{font-family:inherit;letter-spacing:inherit}
 
 .stop-details h3{display:flex;align-items:center;justify-content:space-between;gap:6px}.stop-details h3>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.stop-remove{width:40px;height:40px;flex:none;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:#9a8e83;cursor:pointer}.stop-remove svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}.stop-remove:active{background:#f3e8e2;color:#bd765f}
 @media(prefers-color-scheme:dark){.stop-remove{color:#c2b3a6}.stop-remove:active{background:#42332f;color:#e0a38c}}
+.toast.show{pointer-events:auto}
