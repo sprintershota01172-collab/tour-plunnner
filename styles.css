@@ -382,3 +382,6 @@ button,input,textarea,select{font-family:inherit;letter-spacing:inherit}
 @media(max-width:600px){.places-caption{font-size:9px}#addPlace{min-width:104px;height:34px;padding:0 11px}.sheet-header h2{font-size:18px}.reservation-status-field select{font-size:16px}}
 @media(prefers-color-scheme:dark){.places-caption{color:#b1b3ab}#addPlace{background:#222a34;border-color:#46525d;color:#a9d0c7}.reservation-status-field>span{color:#b2b4ad}.reservation-status-field select{background:#1b232d;border-color:#3d4955;color:#d7e2dc}.reservation-badge{background:#3c3328;color:#e2c694}.reservation-badge.booked{background:#293e3a;color:#abd1c5}}
 @media(max-width:600px){.reservation-status-field select{font-size:16px}}
+
+.stop-details h3{display:flex;align-items:center;justify-content:space-between;gap:6px}.stop-details h3>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.stop-remove{width:40px;height:40px;flex:none;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:#9a8e83;cursor:pointer}.stop-remove svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}.stop-remove:active{background:#f3e8e2;color:#bd765f}
+@media(prefers-color-scheme:dark){.stop-remove{color:#c2b3a6}.stop-remove:active{background:#42332f;color:#e0a38c}}
