@@ -386,3 +386,20 @@ button,input,textarea,select{font-family:inherit;letter-spacing:inherit}
 .stop-details h3{display:flex;align-items:center;justify-content:space-between;gap:6px}.stop-details h3>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.stop-remove{width:40px;height:40px;flex:none;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:#9a8e83;cursor:pointer}.stop-remove svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}.stop-remove:active{background:#f3e8e2;color:#bd765f}
 @media(prefers-color-scheme:dark){.stop-remove{color:#c2b3a6}.stop-remove:active{background:#42332f;color:#e0a38c}}
 .toast.show{pointer-events:auto}
+
+.hotel-editor{margin-top:22px;padding-top:18px;border-top:1px solid #e5e0d6}
+.hotel-editor-head{display:flex;align-items:baseline;gap:9px;margin-bottom:10px}
+.hotel-editor-head .eyebrow{margin:0;font-size:8px;letter-spacing:.15em;color:#9a8051}
+.hotel-editor-head h3{margin:0;font-family:ui-rounded,"Hiragino Maru Gothic ProN","M PLUS Rounded 1c","Hiragino Sans","Yu Gothic UI",sans-serif;font-size:14px;font-weight:650;color:#344650}
+.hotel-edit-list{display:grid;gap:9px}
+.hotel-edit-card{padding:11px 12px 12px;border:1px solid #e6e1d7;border-radius:15px;background:#faf8f2}
+.hotel-edit-card-head{display:flex;align-items:center;justify-content:space-between;min-height:30px;margin-bottom:7px;color:#8b7550;font-size:9px;font-weight:700;letter-spacing:.08em}
+.hotel-edit-card .field{gap:5px}.hotel-edit-card .field>span{font-size:9px}.hotel-edit-card .field input{min-height:42px;height:42px;padding:8px 11px;border-radius:11px}
+.hotel-date-fields{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:8px}
+.hotel-remove-button{width:40px;height:40px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:#9a9287;cursor:pointer}
+.hotel-remove-button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.hotel-remove-button:active{background:#f4e9e4;color:#bd765f}
+.hotel-add-button{width:100%;min-height:44px;margin-top:9px;display:flex;align-items:center;justify-content:center;gap:7px;border:1px dashed #cfc7b6;border-radius:13px;background:transparent;color:#557b77;font-size:11px;font-weight:650;cursor:pointer}
+.hotel-add-button svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round}
+.hotel-empty{margin:0;padding:12px 3px 5px;color:#8b8d85;font-size:10px}
+@media(prefers-color-scheme:dark){.hotel-editor{border-color:#394551}.hotel-editor-head .eyebrow{color:#d0ba89}.hotel-editor-head h3{color:#eeeae2}.hotel-edit-card{background:#1b232d;border-color:#3d4955}.hotel-edit-card-head{color:#d0ba89}.hotel-remove-button{color:#b8aa9f}.hotel-add-button{border-color:#53615b;color:#abd1c5}.hotel-empty{color:#b3b5b1}}
