@@ -131,8 +131,8 @@ html,body{background:var(--bg);color:var(--ink)}
 .page-subtitle{color:#87877f;font-size:11px;letter-spacing:.015em}
 .primary-button{background:#667f74;box-shadow:none;border-radius:999px;font-weight:550;letter-spacing:.03em}
 .primary-button:hover{background:#526d62;box-shadow:none}
-#addPlace{width:42px;height:42px;padding:0;gap:5px;background:transparent;border:1px solid #dcd9ce;color:#526b61;box-shadow:none}
-#addPlace svg{width:16px;height:16px}#addPlace span{font-size:10px}
+#addPlace{width:42px;height:42px;padding:0;display:grid;place-items:center;background:transparent;border:1px solid #dcd9ce;color:#526b61;box-shadow:none}
+#addPlace svg{width:17px;height:17px}
 .searchbox,.filter-button{background:rgba(255,254,250,.75);border-color:#e7e4da;box-shadow:none;border-radius:999px}
 .searchbox{max-width:340px}.filter-button{min-width:44px;justify-content:center}
 .category-chips{margin-bottom:20px}.chip{border-color:transparent;background:transparent;box-shadow:none;color:#76776f}.chip.active{background:#e8ece5;border-color:transparent;color:#4e675c;box-shadow:none}
