@@ -273,6 +273,32 @@ button,input,textarea,select{font-family:inherit;letter-spacing:inherit}
 :root{--muted:#646c70}
 .page-subtitle,.empty-state p,.place-address,.tray-tip,.itinerary-day-title p{color:#646c70}
 .page-heading .eyebrow,.sheet-header .eyebrow{color:#806640}
+
+/* Trip switcher, compact editorial section label, and swipe-to-delete */
+.trip-summary{appearance:none;display:flex;align-items:center;gap:7px;min-height:44px;padding:0 9px;border:0;color:#697476;background:transparent;font:inherit;cursor:pointer;touch-action:manipulation}
+.trip-summary:active{opacity:.72}.trip-chevron{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.8;opacity:.58;flex:none}
+.trip-picker{position:relative}.trip-summary .location-dot{flex:none}
+.page-heading .eyebrow#placeHeading{font-size:8px;letter-spacing:.22em;font-weight:650;color:#8a795f}
+.place-card{touch-action:pan-y;transition:transform .2s cubic-bezier(.22,1,.36,1),opacity .2s ease,box-shadow .2s ease}
+.place-card.swipe-away{opacity:0;transform:translateX(var(--swipe-offset,-110%));transition:transform .18s cubic-bezier(.22,1,.36,1),opacity .18s ease}
+.trips-sheet{width:min(520px,100%)}
+.trip-list{display:grid;gap:8px;max-height:min(48dvh,410px);overflow-y:auto;padding:1px 2px 4px;overscroll-behavior:contain}
+.trip-row{display:flex;align-items:center;gap:5px;min-height:66px;padding:4px 5px 4px 7px;border:1px solid #e5e1d7;border-radius:15px;background:rgba(255,254,250,.75)}
+.trip-row.current{border-color:rgba(71,122,120,.35);background:#edf2ec}
+.trip-row-select{appearance:none;display:flex;align-items:center;gap:11px;flex:1;min-width:0;min-height:56px;padding:5px;border:0;border-radius:11px;background:transparent;text-align:left;color:inherit;cursor:pointer}
+.trip-row-mark{width:36px;height:36px;display:grid;place-items:center;flex:none;border-radius:12px;background:#e4ede7;color:#477a78}
+.trip-row-mark svg{width:18px;height:18px;fill:currentColor}
+.trip-row-copy{display:grid;gap:4px;min-width:0}.trip-row-copy b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:600}.trip-row-copy small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#818581;font-size:9px}
+.trip-current-tag{margin-left:auto;color:#477a78;font-size:8px;font-weight:700;letter-spacing:.12em}
+.trip-delete{width:44px;height:44px;display:grid;place-items:center;flex:none;border:0;border-radius:12px;background:transparent;color:#a77f75;cursor:pointer}
+.trip-delete svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.trip-delete:hover{background:#f5e9e3;color:#a95545}
+.new-trip-button{width:100%;min-height:48px;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid #d9e2dc;border-radius:999px;background:#e9efea;color:#477a78;font:inherit;font-size:11px;font-weight:600;cursor:pointer}
+.new-trip-button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+#appToast{display:flex;align-items:center;gap:13px}#toastUndo{min-height:34px;padding:0 11px;border:1px solid rgba(255,255,255,.25);border-radius:999px;background:transparent;color:#fff;font:inherit;font-size:10px;white-space:nowrap;cursor:pointer}
+@media(max-width:600px){.trip-summary{max-width:46vw;gap:5px;padding:0 4px;font-size:9px}.trip-summary #tripSummary{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.trip-chevron{width:12px}.trip-row{min-height:61px}.trip-list{max-height:48dvh}}
+@media(prefers-color-scheme:dark){.trip-summary{color:#b4b7b5}.trip-row{background:#222a34;border-color:#394551}.trip-row.current{background:#293b3c;border-color:#49615d}.trip-row-mark{background:#293b3c;color:#a7c9c1}.trip-row-copy small{color:#a9acac}.trip-current-tag{color:#a7c9c1}.trip-delete:hover{background:#493534;color:#e2a08f}.new-trip-button{background:#293b3c;border-color:#405451;color:#a7c9c1}}
+@media(prefers-reduced-motion:reduce){.place-card,.place-card.swipe-away{transition:none}}
 .trip-summary{color:#606d70}.place-count{color:#667073}.chip{color:#626c6d}
 .searchbox input::placeholder,.field input::placeholder,.field textarea::placeholder{color:#727876}
 @media(prefers-color-scheme:dark){:root{--muted:#a9acac}.page-subtitle,.empty-state p,.place-address,.tray-tip,.itinerary-day-title p{color:#b3b5b1}.page-heading .eyebrow,.sheet-header .eyebrow{color:#d0ba89}.trip-summary,.place-count,.chip{color:#b6b9b7}.searchbox input::placeholder,.field input::placeholder,.field textarea::placeholder{color:#a9acac}}
