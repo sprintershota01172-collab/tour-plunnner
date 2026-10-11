@@ -628,3 +628,29 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 .place-row.swipe-ready .place-swipe-background span{opacity:1}
 @media(prefers-color-scheme:dark){.place-swipe-background{color:#efb3a5}}
 @media(prefers-reduced-motion:reduce){.place-row .place-card,.place-row .place-card.swipe-away,.place-swipe-background,.place-swipe-background span{transition:none}}
+
+/* Safe-area padding is additional to the navigation content, not taken from it. */
+.bottom-nav{height:calc(54px + var(--safe-bottom,env(safe-area-inset-bottom,0px)));min-height:calc(54px + var(--safe-bottom,env(safe-area-inset-bottom,0px)));padding:4px max(12px,env(safe-area-inset-left,0px)) calc(4px + var(--safe-bottom,env(safe-area-inset-bottom,0px)));gap:0;flex:0 0 auto;overflow:visible}
+.bottom-nav .nav-item{flex:1;min-width:0;max-width:140px;min-height:44px;padding:0 8px;gap:2px;line-height:16px;overflow:visible}
+.bottom-nav .nav-icon{flex:none;height:23px;width:34px}
+.bottom-nav .nav-item>span:last-of-type{display:block;line-height:16px;white-space:nowrap}
+.wishlist-page .place-body{grid-template-rows:14px 12px;gap:0;padding:2px 8px}
+.wishlist-page .place-topline{line-height:12px;min-height:12px;align-items:center}
+.wishlist-page .category-tag,.wishlist-page .must-badge,.wishlist-page .reservation-badge{min-height:12px;height:12px;line-height:12px;padding:0 4px;font-size:9px;flex:none}
+
+/* Shared trip controls keep the mobile sheets compact. */
+.partner-shortcut{width:100%;min-height:44px;margin:16px 0 0;padding:10px 0;display:flex;align-items:center;gap:8px;border:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:none;color:var(--ink);text-align:left;font:inherit;font-size:12px}
+.partner-shortcut small{margin-left:auto;color:var(--muted);font-size:10px;max-width:44%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.partner-shortcut svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;flex:none}
+.partner-backdrop{z-index:110}
+.partner-sheet{width:min(100%,480px);max-height:calc(var(--vh,100dvh) - 16px);padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.partner-body{padding:0 16px 4px;font-size:12px;line-height:1.8}
+.partner-body>p{margin:0 0 12px}
+.partner-body .partner-status{min-height:18px;color:var(--teal);font-size:11px;margin-bottom:8px}
+.partner-status[data-status="offline"],.partner-status[data-status="retry"],.partner-error{color:#ae7057}
+.partner-body textarea{width:100%;min-height:72px;resize:none;font-family:system-ui,sans-serif;font-size:16px;line-height:1.5;padding:8px 10px;overflow-wrap:anywhere}
+.partner-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.partner-actions button{min-height:44px;padding:8px 14px;font-size:12px;flex:1 1 130px}
+.partner-body .partner-offline-note{margin:8px 0;font-size:10px}
+.partner-leave{border:0;background:none;color:var(--muted);font:inherit;font-size:11px;padding:10px 0;min-height:44px}
+.partner-backdrop [hidden]{display:none!important}
