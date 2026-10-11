@@ -573,3 +573,13 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 .nav-item.active .nav-icon{width:34px;height:23px;border-radius:8px}
 @media(min-width:760px){.wishlist-page{padding:20px 24px}.wishlist-page .page-heading,.wishlist-page .wishlist-toolbar,.wishlist-page .register-place-button,.wishlist-page .category-chips,.wishlist-page .place-grid{max-width:1200px;margin-left:auto;margin-right:auto}.wishlist-page .register-place-button{width:100%}}
 @media(max-width:360px){.topbar{padding:0 10px;gap:6px}.brand small{display:none}.topbar-actions .stay-shortcut{padding:0 7px}.trip-summary{font-size:10px}.wishlist-page{padding-left:12px;padding-right:12px}}
+
+/* Slightly taller collection rows, matching the 32px control rhythm. */
+.wishlist-page .place-card{height:32px;min-height:32px;border-radius:var(--collection-radius)}
+.wishlist-page .place-thumb{width:30px}
+.wishlist-page .place-thumb svg{width:15px;height:15px}
+.wishlist-page .place-body{grid-template-rows:14px 10px;padding:3px 8px}
+.wishlist-page .place-name{line-height:14px}
+.wishlist-page .place-topline{line-height:10px}
+.wishlist-page .category-tag,.wishlist-page .must-badge,.wishlist-page .reservation-badge{min-height:10px;line-height:10px}
+.wishlist-page .place-meta{top:4px;right:8px;line-height:14px}
