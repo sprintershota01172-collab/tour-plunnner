@@ -276,3 +276,12 @@ button,input,textarea,select{font-family:inherit;letter-spacing:inherit}
 .trip-summary{color:#606d70}.place-count{color:#667073}.chip{color:#626c6d}
 .searchbox input::placeholder,.field input::placeholder,.field textarea::placeholder{color:#727876}
 @media(prefers-color-scheme:dark){:root{--muted:#a9acac}.page-subtitle,.empty-state p,.place-address,.tray-tip,.itinerary-day-title p{color:#b3b5b1}.page-heading .eyebrow,.sheet-header .eyebrow{color:#d0ba89}.trip-summary,.place-count,.chip{color:#b6b9b7}.searchbox input::placeholder,.field input::placeholder,.field textarea::placeholder{color:#a9acac}}
+
+/* Smaller titles and a denser day board */
+.page h1{font-size:clamp(18px,1.6vw,21px);line-height:1.22;letter-spacing:.045em}
+.page-heading{margin-bottom:14px}.page-heading .eyebrow{margin-bottom:4px}
+.board-page{padding-top:14px}.board-heading{margin-bottom:5px}.day-tabs{gap:5px;padding-bottom:6px}.day-tab{height:43px;min-width:50px;border-radius:11px}.day-context{min-height:28px;padding:6px 10px;margin:0 0 8px;font-size:9px}
+.timeline-toolbar{min-height:39px;padding:7px 11px}.timeline-scroll{height:30dvh;min-height:230px}.timeline-inner{background:repeating-linear-gradient(to bottom,transparent 0,transparent 43px,#e8e4db 44px,#e8e4db 45px)}
+.timeline-hour-line{height:1px}.time-label{font-size:8px}.timeline-piece{border-radius:9px}.timeline-piece .piece-info{gap:1px}.timeline-piece .piece-time{font-size:8px}.timeline-piece .piece-title{font-size:10px}.timeline-piece .piece-duration{font-size:8px}
+@media(max-width:600px){.page h1{font-size:18px}.page-heading{margin-bottom:12px}.board-page{padding-top:11px}.board-heading{margin-bottom:3px}.day-tab{height:41px;min-width:47px}.day-context{margin-bottom:6px}.timeline-toolbar{min-height:36px;padding:6px 9px}.timeline-scroll{height:30dvh;min-height:215px}}
+@media(prefers-color-scheme:dark){.timeline-inner{background:repeating-linear-gradient(to bottom,transparent 0,transparent 43px,#35404b 44px,#35404b 45px)}}
