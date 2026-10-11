@@ -409,3 +409,9 @@ button,input,textarea,select{font-family:inherit;letter-spacing:inherit}
 :root{font-family:"Caveat","Yomogi","Hiragino Maru Gothic ProN","Yu Gothic UI",sans-serif}
 body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru Gothic ProN","Yu Gothic UI",sans-serif}
 .brand b,.brand small,.eyebrow,.page-count,.place-count,.day-week,.stop-time,.page h1,.empty-state h2,.itinerary-day-title h2,.sheet-header h2,.hotel-editor-head h3,#addPlace span,.empty-add span{font-family:"Caveat","Yomogi","Hiragino Maru Gothic ProN","Yu Gothic UI",sans-serif}
+
+/* Keep paired date controls inside their own grid cells on narrow mobile viewports. */
+.settings-sheet .form-grid{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:12px}
+.settings-sheet .field{min-width:0}
+.settings-sheet input[type="date"]{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+@media(max-width:380px){.settings-sheet .form-grid{column-gap:8px}}
