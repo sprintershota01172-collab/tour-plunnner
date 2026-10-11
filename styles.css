@@ -268,3 +268,11 @@ button,input,textarea,select{font-family:inherit;letter-spacing:inherit}
  .sheet-illustration{background:#3a3830;color:#d0b47d}.detail-icon{background:#293b3c;color:#a7c9c1}
  .candidate-box{background:#29343a;border-color:#46514e}.connection-status{color:#e3aa8f}
 }
+
+/* Keep fine editorial labels readable on the paper palette */
+:root{--muted:#646c70}
+.page-subtitle,.empty-state p,.place-address,.tray-tip,.itinerary-day-title p{color:#646c70}
+.page-heading .eyebrow,.sheet-header .eyebrow{color:#806640}
+.trip-summary{color:#606d70}.place-count{color:#667073}.chip{color:#626c6d}
+.searchbox input::placeholder,.field input::placeholder,.field textarea::placeholder{color:#727876}
+@media(prefers-color-scheme:dark){:root{--muted:#a9acac}.page-subtitle,.empty-state p,.place-address,.tray-tip,.itinerary-day-title p{color:#b3b5b1}.page-heading .eyebrow,.sheet-header .eyebrow{color:#d0ba89}.trip-summary,.place-count,.chip{color:#b6b9b7}.searchbox input::placeholder,.field input::placeholder,.field textarea::placeholder{color:#a9acac}}
