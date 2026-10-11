@@ -487,3 +487,18 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 .wishlist-page .register-place-button small{margin-left:auto;font-family:inherit;font-size:10px;letter-spacing:.08em;opacity:.65}
 .wishlist-page .register-place-button:active{opacity:.75}
 .wishlist-page .register-place-button:focus-visible{outline:2px solid #537c7b;outline-offset:3px}
+
+/* Compact collection bands: roughly one third of the previous 124–136px rows. */
+.wishlist-page .place-grid{gap:8px}
+.wishlist-page .place-card{height:46px;min-height:46px;border-radius:10px;align-items:stretch}
+.wishlist-page .place-thumb{width:44px}
+.wishlist-page .place-thumb svg{width:20px;height:20px}
+.wishlist-page .place-body{position:relative;display:grid;grid-template-rows:17px 16px;gap:1px;padding:5px 9px;overflow:hidden}
+.wishlist-page .place-name{grid-row:1;margin:0;padding-right:74px;line-height:17px;font-size:11px;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.wishlist-page .place-topline{grid-row:2;gap:5px;margin:0;flex-wrap:nowrap;min-width:0;overflow:hidden;line-height:16px}
+.wishlist-page .category-tag{padding:0 5px;max-width:110px;min-height:15px;font-size:8px;gap:3px;overflow:hidden;text-overflow:ellipsis}
+.wishlist-page .must-badge{font-size:8px}
+.wishlist-page .reservation-badge{min-height:15px;padding:0 5px;font-size:8px;line-height:15px}
+.wishlist-page .place-address{display:none}
+.wishlist-page .place-meta{position:absolute;top:6px;right:9px;gap:5px;margin:0;line-height:16px;font-size:8px}
+.wishlist-page .place-meta svg{width:10px;height:10px}
