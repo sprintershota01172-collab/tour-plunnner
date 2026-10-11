@@ -668,3 +668,13 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 .tray-card .tray-piece .piece-title{line-height:16px}
 .tray-card .tray-piece .piece-category{line-height:12px;margin-top:0}
 #settingsButton svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+
+/* iOS date controls have an intrinsic width; give each mobile date its own row. */
+.settings-sheet input[type="date"]{appearance:none;-webkit-appearance:none;inline-size:100%;min-inline-size:0;max-inline-size:100%;font-size:16px;overflow:hidden}
+.settings-sheet input[type="date"]::-webkit-date-and-time-value{min-width:0;text-align:left}
+.settings-sheet input[type="date"]::-webkit-datetime-edit{min-width:0;padding:0}
+@media(max-width:600px){
+  #settingsForm>.form-grid>.date-field{grid-column:1 / -1;min-width:0}
+  .settings-sheet .hotel-date-fields{grid-template-columns:minmax(0,1fr);gap:8px}
+  .settings-sheet input[type="date"]{min-height:44px;padding:8px 10px}
+}
