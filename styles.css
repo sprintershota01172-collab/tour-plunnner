@@ -285,3 +285,53 @@ button,input,textarea,select{font-family:inherit;letter-spacing:inherit}
 .timeline-hour-line{height:1px}.time-label{font-size:8px}.timeline-piece{border-radius:9px}.timeline-piece .piece-info{gap:1px}.timeline-piece .piece-time{font-size:8px}.timeline-piece .piece-title{font-size:10px}.timeline-piece .piece-duration{font-size:8px}
 @media(max-width:600px){.page h1{font-size:18px}.page-heading{margin-bottom:12px}.board-page{padding-top:11px}.board-heading{margin-bottom:3px}.day-tab{height:41px;min-width:47px}.day-context{margin-bottom:6px}.timeline-toolbar{min-height:36px;padding:6px 9px}.timeline-scroll{height:30dvh;min-height:215px}}
 @media(prefers-color-scheme:dark){.timeline-inner{background:repeating-linear-gradient(to bottom,transparent 0,transparent 43px,#35404b 44px,#35404b 45px)}}
+
+/* Airline-inspired flight mark and packing checklist */
+.brand-mark svg{width:23px;height:23px;stroke-width:1.25}
+.empty-state{padding:54px 20px 28px}
+.empty-flight-art{width:min(360px,78%);height:112px;margin:0 auto 8px;display:grid;place-items:center;overflow:visible}
+.empty-flight-art svg{width:100%;height:100%;overflow:visible}
+.flight-trail{fill:none;stroke:#879bb0;stroke-width:1.25;stroke-dasharray:3 6;stroke-linecap:round;opacity:.72}
+.flight-origin{fill:#c77862}.flight-destination{fill:#477a78}.flight-plane{fill:#365c78;filter:drop-shadow(0 3px 4px rgba(39,50,68,.12))}
+.empty-add{width:44px;height:44px;border:1px solid #d8ded9;border-radius:50%;background:rgba(252,250,245,.7);color:#477a78;display:grid;place-items:center;margin:0 auto;cursor:pointer;transition:transform .22s var(--ease),background .22s var(--ease)}
+.empty-add svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
+.empty-add:active{transform:scale(.94)}
+.itinerary-tools{display:flex;align-items:center;gap:7px}
+.packing-button{height:42px;min-width:44px;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid #e2ded4;border-radius:999px;background:rgba(252,250,245,.88);color:#477a78;font-size:11px;cursor:pointer}
+.packing-button svg,.packing-add-form svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.packing-sheet{width:min(560px,100%);max-height:min(80dvh,720px);display:flex;flex-direction:column;overflow:hidden}
+.packing-sheet .sheet-header{flex:none;margin-bottom:12px}
+.packing-progress-label{margin:7px 0 5px;color:#687577;font-size:10px}
+.packing-progress{height:3px;width:min(250px,55vw);border-radius:99px;background:#e5e4dc;overflow:hidden}
+.packing-progress span{display:block;height:100%;width:0;background:#477a78;border-radius:inherit;transition:width .24s var(--ease)}
+.packing-list{min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 2px 10px}
+.packing-group{margin:0 0 12px}.packing-group h3{margin:0 0 4px;color:#9a8051;font-size:9px;font-weight:650;letter-spacing:.12em}
+.packing-item{min-height:42px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(224,220,211,.72)}
+.packing-check-row{min-height:42px;min-width:0;flex:1;display:flex;align-items:center;gap:10px;cursor:pointer}
+.packing-check-row input{position:absolute;opacity:0;width:1px;height:1px}
+.packing-check{width:18px;height:18px;flex:none;border:1px solid #c9cec7;border-radius:6px;background:#fffefa;display:grid;place-items:center}
+.packing-check:after{content:"";width:8px;height:4px;border-left:1.5px solid white;border-bottom:1.5px solid white;transform:translateY(-1px) rotate(-45deg);opacity:0}
+.packing-item.checked .packing-check{background:#477a78;border-color:#477a78}.packing-item.checked .packing-check:after{opacity:1}
+.packing-name{min-width:0;color:#3b4651;font-size:12px;line-height:1.4}.packing-item.checked .packing-name{color:#8a8e8b;text-decoration:line-through;text-decoration-color:#b3b8b1}
+.packing-remove{width:38px;height:38px;flex:none;border:0;border-radius:50%;background:transparent;color:#92948e;font-size:19px;cursor:pointer}
+.packing-add-form{flex:none;display:flex;gap:8px;padding:10px 0 0;border-top:1px solid #e5e0d6;background:#fcfaf5}
+.packing-add-form input{min-width:0;flex:1;height:44px;padding:0 13px;border:1px solid #e1ddd3;border-radius:12px;background:#f8f6f0;font-size:16px}
+.packing-add-form button{width:44px;height:44px;flex:none;display:grid;place-items:center;border:0;border-radius:50%;background:#477a78;color:white;cursor:pointer}
+.packing-empty{padding:22px;color:#70777a;text-align:center;font-size:12px}
+.timeline-piece,.itinerary-stop{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.timeline-piece.swipe-away,.itinerary-stop.swipe-away{opacity:0;transform:translateX(var(--swipe-offset,110%));transition:transform .17s var(--ease),opacity .17s var(--ease)}
+@media(max-width:600px){
+ .empty-state{padding:42px 20px 20px}.empty-flight-art{height:94px;width:min(300px,82%)}.empty-add{width:42px;height:42px}
+ .itinerary-tools{gap:5px}.packing-button,.share-button{height:40px;padding:0 10px;font-size:10px}
+ .packing-sheet{max-height:min(82dvh,720px);padding-left:17px;padding-right:17px}.packing-sheet .sheet-header{grid-template-columns:minmax(0,1fr) 38px;gap:8px}
+ .packing-item,.packing-check-row{min-height:40px}.packing-name{font-size:12px}
+}
+@media(prefers-color-scheme:dark){
+ .flight-trail{stroke:#a0b5ca;opacity:.62}.flight-plane{fill:#a8c4d4}.flight-origin{fill:#df9a7c}.flight-destination{fill:#92bbb3}
+ .empty-add,.packing-button{background:#222a34;border-color:#46525d;color:#a9d0c7}
+ .packing-progress{background:#3b454b}.packing-progress-label,.packing-name{color:#d9dedb}.packing-group h3{color:#d0ba89}
+ .packing-item{border-color:#394551}.packing-check{background:#1b232d;border-color:#56615f}.packing-item.checked .packing-name{color:#a5aaa7}
+ .packing-add-form{background:#222a34;border-color:#394551}.packing-add-form input{background:#1b232d;border-color:#3d4955;color:#eeeae2}.packing-remove{color:#a9acac}
+}
+@media(prefers-reduced-motion:reduce){.empty-add,.packing-progress span,.timeline-piece.swipe-away,.itinerary-stop.swipe-away{transition:none}}
+.packing-sheet .sheet-header{grid-template-columns:minmax(0,1fr) 40px}
