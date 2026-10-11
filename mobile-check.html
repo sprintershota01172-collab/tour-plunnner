@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>tabi — Mobile layout check</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;padding:24px;background:#e6e4dd;color:#536461;font:13px system-ui,sans-serif}
+    main{display:flex;justify-content:center;align-items:flex-start;gap:30px;flex-wrap:wrap}figure{margin:0}figcaption{margin:0 0 10px;text-align:center;letter-spacing:.06em}
+    iframe{display:block;border:0;border-radius:20px;box-shadow:0 10px 35px #293b3c1a;background:#f8f6ef}
+    #phone390{width:390px;height:700px}#phone320{width:320px;height:568px}
+  </style>
+</head>
+<body>
+  <!-- Actual app frames exercise its mobile media queries and touch-sized layout. -->
+  <main>
+    <figure><figcaption>390 × 700</figcaption><iframe id="phone390" src="./" title="390px幅のアプリ"></iframe></figure>
+    <figure><figcaption>320 × 568</figcaption><iframe id="phone320" src="./" title="320px幅のアプリ"></iframe></figure>
+  </main>
+</body>
+</html>

@@ -657,3 +657,14 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 
 /* Prevent focus from scrolling the translated page strip. */
 #viewport{overflow:clip}
+
+/* Empty trays must fit their content rather than the height cap for pieces. */
+.tray-card .tray-pieces.is-empty{flex:none;min-height:48px;height:auto;max-height:none;overflow:visible;padding:4px 0 0;align-items:center}
+.tray-card .tray-empty{display:flex;align-items:center;gap:8px;width:100%;min-width:0;min-height:44px;padding:0 1px;text-align:left;line-height:1.7}
+.tray-empty-message{flex:1;min-width:0;line-height:18px}
+.tray-card .tray-add-link{display:inline-flex;align-items:center;justify-content:center;gap:4px;flex:none;min-height:44px;margin:0;padding:0 8px;white-space:nowrap;font:inherit;font-size:10px;line-height:16px}
+.tray-add-link svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.tray-card .tray-complete{justify-content:center;text-align:center}
+.tray-card .tray-piece .piece-title{line-height:16px}
+.tray-card .tray-piece .piece-category{line-height:12px;margin-top:0}
+#settingsButton svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
