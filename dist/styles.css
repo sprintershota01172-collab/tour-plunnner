@@ -502,3 +502,18 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 .wishlist-page .place-address{display:none}
 .wishlist-page .place-meta{position:absolute;top:6px;right:9px;gap:5px;margin:0;line-height:16px;font-size:8px}
 .wishlist-page .place-meta svg{width:10px;height:10px}
+
+/* Extra slim collection bands, half of the previous 46px height. */
+.wishlist-page .place-grid{gap:6px}
+.wishlist-page .place-card{height:23px;min-height:23px;border-radius:6px}
+.wishlist-page .place-thumb{width:22px}
+.wishlist-page .place-thumb svg{width:13px;height:13px}
+.wishlist-page .place-body{grid-template-rows:11px 9px;gap:0;padding:1px 6px}
+.wishlist-page .place-name{line-height:11px;font-size:10px;padding-right:70px}
+.wishlist-page .place-topline{line-height:9px;gap:4px}
+.wishlist-page .category-tag{min-height:9px;padding:0 3px;font-size:7px;line-height:9px}
+.wishlist-page .category-tag .tag-dot{width:3px;height:3px}
+.wishlist-page .must-badge{font-size:7px;line-height:9px}
+.wishlist-page .reservation-badge{min-height:9px;padding:0 3px;font-size:7px;line-height:9px}
+.wishlist-page .place-meta{top:2px;right:6px;font-size:8px;line-height:11px;gap:4px}
+.wishlist-page .place-meta svg{width:9px;height:9px}
