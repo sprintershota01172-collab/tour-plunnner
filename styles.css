@@ -114,3 +114,95 @@ html,body{background:var(--bg);color:var(--ink);font-size:15px}
 @media(max-width:600px){.edit-sheet{padding:9px 16px max(8px,env(safe-area-inset-bottom));max-height:min(88dvh,760px);border-radius:23px 23px 0 0}.sheet-grabber{margin-bottom:9px}.sheet-header{grid-template-columns:minmax(0,1fr) 38px 38px;gap:7px;margin-bottom:10px}.sheet-illustration{width:36px;height:36px;border-radius:12px}.sheet-illustration svg{width:31px;height:31px}.sheet-header .icon-button{width:38px;height:38px}.form-grid{gap:8px 8px}.field input,.field textarea,.field select{min-height:40px;padding:6px 9px;border-radius:9px}.field textarea{min-height:54px}.photo-drop{min-height:38px;padding:4px 6px}.photo-add{min-height:31px}.photo-hint{font-size:8px}.photo-item{width:44px;height:44px}.optional-details{margin-top:8px}.optional-details summary{min-height:42px}.lower-fields{margin-top:8px}.priority-toggle{min-height:42px;padding:5px 7px}.sheet-footer{margin-top:8px;padding-top:8px}.sheet-footer .primary-button,.secondary-button,.delete-button{min-height:40px}}
 @media(prefers-color-scheme:dark){.edit-sheet{background:#1c1d20;border-color:#34353a}.sheet-header h2,.detail-title{color:#f2f1ec}.sheet-caption,.drop-hint,.photo-hint,.priority-toggle small{color:#a5a199}.sheet-header .eyebrow,.photo-add svg,.url-fetch{color:#c6b07b}.sheet-illustration,.detail-icon,.url-fetch .fetch-icon{background:#2b2923;color:#c6b07b}.sheet-header .icon-button,.photo-drop,.field input,.field textarea,.field select,.priority-toggle,.photo-add{background:#18191c;border-color:#37383d;color:#f1f1ed}.field input::placeholder,.field textarea::placeholder{color:#777872}.optional-details,.sheet-footer{border-color:#37383d}.sheet-footer{background:#1c1d20}.paste-button{background:#282721;border-color:#464137;color:#d5c49b}.candidate-box{background:#23231f;border-color:#403d33}.detail-title small{color:#aaa69c}}
 @media(prefers-reduced-motion:reduce){.detail-chevron{transition:none}}
+
+/* A quieter, editorial travel journal */
+:root{
+  --bg:#f7f6f2;--surface:#fffefa;--surface-2:#f0eee7;--line:#e9e6dc;
+  --ink:#292b28;--muted:#85867f;--teal:#607c72;--teal-dark:#4d685f;--teal-soft:#e7ede8;
+  --coral:#c7826c;--shadow:0 4px 18px rgba(48,47,39,.045);
+}
+html,body{background:var(--bg);color:var(--ink)}
+.topbar{background:rgba(247,246,242,.91);border-color:rgba(225,222,213,.8);backdrop-filter:blur(12px)}
+.brand-mark{background:#e9ede7;color:#61796e}.brand b{font-weight:600;letter-spacing:.015em}
+.trip-summary{background:transparent;border:0;padding:0;color:#77786f}.location-dot{background:#be8872;box-shadow:0 0 0 3px #f1e8e1}
+.icon-button:hover,.quiet-button:hover{background:#efede6}
+.page-heading .eyebrow{color:#a18b65;letter-spacing:.2em;font-size:8px}
+.page h1{font-family:"Noto Serif JP","Yu Mincho","Hiragino Mincho ProN",serif;font-weight:500;letter-spacing:.015em;font-size:clamp(22px,2.4vw,29px);color:#30332f}
+.page-subtitle{color:#87877f;font-size:11px;letter-spacing:.015em}
+.primary-button{background:#667f74;box-shadow:none;border-radius:999px;font-weight:550;letter-spacing:.03em}
+.primary-button:hover{background:#526d62;box-shadow:none}
+#addPlace{width:42px;height:42px;padding:0;gap:5px;background:transparent;border:1px solid #dcd9ce;color:#526b61;box-shadow:none}
+#addPlace svg{width:16px;height:16px}#addPlace span{font-size:10px}
+.searchbox,.filter-button{background:rgba(255,254,250,.75);border-color:#e7e4da;box-shadow:none;border-radius:999px}
+.searchbox{max-width:340px}.filter-button{min-width:44px;justify-content:center}
+.category-chips{margin-bottom:20px}.chip{border-color:transparent;background:transparent;box-shadow:none;color:#76776f}.chip.active{background:#e8ece5;border-color:transparent;color:#4e675c;box-shadow:none}
+.place-grid{gap:13px}.place-card{background:rgba(255,254,250,.78);border:1px solid #ece9e0;border-radius:15px;box-shadow:0 2px 8px rgba(48,47,39,.025)}
+.place-card:hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(48,47,39,.06)}
+.place-name{font-weight:600;color:#343630}.place-address{color:#898981}
+.empty-orbit{width:64px;height:64px;border:1px solid #e8e3d7;border-radius:50%;background:#f1efe8;box-shadow:none;color:#8c9b8b}
+.empty-orbit svg{width:30px;height:30px}.empty-state h2{font-family:"Noto Serif JP","Yu Mincho",serif;font-weight:500;letter-spacing:.02em;color:#42443e}.empty-state p{color:#8d8d85}
+.text-button{color:#647c70;font-weight:550}
+.day-tab{border-radius:12px;background:#fbfaf6;border-color:#e6e3d9;box-shadow:none}.day-tab.selected{background:#627c70;border-color:#627c70;box-shadow:none}
+.day-context{background:#f0efe9;border-color:#e8e5dc;color:#74756e}
+.timeline-card,.tray-card,.itinerary-day{background:rgba(255,254,250,.88);border-color:#e9e6dd;border-radius:15px;box-shadow:0 2px 9px rgba(48,47,39,.025)}
+.timeline-toolbar{border-color:#eeece5}.timeline-inner{background:repeating-linear-gradient(to bottom,transparent 0,transparent 55px,#eeece6 56px,#eeece6 57px)}
+.timeline-piece{box-shadow:0 2px 7px color-mix(in srgb,var(--piece-color) 12%,transparent)}
+.tray-card{background:transparent;border-style:dashed;box-shadow:none}.tray-piece{border-color:#e9e6dd;box-shadow:none;background:#fffefa}.tray-tip{color:#8b887d}
+.date-badge{background:#ecefe8;color:#62786d}.itinerary-day-head{background:#f4f2eb}.share-button{background:#fffefa;border-color:#e7e4da;color:#687d71}
+.bottom-nav{background:rgba(249,248,244,.93);border-color:rgba(225,222,213,.82);box-shadow:0 -3px 16px rgba(48,47,39,.025)}
+.nav-item{color:#93938b;font-size:9px;letter-spacing:.03em}.nav-item.active{color:#5b7569}.nav-item.active .nav-icon{background:#e9ede7}
+.edit-sheet{background:#fffefa;border-color:#e9e6dd;box-shadow:0 -12px 42px rgba(40,40,34,.13)}
+.sheet-header h2{font-family:"Noto Serif JP","Yu Mincho",serif;font-weight:500;letter-spacing:.01em}.sheet-header .eyebrow{color:#a18b65}.sheet-illustration{background:#f1efe8;color:#9b865e}
+.field input,.field textarea,.field select{border-color:#e8e5dc;background:#faf9f5}.field input:focus,.field textarea:focus,.field select:focus{border-color:#96a79a;outline:2px solid #e7ede8!important}
+.optional-details{border-color:#ece9e1}.detail-icon{background:#f1efe8;color:#8d805e}.detail-title{color:#51534d}
+.priority-toggle{background:#fffefa;border-color:#ece9e1}.toggle-ui{background:#e7e8e1}.priority-toggle input:checked+.toggle-ui{background:#6c8579}
+.photo-drop{background:#faf9f5;border-color:#e4e0d5}.photo-add{background:#fffefa;border-color:#e5e2d9;color:#666c63}.photo-add svg{color:#7d9284}
+.sheet-footer{background:#fffefa;border-color:#ece9e1}.sheet-footer .primary-button{background:#657e72}.secondary-button,.delete-button{border-color:#e7e4dc;color:#77776f}
+@media(max-width:600px){
+ .topbar{background:rgba(247,246,242,.94)}.page{padding-left:16px;padding-right:16px}
+ .page-heading{margin-bottom:16px}.page h1{font-size:22px}.page-subtitle{font-size:10px}
+ .wishlist-toolbar{gap:7px}.searchbox{height:40px}.filter-button{height:40px;padding:0 11px}
+ .category-chips{margin-bottom:16px}.place-grid{gap:9px}.place-card{min-height:124px;border-radius:13px}
+ .day-tab{min-width:51px}.timeline-card,.tray-card,.itinerary-day{border-radius:13px}
+ .bottom-nav{height:66px}.nav-item.active .nav-icon{width:38px;height:27px}
+}
+@media(prefers-color-scheme:dark){
+ :root{--bg:#171917;--surface:#222420;--surface-2:#2a2c27;--line:#363831;--ink:#efeee8;--muted:#aaa99f;--teal:#a9b9a8;--teal-dark:#bdcbbb;--teal-soft:#29332c;--shadow:0 8px 24px rgba(0,0,0,.2)}
+ .topbar{background:rgba(23,25,23,.93);border-color:#343630}.brand-mark{background:#29332c;color:#b5c3b0}.trip-summary{color:#b3b2a8}
+ .page h1,.sheet-header h2{color:#eeede6}.page-subtitle,.empty-state p{color:#aaa99f}.page-heading .eyebrow,.sheet-header .eyebrow{color:#c3ad7f}
+ #addPlace{border-color:#4b5048;color:#b5c3b0}.searchbox,.filter-button,.place-card,.day-tab,.share-button{background:#222420;border-color:#393b35;color:#deddd5}
+ .chip{color:#b3b2a8}.chip.active,.day-context{background:#2b332d;border-color:#3b463c;color:#d0d8cc}
+ .empty-orbit{background:#222720;border-color:#3a4038;color:#afbeac}.empty-state h2{color:#e1e0d8}.text-button,.nav-item.active{color:#b6c5b1}
+ .day-tab.selected{background:#647b69;border-color:#647b69;color:#fff}.timeline-card,.tray-card,.itinerary-day{background:#20221e;border-color:#393b35}
+ .timeline-toolbar{border-color:#393b35}.timeline-inner{background:repeating-linear-gradient(to bottom,transparent 0,transparent 55px,#343630 56px,#343630 57px)}
+ .tray-piece{background:#252722;border-color:#393b35}.itinerary-day-head{background:#292b25}.date-badge{background:#303a31;color:#c4d0bd}
+ .bottom-nav{background:rgba(29,31,27,.95);border-color:#383a34}.nav-item{color:#97988e}.nav-item.active .nav-icon{background:#29332c}
+ .edit-sheet,.sheet-footer{background:#222420;border-color:#393b35}.sheet-caption,.detail-title,.priority-toggle b{color:#e2e1d9}
+ .sheet-illustration,.detail-icon{background:#303128;color:#c5b27f}.field input,.field textarea,.field select,.photo-drop,.priority-toggle,.photo-add{background:#1c1e1a;border-color:#3c3e37;color:#ecebe4}
+ .optional-details{border-color:#393b35}.detail-title small,.field-hint,.drop-hint,.photo-hint{color:#aaa99f}.secondary-button,.delete-button{background:transparent;border-color:#454740;color:#d0cfc7}
+ .paste-button{background:#303128;border-color:#474337;color:#d0c298}.candidate-box{background:#292b25;border-color:#454238}.connection-status{color:#dbad92}
+}
+
+/* A quieter, editorial travel journal */
+:root{--bg:#f7f6f2;--surface:#fffefa;--surface-2:#f0eee7;--line:#e9e6dc;--ink:#292b28;--muted:#85867f;--teal:#607c72;--teal-dark:#4d685f;--teal-soft:#e7ede8;--coral:#c7826c;--shadow:0 4px 18px rgba(48,47,39,.045)}
+html,body{background:var(--bg);color:var(--ink)}
+.topbar{background:rgba(247,246,242,.91);border-color:rgba(225,222,213,.8);backdrop-filter:blur(12px)}
+.brand-mark{background:#e9ede7;color:#61796e}.brand b{font-weight:600;letter-spacing:.015em}.trip-summary{background:transparent;border:0;padding:0;color:#77786f}.location-dot{background:#be8872;box-shadow:0 0 0 3px #f1e8e1}
+.icon-button:hover,.quiet-button:hover{background:#efede6}.page-heading .eyebrow{color:#a18b65;letter-spacing:.2em;font-size:8px}
+.page h1{font-family:"Noto Serif JP","Yu Mincho","Hiragino Mincho ProN",serif;font-weight:500;letter-spacing:.015em;font-size:clamp(22px,2.4vw,29px);color:#30332f}.page-subtitle{color:#87877f;font-size:11px;letter-spacing:.015em}
+.primary-button{background:#667f74;box-shadow:none;border-radius:999px;font-weight:550;letter-spacing:.03em}.primary-button:hover{background:#526d62;box-shadow:none}
+#addPlace{width:42px;height:42px;padding:0;gap:5px;background:transparent;border:1px solid #dcd9ce;color:#526b61;box-shadow:none}#addPlace svg{width:16px;height:16px}#addPlace span{font-size:10px}
+.searchbox,.filter-button{background:rgba(255,254,250,.75);border-color:#e7e4da;box-shadow:none;border-radius:999px}.searchbox{max-width:340px}.filter-button{min-width:44px;justify-content:center}
+.category-chips{margin-bottom:20px}.chip{border-color:transparent;background:transparent;box-shadow:none;color:#76776f}.chip.active{background:#e8ece5;border-color:transparent;color:#4e675c;box-shadow:none}
+.place-grid{gap:13px}.place-card{background:rgba(255,254,250,.78);border:1px solid #ece9e0;border-radius:15px;box-shadow:0 2px 8px rgba(48,47,39,.025)}.place-card:hover{transform:translateY(-2px);box-shadow:0 7px 18px rgba(48,47,39,.06)}.place-name{font-weight:600;color:#343630}.place-address{color:#898981}
+.empty-orbit{width:64px;height:64px;border:1px solid #e8e3d7;border-radius:50%;background:#f1efe8;box-shadow:none;color:#8c9b8b}.empty-orbit svg{width:30px;height:30px}.empty-state h2{font-family:"Noto Serif JP","Yu Mincho",serif;font-weight:500;letter-spacing:.02em;color:#42443e}.empty-state p{color:#8d8d85}.text-button{color:#647c70;font-weight:550}
+.day-tab{border-radius:12px;background:#fbfaf6;border-color:#e6e3d9;box-shadow:none}.day-tab.selected{background:#627c70;border-color:#627c70;box-shadow:none}.day-context{background:#f0efe9;border-color:#e8e5dc;color:#74756e}
+.timeline-card,.tray-card,.itinerary-day{background:rgba(255,254,250,.88);border-color:#e9e6dd;border-radius:15px;box-shadow:0 2px 9px rgba(48,47,39,.025)}.timeline-toolbar{border-color:#eeece5}.timeline-inner{background:repeating-linear-gradient(to bottom,transparent 0,transparent 55px,#eeece6 56px,#eeece6 57px)}.timeline-piece{box-shadow:0 2px 7px color-mix(in srgb,var(--piece-color) 12%,transparent)}
+.tray-card{background:transparent;border-style:dashed;box-shadow:none}.tray-piece{border-color:#e9e6dd;box-shadow:none;background:#fffefa}.tray-tip{color:#8b887d}.date-badge{background:#ecefe8;color:#62786d}.itinerary-day-head{background:#f4f2eb}.share-button{background:#fffefa;border-color:#e7e4da;color:#687d71}
+.bottom-nav{background:rgba(249,248,244,.93);border-color:rgba(225,222,213,.82);box-shadow:0 -3px 16px rgba(48,47,39,.025)}.nav-item{color:#93938b;font-size:9px;letter-spacing:.03em}.nav-item.active{color:#5b7569}.nav-item.active .nav-icon{background:#e9ede7}
+.edit-sheet{background:#fffefa;border-color:#e9e6dd;box-shadow:0 -12px 42px rgba(40,40,34,.13)}.sheet-header h2{font-family:"Noto Serif JP","Yu Mincho",serif;font-weight:500;letter-spacing:.01em}.sheet-header .eyebrow{color:#a18b65}.sheet-illustration{background:#f1efe8;color:#9b865e}
+.field input,.field textarea,.field select{border-color:#e8e5dc;background:#faf9f5}.field input:focus,.field textarea:focus,.field select:focus{border-color:#96a79a;outline:2px solid #e7ede8!important}.optional-details{border-color:#ece9e1}.detail-icon{background:#f1efe8;color:#8d805e}.detail-title{color:#51534d}
+.priority-toggle{background:#fffefa;border-color:#ece9e1}.toggle-ui{background:#e7e8e1}.priority-toggle input:checked+.toggle-ui{background:#6c8579}.photo-drop{background:#faf9f5;border-color:#e4e0d5}.photo-add{background:#fffefa;border-color:#e5e2d9;color:#666c63}.photo-add svg{color:#7d9284}
+.sheet-footer{background:#fffefa;border-color:#ece9e1}.sheet-footer .primary-button{background:#657e72}.secondary-button,.delete-button{border-color:#e7e4dc;color:#77776f}
+@media(max-width:600px){.topbar{background:rgba(247,246,242,.94)}.page{padding-left:16px;padding-right:16px}.page-heading{margin-bottom:16px}.page h1{font-size:22px}.page-subtitle{font-size:10px}.wishlist-toolbar{gap:7px}.searchbox{height:40px}.filter-button{height:40px;padding:0 11px}.category-chips{margin-bottom:16px}.place-grid{gap:9px}.place-card{min-height:124px;border-radius:13px}.day-tab{min-width:51px}.timeline-card,.tray-card,.itinerary-day{border-radius:13px}.bottom-nav{height:66px}.nav-item.active .nav-icon{width:38px;height:27px}}
+@media(prefers-color-scheme:dark){:root{--bg:#171917;--surface:#222420;--surface-2:#2a2c27;--line:#363831;--ink:#efeee8;--muted:#aaa99f;--teal:#a9b9a8;--teal-dark:#bdcbbb;--teal-soft:#29332c;--shadow:0 8px 24px rgba(0,0,0,.2)}.topbar{background:rgba(23,25,23,.93);border-color:#343630}.brand-mark{background:#29332c;color:#b5c3b0}.trip-summary{color:#b3b2a8}.page h1,.sheet-header h2{color:#eeede6}.page-subtitle,.empty-state p{color:#aaa99f}.page-heading .eyebrow,.sheet-header .eyebrow{color:#c3ad7f}#addPlace{border-color:#4b5048;color:#b5c3b0}.searchbox,.filter-button,.place-card,.day-tab,.share-button{background:#222420;border-color:#393b35;color:#deddd5}.chip{color:#b3b2a8}.chip.active,.day-context{background:#2b332d;border-color:#3b463c;color:#d0d8cc}.empty-orbit{background:#222720;border-color:#3a4038;color:#afbeac}.empty-state h2{color:#e1e0d8}.text-button,.nav-item.active{color:#b6c5b1}.day-tab.selected{background:#647b69;border-color:#647b69;color:#fff}.timeline-card,.tray-card,.itinerary-day{background:#20221e;border-color:#393b35}.timeline-toolbar{border-color:#393b35}.timeline-inner{background:repeating-linear-gradient(to bottom,transparent 0,transparent 55px,#343630 56px,#343630 57px)}.tray-piece{background:#252722;border-color:#393b35}.itinerary-day-head{background:#292b25}.date-badge{background:#303a31;color:#c4d0bd}.bottom-nav{background:rgba(29,31,27,.95);border-color:#383a34}.nav-item{color:#97988e}.nav-item.active .nav-icon{background:#29332c}.edit-sheet,.sheet-footer{background:#222420;border-color:#393b35}.sheet-caption,.detail-title,.priority-toggle b{color:#e2e1d9}.sheet-illustration,.detail-icon{background:#303128;color:#c5b27f}.field input,.field textarea,.field select,.photo-drop,.priority-toggle,.photo-add{background:#1c1e1a;border-color:#3c3e37;color:#ecebe4}.optional-details{border-color:#393b35}.detail-title small,.field-hint,.drop-hint,.photo-hint{color:#aaa99f}.secondary-button,.delete-button{background:transparent;border-color:#454740;color:#d0cfc7}.paste-button{background:#303128;border-color:#474337;color:#d0c298}.candidate-box{background:#292b25;border-color:#454238}.connection-status{color:#dbad92}}
