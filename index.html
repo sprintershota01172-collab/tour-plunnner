@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Yomogi&display=swap" rel="stylesheet">
   <title>tabi — 旅程プランナー</title>
-  <link rel="stylesheet" href="styles.css?v=20261011-22">
+  <link rel="stylesheet" href="styles.css?v=20261011-23">
 </head>
 <body>
   <div class="app-shell">
@@ -54,6 +54,6 @@
   <div class="modal-backdrop settings-backdrop" id="settingsBackdrop" aria-hidden="true"><section class="edit-sheet settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="sheet-grabber"></div><header class="sheet-header"><div><p class="eyebrow">TRIP DETAILS</p><h2 id="settingsTitle">旅行の設定</h2></div><button class="icon-button" id="closeSettings" aria-label="閉じる">×</button></header><form id="settingsForm"><div class="form-grid"><label class="field"><span>旅行先</span><input name="destination" required></label><label class="field"><span>人数</span><input name="travelers" type="number" min="1" max="20"></label><label class="field"><span>出発日</span><input name="startDate" type="date" required></label><label class="field"><span>帰着日</span><input name="endDate" type="date" required></label></div><section class="hotel-editor" id="hotelEditor" aria-labelledby="hotelEditorTitle"><div class="hotel-editor-head"><p class="eyebrow">STAYS</p><h3 id="hotelEditorTitle">宿泊先</h3><p class="hotel-editor-caption">宿泊先はここで登録・変更できます</p></div><div class="hotel-edit-list" id="hotelEditList"></div><button class="hotel-add-button" id="addHotelButton" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>宿泊先を追加</span></button></section><div class="sheet-footer"><span class="footer-spacer"></span><button type="button" class="secondary-button" id="cancelSettings">閉じる</button><button class="primary-button" type="submit">保存する</button></div></form></section></div>
   <div class="modal-backdrop trips-backdrop" id="tripsBackdrop" aria-hidden="true"><section class="edit-sheet trips-sheet" role="dialog" aria-modal="true" aria-labelledby="tripsTitle"><div class="sheet-grabber"></div><header class="sheet-header"><div><p class="eyebrow">YOUR JOURNEYS</p><h2 id="tripsTitle">旅行を選ぶ</h2></div><button class="icon-button" id="closeTrips" aria-label="閉じる">×</button></header><div class="trip-list" id="tripList"></div><button class="new-trip-button" id="newTripButton" type="button"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>新しい旅を登録</span></button></section></div>
   <div class="toast" id="appToast" role="status"></div>
-  <script src="app.js?v=20261011-22" defer></script>
+  <script src="app.js?v=20261011-23" defer></script>
 </body>
 </html>
