@@ -21,7 +21,7 @@
     hotels:[],
     places:[], packingItems:PACKING_DEFAULTS
   };
-  const DB_NAME='malie-honeymoon', DB_STORE='app', TRIP_RESET_KEY='tabi-original-trip-reset-20261011';
+  const DB_NAME='malie-honeymoon', DB_STORE='app', TRIP_RESET_KEY='tabi-original-trip-reset-20261011-2';
   let state=structuredClone(DEFAULTS), trips=[], activeTripId='', selectedDay=0, pageIndex=0, selectedCategory='すべて', editingPhotos=[], candidate=null;
   let db=null, saveTimer=0, toastTimer=0, completionShown=false, undoSnapshot=null, drag=null, swipeStart=null, focusScroll=null, ignorePlaceClickUntil=0, undoMessage='直前の操作を戻しました', hotelDraft=[];
   const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
