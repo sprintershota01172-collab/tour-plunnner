@@ -1,5 +1,5 @@
-const CACHE='tabi-planner-v20';
-const SHELL=['./index.html','./styles.css?v=20261011-13','./app.js?v=20261011-10','./manifest.webmanifest','./icon.svg'];
+const CACHE='tabi-planner-v21';
+const SHELL=['./index.html','./styles.css?v=20261011-14','./app.js?v=20261011-11','./manifest.webmanifest','./icon.svg'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('tabi-planner-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
