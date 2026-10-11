@@ -480,3 +480,10 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 .drag-preview.blocked{border-color:#bd604d;color:#a14c3d;background:rgba(189,96,77,.12)}
 @media(max-width:600px){.timeline-toolbar>div{min-width:0;flex-direction:column;align-items:flex-start;gap:2px}.timeline-meta{font-size:8px}.timeline-toolbar .small-link{flex:none;font-size:8px}.timeline-toolbar{height:44px}.timeline-scroll{scroll-padding:24px 0}}
 @media(prefers-color-scheme:dark){.resize-handle .resize-grip{background:#253d39;border-color:#a6c9bc;color:#e8f0eb}.adjuster-buttons button{border-color:#567467;color:#c1dfd0}.adjuster-buttons button[data-duration-delta="15"]{color:#fff;border-color:#547d77;background:#547d77}.timeline-piece.selected{outline-color:#85ae9c}.drag-preview{color:#c1dfd0;border-color:#a6c9bc;background:rgba(166,201,188,.12)}}
+
+/* Always available registration action; collection rows keep their current sizing. */
+.wishlist-page .register-place-button{display:flex;align-items:center;gap:9px;width:100%;min-height:44px;margin:0 0 12px;padding:10px 14px;border:1px solid var(--line,#deded8);border-radius:12px;background:var(--surface,#fff);color:var(--text,#293344);font:inherit;font-size:12px;text-align:left;touch-action:manipulation;cursor:pointer}
+.wishlist-page .register-place-button svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7}
+.wishlist-page .register-place-button small{margin-left:auto;font-family:inherit;font-size:10px;letter-spacing:.08em;opacity:.65}
+.wishlist-page .register-place-button:active{opacity:.75}
+.wishlist-page .register-place-button:focus-visible{outline:2px solid #537c7b;outline-offset:3px}
