@@ -21,7 +21,7 @@
     hotels:[],
     places:[], packingItems:PACKING_DEFAULTS
   };
-  const DB_NAME='malie-honeymoon', DB_STORE='app', TRIP_RESET_KEY='tabi-original-trip-reset-20261011-2';
+  const DB_NAME='malie-honeymoon', DB_STORE='app';
   let state=structuredClone(DEFAULTS), trips=[], activeTripId='', selectedDay=0, pageIndex=0, selectedCategory='すべて', editingPhotos=[], candidate=null;
   let db=null, saveTimer=0, toastTimer=0, completionShown=false, undoSnapshot=null, drag=null, swipeStart=null, focusScroll=null, ignorePlaceClickUntil=0, undoMessage='直前の操作を戻しました', hotelDraft=[];
   const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
@@ -35,7 +35,7 @@
     else{state=normalizeState(DEFAULTS);trips=[state];activeTripId=state.id;}
     const resetOriginalTrip=resetOriginalTripOnce();renderAll();if(needsMigration||resetOriginalTrip)persist();if(resetOriginalTrip)openSettings(false);
   }
-  function resetOriginalTripOnce(){try{if(localStorage.getItem(TRIP_RESET_KEY))return false;}catch{return false;}const isUntouchedOriginal=state.destination==='Honolulu, Hawai‘i'&&state.startDate==='2027-02-21'&&state.endDate==='2027-02-27'&&(state.places||[]).length===0&&(state.hotels||[]).length===0;let changed=false;if(isUntouchedOriginal){const start=new Date();start.setHours(12,0,0,0);const end=new Date(start);end.setDate(end.getDate()+6);state=normalizeState({id:state.id,destination:'',travelers:2,startDate:localDateString(start),endDate:localDateString(end),hotels:[],places:[],packingItems:structuredClone(PACKING_DEFAULTS)});trips=trips.map(t=>t.id===state.id?state:t);changed=true;}try{localStorage.setItem(TRIP_RESET_KEY,'done');}catch{}return changed;}
+  function resetOriginalTripOnce(){const isUntouchedOriginal=state.destination==='Honolulu, Hawai‘i'&&state.startDate==='2027-02-21'&&state.endDate==='2027-02-27'&&(state.places||[]).length===0&&(state.hotels||[]).length===0;if(!isUntouchedOriginal)return false;const start=new Date();start.setHours(12,0,0,0);const end=new Date(start);end.setDate(end.getDate()+6);state=normalizeState({id:state.id,destination:'',travelers:2,startDate:localDateString(start),endDate:localDateString(end),hotels:[],places:[],packingItems:structuredClone(PACKING_DEFAULTS)});trips=trips.map(t=>t.id===state.id?state:t);return true;}
   function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,reservationRequired:p.reservationRequired??!!p.booked})):[];s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);return s;}
   function storagePayload(){trips=trips.map(t=>t.id===state.id?state:t);activeTripId=state.id;return {version:2,activeTripId,trips};}
   function persist(){clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{const payload=storagePayload();if(db){try{await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(payload,'state');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}catch{toast('保存できませんでした。端末の空き容量をご確認ください');}}else{try{localStorage.setItem(DB_NAME,JSON.stringify(payload));}catch{toast('保存容量が不足しています');}}},100);}
