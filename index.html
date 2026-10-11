@@ -3,34 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f5f5f7">
-  <meta name="description" content="行きたい場所をパズルのように並べて、ふたりのハワイ旅行をつくるアプリ。">
+  <meta name="theme-color" content="#f6f6f8">
+  <meta name="description" content="行きたい場所を集めて、日ごとの旅程を組み立てるプランナー。">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
-  <title>mālie — Honeymoon Planner</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>tabi — 旅程プランナー</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="#" aria-label="ホーム"><span class="brand-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15c2.3-4.4 5.3-6.6 9-6.6s6.7 2.2 9 6.6M4 18c2.1-2.3 4.8-3.5 8-3.5s5.9 1.2 8 3.5"/><path d="M12 4.5v.1"/></svg></span><span><b>mālie</b><small>OUR HONEYMOON</small></span></a>
-      <div class="trip-summary"><span class="location-dot"></span><span id="tripSummary">Honolulu, Hawai‘i</span><span class="summary-separator">·</span><span id="travelerCount">2人</span></div>
+      <a class="brand" href="#" aria-label="ホーム"><span class="brand-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="2"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="2"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="2"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="2"/></svg></span><span><b>tabi</b><small>TRIP PLANNER</small></span></a>
+      <div class="trip-summary"><span class="location-dot"></span><span id="tripSummary">旅行先を設定</span><span class="summary-separator">·</span><span id="travelerCount">2人</span></div>
+      <span class="connection-status" id="connectionStatus" role="status" hidden><i></i>オフライン</span>
       <button class="icon-button" id="settingsButton" aria-label="旅行設定" title="旅行設定"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1 1.4 1.1-1.5 2.6-1.7-.6a8 8 0 0 1-1.5.9l-.3 1.8h-3l-.3-1.8a8 8 0 0 1-1.5-.9l-1.7.6-1.5-2.6 1.4-1.1a7 7 0 0 1 0-1.8l-1.4-1.1 1.5-2.6 1.7.6a8 8 0 0 1 1.5-.9l.3-1.8h3l.3 1.8a8 8 0 0 1 1.5.9l1.7-.6 1.5 2.6-1.4 1.1a7 7 0 0 1 0 1.8Z"/></svg></button>
     </header>
     <main id="viewport" class="viewport">
       <div class="pages" id="pages">
         <section class="page wishlist-page" data-page="0" aria-label="行きたいところ">
-          <div class="page-heading"><div><p class="eyebrow">DREAMING OF HAWAI‘I</p><h1>行きたいところ</h1><p class="page-subtitle">思いついた場所を集めて、ふたりの旅のピースに。</p></div><button class="primary-button" id="addPlace"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>追加</span></button></div>
+          <div class="page-heading"><div><p class="eyebrow">YOUR PLACES</p><h1>行きたい場所</h1><p class="page-subtitle">気になる場所を集めて、旅程に並べましょう。</p></div><button class="primary-button" id="addPlace"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>追加</span></button></div>
           <div class="wishlist-toolbar"><div class="searchbox"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg><input id="searchPlaces" type="search" placeholder="場所を検索" aria-label="場所を検索"></div><button class="filter-button" id="filterToggle"><svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10m-7 6h4"/></svg><span>すべて</span></button><span class="place-count" id="placeCount">0 SPOTS</span></div>
           <div class="category-chips" id="categoryChips"></div>
           <div class="place-grid" id="placeGrid"></div>
           <div class="empty-state" id="emptyWishlist"><div class="empty-orbit"><svg viewBox="0 0 48 48"><path d="M9 31c4.5-9 9.5-13.5 15-13.5S34.5 22 39 31M11 37c4-4.5 8.3-6.7 13-6.7S33 32.5 37 37"/><circle cx="24" cy="10" r="2"/></svg></div><h2>旅のピースを集めよう</h2><p>気になる場所を追加すると、ここに並びます。</p><button class="text-button" id="emptyAdd">最初の場所を追加 <span>→</span></button></div>
         </section>
         <section class="page board-page" data-page="1" aria-label="パズルボード">
-          <div class="page-heading board-heading"><div><p class="eyebrow">MAKE IT YOUR DAY</p><h1>旅程を組み立てる</h1><p class="page-subtitle">ピースを時間に合わせて置いてみよう。</p></div><div class="board-actions"><button class="quiet-button" id="undoMove" title="元に戻す"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h9a7 7 0 0 1 0 14h-2"/></svg></button><button class="quiet-button" id="autoArrange" title="空き時間に並べる"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h6"/><path d="m17 15 3 3 3-3"/></svg></button></div></div>
+          <div class="page-heading board-heading"><div><p class="eyebrow">BUILD YOUR PLAN</p><h1>旅程を組み立てる</h1><p class="page-subtitle">場所を時間に合わせて配置。</p></div><div class="board-actions"><button class="quiet-button" id="undoMove" title="元に戻す"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h9a7 7 0 0 1 0 14h-2"/></svg></button><button class="quiet-button" id="autoArrange" title="空き時間に並べる"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h6"/><path d="m17 15 3 3 3-3"/></svg></button></div></div>
           <div class="day-tabs" id="dayTabs" role="tablist" aria-label="日付"></div>
           <div class="day-context" id="dayContext"></div>
           <div class="board-layout"><div class="timeline-card"><div class="timeline-toolbar"><div><span class="timeline-date" id="selectedDateLabel"></span><span class="timeline-meta" id="placedCount"></span></div><button class="small-link" id="dayClear">この日のピースを戻す</button></div><div class="timeline-scroll" id="timelineScroll"><div class="timeline-inner" id="timelineInner"></div></div></div>
@@ -39,7 +37,7 @@
           <div class="completion-toast" id="completionToast"><span class="toast-spark">✦</span><span>絶対行きたい場所がぜんぶ旅程に入りました</span><button id="toastClose" aria-label="閉じる">×</button></div>
         </section>
         <section class="page itinerary-page" data-page="2" aria-label="旅程ビュー">
-          <div class="page-heading itinerary-heading"><div><p class="eyebrow">OUR LITTLE ADVENTURE</p><h1>ふたりの旅程</h1><p class="page-subtitle" id="itinerarySubtitle">Honolulu · February 2027</p></div><button class="share-button" id="shareMenu"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.6 6.8-4.2m-6.8 7 6.8 4.2"/></svg><span>共有</span></button></div>
+          <div class="page-heading itinerary-heading"><div><p class="eyebrow">YOUR ITINERARY</p><h1>旅程</h1><p class="page-subtitle" id="itinerarySubtitle">旅行の予定を表示</p></div><button class="share-button" id="shareMenu"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.6 6.8-4.2m-6.8 7 6.8 4.2"/></svg><span>共有</span></button></div>
           <div class="itinerary-content" id="itineraryContent"></div>
           <div class="share-panel" id="sharePanel"><button data-share="text">テキストをコピー</button><button data-share="image">画像として保存</button><button data-share="json">JSONを書き出す</button><button data-share="import">JSONを読み込む</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
         </section>
