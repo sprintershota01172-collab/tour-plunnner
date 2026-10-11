@@ -614,3 +614,17 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 .trip-dates-button{display:inline-flex;align-items:center;justify-content:center;height:32px;padding:0 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);font:inherit;font-size:11px;cursor:pointer;touch-action:manipulation}
 .day-tabs:empty{display:none}
 #autoArrange:disabled,#dayClear:disabled{opacity:.35;cursor:default}
+
+/* Collection rows follow the finger; releasing past the threshold removes one row. */
+.place-row{position:relative;min-width:0;overflow:hidden;border-radius:var(--collection-radius,9px);isolation:isolate;touch-action:pan-y}
+.place-row .place-card{position:relative;z-index:1;width:100%;margin:0;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .25s var(--ease),opacity .25s var(--ease)}
+.place-row .place-card:hover{transform:none}
+.place-row .place-card.is-swiping{transition:none;will-change:transform;cursor:grabbing}
+.place-row .place-card.swipe-away{opacity:0;transform:translateX(var(--swipe-offset,-110%));transition:transform .25s var(--ease),opacity .25s var(--ease)}
+.place-swipe-background{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 12px;border-radius:inherit;background:color-mix(in srgb,var(--coral,#d9826a) 18%,var(--surface));color:#a65747;opacity:0;pointer-events:none;transition:opacity .25s var(--ease)}
+.place-swipe-background span{display:flex;align-items:center;gap:5px;font-size:10px;opacity:.65;transition:opacity .25s var(--ease)}
+.place-swipe-background svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.place-row.swiping .place-swipe-background,.place-row.swipe-settling .place-swipe-background{opacity:1}
+.place-row.swipe-ready .place-swipe-background span{opacity:1}
+@media(prefers-color-scheme:dark){.place-swipe-background{color:#efb3a5}}
+@media(prefers-reduced-motion:reduce){.place-row .place-card,.place-row .place-card.swipe-away,.place-swipe-background,.place-swipe-background span{transition:none}}
