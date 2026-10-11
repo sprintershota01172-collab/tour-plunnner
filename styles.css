@@ -206,3 +206,65 @@ html,body{background:var(--bg);color:var(--ink)}
 .sheet-footer{background:#fffefa;border-color:#ece9e1}.sheet-footer .primary-button{background:#657e72}.secondary-button,.delete-button{border-color:#e7e4dc;color:#77776f}
 @media(max-width:600px){.topbar{background:rgba(247,246,242,.94)}.page{padding-left:16px;padding-right:16px}.page-heading{margin-bottom:16px}.page h1{font-size:22px}.page-subtitle{font-size:10px}.wishlist-toolbar{gap:7px}.searchbox{height:40px}.filter-button{height:40px;padding:0 11px}.category-chips{margin-bottom:16px}.place-grid{gap:9px}.place-card{min-height:124px;border-radius:13px}.day-tab{min-width:51px}.timeline-card,.tray-card,.itinerary-day{border-radius:13px}.bottom-nav{height:66px}.nav-item.active .nav-icon{width:38px;height:27px}}
 @media(prefers-color-scheme:dark){:root{--bg:#171917;--surface:#222420;--surface-2:#2a2c27;--line:#363831;--ink:#efeee8;--muted:#aaa99f;--teal:#a9b9a8;--teal-dark:#bdcbbb;--teal-soft:#29332c;--shadow:0 8px 24px rgba(0,0,0,.2)}.topbar{background:rgba(23,25,23,.93);border-color:#343630}.brand-mark{background:#29332c;color:#b5c3b0}.trip-summary{color:#b3b2a8}.page h1,.sheet-header h2{color:#eeede6}.page-subtitle,.empty-state p{color:#aaa99f}.page-heading .eyebrow,.sheet-header .eyebrow{color:#c3ad7f}#addPlace{border-color:#4b5048;color:#b5c3b0}.searchbox,.filter-button,.place-card,.day-tab,.share-button{background:#222420;border-color:#393b35;color:#deddd5}.chip{color:#b3b2a8}.chip.active,.day-context{background:#2b332d;border-color:#3b463c;color:#d0d8cc}.empty-orbit{background:#222720;border-color:#3a4038;color:#afbeac}.empty-state h2{color:#e1e0d8}.text-button,.nav-item.active{color:#b6c5b1}.day-tab.selected{background:#647b69;border-color:#647b69;color:#fff}.timeline-card,.tray-card,.itinerary-day{background:#20221e;border-color:#393b35}.timeline-toolbar{border-color:#393b35}.timeline-inner{background:repeating-linear-gradient(to bottom,transparent 0,transparent 55px,#343630 56px,#343630 57px)}.tray-piece{background:#252722;border-color:#393b35}.itinerary-day-head{background:#292b25}.date-badge{background:#303a31;color:#c4d0bd}.bottom-nav{background:rgba(29,31,27,.95);border-color:#383a34}.nav-item{color:#97988e}.nav-item.active .nav-icon{background:#29332c}.edit-sheet,.sheet-footer{background:#222420;border-color:#393b35}.sheet-caption,.detail-title,.priority-toggle b{color:#e2e1d9}.sheet-illustration,.detail-icon{background:#303128;color:#c5b27f}.field input,.field textarea,.field select,.photo-drop,.priority-toggle,.photo-add{background:#1c1e1a;border-color:#3c3e37;color:#ecebe4}.optional-details{border-color:#393b35}.detail-title small,.field-hint,.drop-hint,.photo-hint{color:#aaa99f}.secondary-button,.delete-button{background:transparent;border-color:#454740;color:#d0cfc7}.paste-button{background:#303128;border-color:#474337;color:#d0c298}.candidate-box{background:#292b25;border-color:#454238}.connection-status{color:#dbad92}}
+
+/* Art-book typography and a mineral, sunset-accented palette */
+:root{
+  --bg:#f3f0e9;--surface:#fcfaf5;--surface-2:#e8e5dc;--line:#e3dfd5;
+  --ink:#273244;--muted:#7e8184;--teal:#477a78;--teal-dark:#315e62;--teal-soft:#e2eeea;
+  --coral:#c77862;--shadow:0 5px 22px rgba(39,50,68,.055);
+  font-family:"Avenir Next","Hiragino Sans","Yu Gothic",-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;
+  font-optical-sizing:auto;letter-spacing:.012em;
+}
+html,body{background-color:var(--bg);color:var(--ink)}
+body{background-image:radial-gradient(ellipse at 95% 8%,rgba(184,160,111,.10),transparent 34%),radial-gradient(ellipse at 2% 85%,rgba(89,137,132,.08),transparent 35%)}
+button,input,textarea,select{font-family:inherit;letter-spacing:inherit}
+.brand b,.brand small,.eyebrow,.page-count,.place-count,.day-week,.stop-time{font-family:"Avenir Next","Hiragino Sans",sans-serif}
+.page h1,.sheet-header h2,.empty-state h2,.itinerary-day-title h2{
+  font-family:"BIZ UDPMincho","Noto Serif JP","Yu Mincho","Hiragino Mincho ProN",serif;
+  font-weight:500;letter-spacing:.055em;text-rendering:optimizeLegibility;
+}
+.page h1{color:#283448}.page-subtitle{color:#7f8181;letter-spacing:.035em}
+.page-heading .eyebrow,.sheet-header .eyebrow{color:#a18352}
+.brand-mark{background:#e2ece7;color:#467572}.brand b{color:#273244;letter-spacing:.04em}
+.trip-summary{color:#697476}.location-dot{background:#c77862;box-shadow:0 0 0 3px rgba(199,120,98,.13)}
+.primary-button,.day-tab.selected,.priority-toggle input:checked+.toggle-ui{background:#477a78}
+.primary-button:hover{background:#315e62}.day-tab.selected{border-color:#477a78}
+#addPlace{border-color:#d6d2c7;color:#477a78;background:rgba(252,250,245,.7)}
+.searchbox,.filter-button,.place-card,.day-tab,.share-button{border-color:#e2ded4}
+.searchbox,.filter-button,.place-card,.day-tab,.share-button{background:rgba(252,250,245,.88)}
+.chip{color:#6e7473}.chip.active{background:#e0ebe6;color:#3e6e6a}
+.empty-orbit{background:#e8eee7;border-color:#dbdfd4;color:#648983}
+.empty-state h2{color:#354153}.text-button{color:#477a78}
+.day-context{background:#e9eeea;border-color:#dee5df;color:#687876}
+.timeline-card,.tray-card,.itinerary-day{background:rgba(252,250,245,.91);border-color:#e2ded4;box-shadow:0 3px 14px rgba(39,50,68,.035)}
+.timeline-inner{background:repeating-linear-gradient(to bottom,transparent 0,transparent 55px,#e8e4db 56px,#e8e4db 57px)}
+.tray-card{background:rgba(232,238,231,.48);border-color:#d9e0d9}.tray-piece{background:#fcfaf5;border-color:#e4e0d6}
+.date-badge{background:#e3ece8;color:#3f7270}.itinerary-day-head{background:linear-gradient(110deg,#e9efea,#f7f3e9)}
+.bottom-nav{background:rgba(247,245,239,.94);border-color:rgba(220,216,205,.85)}.nav-item.active{color:#3f7471}.nav-item.active .nav-icon{background:#e2ece7}
+.edit-sheet,.sheet-footer{background:#fcfaf5;border-color:#e4dfd4}.sheet-header h2{color:#273244}
+.sheet-illustration{background:#eee9dc;color:#a18352}.detail-icon{background:#e5ede8;color:#477a78}
+.field input,.field textarea,.field select{background:#f8f6f0;border-color:#e1ddd3;color:#303a48}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:#719994;outline:2px solid rgba(71,122,120,.15)!important}
+.optional-details{border-color:#e5e0d6}.priority-toggle{background:#fbf9f3;border-color:#e5e0d6}
+.photo-drop{background:#f8f6ef;border-color:#ded9ce}.photo-add{background:#fcfaf5;border-color:#ded9ce}.photo-add svg{color:#477a78}
+.sheet-footer .primary-button{background:#477a78}.secondary-button,.delete-button{border-color:#ddd8cd;color:#717575}
+@media(prefers-color-scheme:dark){
+ :root{--bg:#171d26;--surface:#222a34;--surface-2:#2a3440;--line:#35404b;--ink:#eeeae2;--muted:#a9acac;--teal:#92bbb3;--teal-dark:#a9cec5;--teal-soft:#293b3c;--coral:#df9a7c;--shadow:0 8px 25px rgba(0,0,0,.25)}
+ body{background-image:radial-gradient(ellipse at 95% 8%,rgba(174,140,85,.11),transparent 35%),radial-gradient(ellipse at 2% 85%,rgba(74,133,131,.10),transparent 38%)}
+ .topbar{background:rgba(23,29,38,.93);border-color:#35404b}.brand-mark{background:#2b3c3d;color:#a6c7bf}.brand b{color:#eeeae2}.trip-summary{color:#b4b7b5}
+ .page h1,.sheet-header h2,.empty-state h2,.itinerary-day-title h2{color:#eeeae2}.page-subtitle,.empty-state p{color:#a9acac}
+ .searchbox,.filter-button,.place-card,.day-tab,.share-button{background:rgba(34,42,52,.92);border-color:#394551;color:#e4e2dc}
+ .chip{color:#b5b7b5}.chip.active,.day-context{background:#293b3c;border-color:#3c5552;color:#c5dad4}
+ .empty-orbit{background:#273437;border-color:#3c4b49;color:#a3c1b8}.text-button,.nav-item.active{color:#a7c9c1}
+ .day-tab.selected{background:#477a78;border-color:#477a78;color:#fff}.timeline-card,.tray-card,.itinerary-day{background:rgba(34,42,52,.95);border-color:#394551}
+ .timeline-toolbar{border-color:#394551}.timeline-inner{background:repeating-linear-gradient(to bottom,transparent 0,transparent 55px,#35404b 56px,#35404b 57px)}
+ .tray-card{background:rgba(41,59,60,.35);border-color:#405451}.tray-piece{background:#252f39;border-color:#3e4a53}
+ .date-badge{background:#2c4142;color:#aed0c6}.itinerary-day-head{background:linear-gradient(110deg,#29383b,#30343a)}
+ .bottom-nav{background:rgba(29,36,46,.96);border-color:#394551}.nav-item{color:#a2a5a4}.nav-item.active .nav-icon{background:#293b3c}
+ .edit-sheet,.sheet-footer{background:#222a34;border-color:#394551}.sheet-header h2,.detail-title,.priority-toggle b{color:#eeeae2}
+ .field input,.field textarea,.field select,.photo-drop,.priority-toggle,.photo-add{background:#1b232d;border-color:#3d4955;color:#eeeae2}
+ .field input::placeholder,.field textarea::placeholder,.detail-title small{color:#a4a8a5}.optional-details{border-color:#394551}
+ .photo-add,.paste-button{border-color:#46514e}.secondary-button,.delete-button{border-color:#4a535a;color:#d0d0ca}
+ .sheet-illustration{background:#3a3830;color:#d0b47d}.detail-icon{background:#293b3c;color:#a7c9c1}
+ .candidate-box{background:#29343a;border-color:#46514e}.connection-status{color:#e3aa8f}
+}
