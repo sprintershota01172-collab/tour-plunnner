@@ -676,6 +676,10 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 #modalBackdrop #closeSheet svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 #modalBackdrop #closeSheet:hover{background:var(--surface-2)}
 
+/* Make the primary collection action easy to find without increasing its size. */
+.wishlist-page .register-place-button{border:3px solid #173B61;color:#173B61}
+@media(prefers-color-scheme:dark){.wishlist-page .register-place-button{background:#e7edf4}}
+
 .settings-sheet input[type="date"]{appearance:none;-webkit-appearance:none;inline-size:100%;min-inline-size:0;max-inline-size:100%;font-size:16px;overflow:hidden}
 .settings-sheet input[type="date"]::-webkit-date-and-time-value{min-width:0;text-align:left}
 .settings-sheet input[type="date"]::-webkit-datetime-edit{min-width:0;padding:0}
