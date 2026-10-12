@@ -20,7 +20,7 @@
     return 'パートナーが旅行を更新しました';
   }
   function create(options){
-    let busy=false,message='',timer=0,queue=Promise.resolve();
+    let busy=false,message='',feedback='',currentRoom='',timer=0,queue=Promise.resolve();
     const room=()=>options.getMetadata?.();
     const prefKey=meta=>'tabi-push:'+meta.roomId;
     const api=async(meta,method,body)=>{
@@ -28,10 +28,15 @@
       if(!response.ok)throw new Error('connection');return response.json();
     };
     const render=()=>{
-      const meta=room(),button=document.querySelector('#partnerNotifyToggle'),hint=document.querySelector('#partnerNotifyHint');if(!button||!hint)return;
-      const enabled=!!meta&&preference(meta.roomId)&&available()&&Notification.permission==='granted';
-      button.textContent=busy?'設定中…':enabled?'通知 ON':'通知をONにする';button.setAttribute('aria-pressed',String(enabled));button.disabled=busy||!meta;
-      hint.textContent=message||(!meta?'共有リンクを作成・参加すると通知を設定できます。':!available()?'iPhoneではSafariからホーム画面に追加し、そのアプリで通知をONにしてください。':Notification.permission==='denied'?'端末の設定でtabiの通知を許可してから、もう一度ONにしてください。':enabled?'この端末にパートナーの更新を通知します。': 'アプリを閉じているときも更新をお知らせします。');
+      const meta=room(),button=document.querySelector('#partnerNotifyToggle'),hint=document.querySelector('#partnerNotifyHint'),status=document.querySelector('#partnerNotifyState');if(!button||!hint)return;
+      const roomId=meta?.roomId||'';if(roomId!==currentRoom){currentRoom=roomId;message='';feedback='';}
+      const saved=!!meta&&preference(meta.roomId),supported=available(),enabled=saved&&supported&&Notification.permission==='granted';
+      const mode=busy?'busy':feedback==='error'?'error':enabled?'on':!meta?'setup':!supported?'unsupported':Notification.permission==='denied'?'blocked':'off';
+      button.dataset.state=mode;button.textContent=busy?'設定中…':enabled?'✓ 通知 ON':saved?'通知設定を解除':feedback==='error'?'もう一度試す':'通知をONにする';
+      button.setAttribute('aria-pressed',String(enabled));button.setAttribute('aria-busy',String(busy));button.disabled=busy;
+      if(status){status.dataset.state=mode;status.textContent={busy:'設定中',on:'通知 ON',off:'通知 OFF',setup:'共有の設定が必要',unsupported:'ホーム画面から設定',blocked:'通知の許可が必要',error:'設定できませんでした'}[mode];}
+      hint.dataset.state=feedback||mode;
+      hint.textContent=busy?(saved?'通知をOFFにしています…':'通知を設定しています…'):message||(!meta?'先に共有リンクを作成するか、パートナーの招待リンクから参加してください。':!supported?'iPhoneではSafariの共有から「ホーム画面に追加」。追加したtabiを開いて通知をONにしてください。':Notification.permission==='denied'?'端末の設定でtabiの通知を許可してください。':enabled?'ONになっています。もう一度押すと、この旅行の通知をOFFにできます。':'OFFになっています。ボタンを押して通知を許可してください。');
     };
     const register=async meta=>{
       const registration=await Promise.race([navigator.serviceWorker.ready,new Promise((_,reject)=>setTimeout(()=>reject(new Error('worker')),10000))]);
@@ -44,17 +49,18 @@
     };
     const enqueue=work=>{queue=queue.catch(()=>{}).then(work);return queue;};
     async function toggle(){
-      const meta=room();if(!meta||busy)return;
+      const meta=room();if(busy)return;
+      if(!meta){feedback='setup';message='①「共有リンクを作成」を押す → ② このボタンで通知をON。招待された方は、招待リンクから参加してください。';render();const next=document.querySelector('#partnerCreate');if(next&&!next.hidden){next.classList.add('notification-next-step');next.focus();}return;}
       const enabled=preference(meta.roomId);
-      if(!enabled&&!available()){message='iPhoneではSafariの共有から「ホーム画面に追加」し、追加したtabiで通知をONにしてください。';render();return;}
+      if(!enabled&&!available()){feedback='unsupported';message='iPhoneではSafariの共有から「ホーム画面に追加」し、追加したtabiで通知をONにしてください。';render();return;}
       // Ask directly within the user's click; never request permission automatically.
       const permission=enabled?null:Notification.permission==='default'?Notification.requestPermission():Promise.resolve(Notification.permission);
-      busy=true;message='';render();
+      busy=true;message='';feedback='';render();
       try{
-        if(enabled){await enqueue(()=>api(meta,'DELETE'));write(prefKey(meta),'off');message='この旅行の通知をOFFにしました。';}
-        else if(await permission!=='granted'){message='通知は許可されませんでした。アプリ内の更新表示は利用できます。';}
-        else{await enqueue(()=>register(meta));write(prefKey(meta),'on');message='通知をONにしました。パートナーの更新をお知らせします。';}
-      }catch{message='通知を設定できませんでした。通信を確認して、もう一度お試しください。';}finally{busy=false;render();}
+        if(enabled){await enqueue(()=>api(meta,'DELETE'));write(prefKey(meta),'off');feedback='success';message='この旅行の通知をOFFにしました。';}
+        else if(await permission!=='granted'){feedback='blocked';message='通知は許可されませんでした。アプリ内の更新表示は利用できます。';}
+        else{await enqueue(()=>register(meta));write(prefKey(meta),'on');feedback='success';message='通知をONにしました。パートナーの更新をお知らせします。';}
+      }catch{feedback='error';message='通知を設定できませんでした。通信を確認して、もう一度お試しください。';}finally{busy=false;render();}
     }
     function notice(before,after){
       const el=document.querySelector('#partnerUpdateNotice');if(!el)return;
