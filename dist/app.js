@@ -32,11 +32,12 @@
   const sharing=sharedApi?sharedApi.create({
     getContext:()=>({id:state.id,trip:state,metadata:state.collaboration}),
     isBusy:()=>!!(drag||resizeSession||placeSwipe||$('#modalBackdrop.open')||$('#settingsBackdrop.open')||$('#packingBackdrop.open')||$('#groupsBackdrop.open')||$('#tripsBackdrop.open')),
-    applyTrip:trip=>{state=normalizeState({...state,...trip});selectedDay=Math.max(0,Math.min(selectedDay,dayCount()-1));persist(false);renderAll();},
+    applyTrip:trip=>{const previous=state;state=normalizeState({...state,...trip});selectedDay=Math.max(0,Math.min(selectedDay,dayCount()-1));persist(false);renderAll();notifications?.notice(previous,state);},
     setMetadata:metadata=>{state.collaboration=metadata;persist(false);},
     onStatus:updatePartnerStatus,
     onConflict:()=>showToast('同じ時間の予定を未配置のピースに戻しました')
   }):null;
+  const notifications=window.TabiNotifications?.create({getMetadata:()=>state.collaboration,sync:()=>sharing?.sync()});
   if(sharedApi){pendingInvite=sharedApi.parseInvite(location.hash);if(pendingInvite)history.replaceState(null,'',location.pathname+location.search);}
 
 
@@ -336,6 +337,7 @@
   }
   const partnerStatusText={local:'',synced:'同期済み',syncing:'同期中…',waiting:'同期待ち',offline:'オフライン · 接続後に同期します',retry:'接続を確認しています · 変更は端末に保存済み',invalid:'共有リンクを確認してください', 'too-large':'写真の容量が大きいため同期できません'};
   function updatePartnerStatus(){
+    notifications?.render();
     const status=$('#partnerStatus');if(!status)return;
     status.textContent=partnerBusy?'接続中…':state.collaboration?(partnerStatusText[sharing?.getStatus()]||'同期待ち'):'';
     status.dataset.status=sharing?.getStatus()||'local';
@@ -351,7 +353,7 @@
     $$('.partner-actions button').forEach(button=>button.disabled=partnerBusy||!sharing);
     updatePartnerStatus();
   }
-  function openPartner(){$('#partnerError').hidden=true;renderPartner();openModal($('#partnerBackdrop'));}
+  function openPartner(){notifications?.restore();$('#partnerError').hidden=true;renderPartner();openModal($('#partnerBackdrop'));}
   function partnerError(error){
     const message=error.message==='offline'?'オンラインでリンクを作成・参加してください。':error.message==='invalid_invite'?'招待リンクが無効です。パートナーにもう一度リンクをもらってください。':error.message==='browser_update'?'ブラウザを更新してから参加してください。':error.message==='photos_too_large'?'写真の容量が大きすぎます。写真を減らしてもう一度お試しください。':'接続できませんでした。旅行は端末に保存されています。もう一度お試しください。';
     $('#partnerError').textContent=message;$('#partnerError').hidden=false;
@@ -379,7 +381,7 @@
     $('#partnerCreate').onclick=createPartnerRoom;$('#partnerJoin').onclick=joinPartnerRoom;$('#partnerCopy').onclick=copyPartnerLink;
     $('#partnerNative').onclick=async()=>{try{if(navigator.share)await navigator.share({title:`${state.destination||'旅行'}を一緒に編集`,url:sharedApi.link(state.collaboration)});else await copyPartnerLink();}catch(error){if(error.name!=='AbortError')showToast('共有できませんでした。リンクをコピーしてください');}};
     $('#partnerSync').onclick=()=>sharing?.sync();
-    $('#partnerLeave').onclick=()=>{if(!state.collaboration)return;delete state.collaboration;undoSnapshot=null;undoCheckpoint=null;sharing.attach();persist(false);renderPartner();showToast('旅行をこの端末のみに保存しました');};
+    $('#partnerLeave').onclick=()=>{if(!state.collaboration)return;notifications?.leave(state.collaboration);delete state.collaboration;undoSnapshot=null;undoCheckpoint=null;sharing.attach();persist(false);renderPartner();showToast('旅行をこの端末のみに保存しました');};
     window.addEventListener('hashchange',()=>{const invite=sharedApi?.parseInvite(location.hash);if(invite){pendingInvite=invite;history.replaceState(null,'',location.pathname+location.search);openPartner();}});
   }
   function bindPlacementHelpers(){
@@ -387,6 +389,6 @@
     $('#trayPieces').addEventListener('click',e=>{const button=e.target.closest('[data-place-now]');if(button){e.preventDefault();placeAtNextSlot(button.dataset.placeNow);return;}if(e.target.closest('[data-back-to-spots]'))navigate(0);});
     $('#trayPieces').addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.stopImmediatePropagation();},true);
   }
-  async function registerSW(){if('serviceWorker' in navigator&&location.protocol.startsWith('http'))try{const registration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});registration.update().catch(()=>{});}catch(e){console.warn('PWA offline cache could not start',e);}}
+  async function registerSW(){if('serviceWorker' in navigator&&location.protocol.startsWith('http'))try{const registration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});registration.update().catch(()=>{});notifications?.restore();}catch(e){console.warn('PWA offline cache could not start',e);}}
   bind();bindPlacementHelpers();loadState();registerSW();
 })();

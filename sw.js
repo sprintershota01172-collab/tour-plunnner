@@ -1,5 +1,5 @@
-const CACHE='tabi-planner-v58';
-const SHELL=['./index.html','./styles.css?v=20261012-46','./app.js?v=20261012-44','./date-range.js?v=20261012-45','./sync.js?v=20261012-41','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
+const CACHE='tabi-planner-v59';
+const SHELL=['./index.html','./styles.css?v=20261012-47','./app.js?v=20261012-47','./notifications.js?v=20261012-47','./date-range.js?v=20261012-45','./sync.js?v=20261012-47','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('tabi-planner-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
@@ -18,5 +18,18 @@ self.addEventListener('fetch',event=>{
     if(cached)return cached;
     try{const response=await fetch(request);if(response.ok&&response.type==='basic')await cache.put(request,response.clone());return response;}
     catch{if(request.mode==='navigate')return (await cache.match('./index.html'))||Response.error();return Response.error();}
+  })());
+});
+
+self.addEventListener('push',event=>event.waitUntil((async()=>{
+  await self.registration.showNotification('tabi',{body:'パートナーが旅行を更新しました。タップして確認できます。',icon:new URL('./icon-192.png',self.registration.scope).href,badge:new URL('./icon-192.png',self.registration.scope).href,tag:'tabi-partner-update',data:{url:self.registration.scope}});
+  const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+  for(const client of windows)if(client.url.startsWith(self.registration.scope))client.postMessage({type:'tabi-partner-update'});
+})()));
+self.addEventListener('notificationclick',event=>{
+  event.notification.close();event.waitUntil((async()=>{
+    const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    const client=windows.find(c=>c.url.startsWith(self.registration.scope));
+    if(client){await client.focus();client.postMessage({type:'tabi-partner-update'});}else await self.clients.openWindow(self.registration.scope);
   })());
 });

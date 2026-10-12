@@ -90,6 +90,7 @@
       const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
       try{
         const headers={Authorization:`Bearer ${await auth(metadata.key)}`};
+        if(method==='PUT'&&window.TabiNotifications?.clientId)headers['X-Tabi-Client']=window.TabiNotifications.clientId;
         if(body)headers['Content-Type']='application/octet-stream';
         if(revision)headers[conditional?'If-None-Match':'X-Tabi-Revision']=conditional?`"${revision}"`:String(revision);
         const response=await transport(`${options.api||API}${metadata.roomId}`,{method,body,headers,cache:'no-store',credentials:'omit',signal:controller.signal});
