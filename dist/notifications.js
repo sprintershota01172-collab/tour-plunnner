@@ -8,7 +8,10 @@
   const preference=room=>read('tabi-push:'+room)==='on';
   const available=()=>window.isSecureContext&&'serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
   const decode=value=>Uint8Array.from(atob(value.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-value.length%4)%4)),c=>c.charCodeAt(0));
+  const canonical=value=>Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical(value[key])])):value;
+  const snapshot=trip=>Object.fromEntries(['destination','travelers','startDate','endDate','datesConfigured','hotels','groups','places','packingItems'].map(key=>[key,trip[key]]));
   function describeUpdate(before,after){
+    if(JSON.stringify(canonical(snapshot(before)))===JSON.stringify(canonical(snapshot(after))))return null;
     const old=new Map((before.places||[]).map(p=>[p.id,p]));
     const added=(after.places||[]).filter(p=>!old.has(p.id));
     if(added.length)return added.length===1?`パートナーが「${added[0].name}」を追加しました`:`パートナーが${added.length}件の場所を追加しました`;
@@ -55,7 +58,7 @@
     }
     function notice(before,after){
       const el=document.querySelector('#partnerUpdateNotice');if(!el)return;
-      el.textContent=describeUpdate(before,after);el.classList.add('show');clearTimeout(timer);timer=setTimeout(()=>el.classList.remove('show'),5000);
+      const text=describeUpdate(before,after);if(!text)return;el.textContent=text;el.classList.add('show');clearTimeout(timer);timer=setTimeout(()=>el.classList.remove('show'),5000);
     }
     async function restore(){const meta=room();render();if(meta&&available()&&Notification.permission==='granted'&&preference(meta.roomId))try{await enqueue(()=>register(meta));}catch{} }
     async function leave(meta){if(!meta)return;write(prefKey(meta),'off');if(navigator.onLine)try{await enqueue(()=>api(meta,'DELETE'));}catch{message='通知の解除を接続後に再試行してください。';}}
