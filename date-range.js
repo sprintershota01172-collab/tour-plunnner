@@ -30,7 +30,7 @@
     $('#rangeDays').innerHTML=calendarDays(month.getFullYear(),month.getMonth()).map(value=>{
       if(!value)return '<span class="range-spacer" aria-hidden="true"></span>';
       const a=value===selection.start,b=value===selection.end,inside=start&&end&&value>=selection.start&&value<=selection.end;
-      const cls=['range-day',a?'range-start':'',b?'range-end':'',inside?'in-range':'',a&&b?'range-single':'',value===today?'range-today':''].filter(Boolean).join('');
+      const cls=['range-day',a?'range-start':'',b?'range-end':'',inside?'in-range':'',a&&b?'range-single':'',value===today?'range-today':''].filter(Boolean).join(' ');
       return `<button type="button" class="${cls}" data-range-day="${value}" aria-label="${value.replace(/-/g,'/')}" aria-pressed="${a||b}"><span>${Number(value.slice(-2))}</span></button>`;
     }).join('');
   }
