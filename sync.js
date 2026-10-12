@@ -86,12 +86,13 @@
     const busy=()=>options.isBusy?.()||false;
     function emit(next){status=next;options.onStatus?.(next);}
     function schedule(delay=700){clearTimeout(timer);if(!disposed)timer=setTimeout(()=>sync(),delay);}
-    async function request(metadata,method,body,revision,conditional=false){
+    async function request(metadata,method,body,revision,conditional=false,updateMessage=null){
       const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
       try{
         const headers={Authorization:`Bearer ${await auth(metadata.key)}`};
         if(method==='PUT'&&window.TabiNotifications?.clientId)headers['X-Tabi-Client']=window.TabiNotifications.clientId;
         if(body)headers['Content-Type']='application/octet-stream';
+        if(method==='PUT'&&updateMessage)headers['X-Tabi-Update']=encode64(encoder.encode(updateMessage.slice(0,300)));
         if(revision)headers[conditional?'If-None-Match':'X-Tabi-Revision']=conditional?`"${revision}"`:String(revision);
         const response=await transport(`${options.api||API}${metadata.roomId}`,{method,body,headers,cache:'no-store',credentials:'omit',signal:controller.signal});
         if(![200,201,304,409].includes(response.status))throw new Error(response.status===413?'photos_too_large':response.status===404?'invalid_invite':'connection');
@@ -120,7 +121,8 @@
           if(same(snapshot,remote)){emit('synced');return;}
           const body=await encrypt(snapshot,metadata.key,metadata.roomId);
           if(!valid(initial))return;
-          const saved=await request(metadata,'PUT',body,revision);
+          const updateMessage=window.TabiNotifications?.describeUpdate(remote,snapshot);
+          const saved=await request(metadata,'PUT',body,revision,false,updateMessage);
           if(!valid(initial))return;
           if(saved.status===409)continue;
           const nextRevision=Number(saved.headers.get('X-Tabi-Revision'));
