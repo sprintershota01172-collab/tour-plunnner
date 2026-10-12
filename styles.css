@@ -670,6 +670,12 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 #settingsButton svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 
 /* iOS date controls have an intrinsic width; give each mobile date its own row. */
+/* The place sheet header has one action: a clear, compact close icon. */
+#modalBackdrop .sheet-header{grid-template-columns:minmax(0,1fr) 44px;align-items:center;gap:8px}
+#modalBackdrop #closeSheet{width:44px;height:44px;min-height:44px;min-width:44px;border:0;border-radius:12px;background:transparent;color:var(--muted);padding:0;box-shadow:none}
+#modalBackdrop #closeSheet svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+#modalBackdrop #closeSheet:hover{background:var(--surface-2)}
+
 .settings-sheet input[type="date"]{appearance:none;-webkit-appearance:none;inline-size:100%;min-inline-size:0;max-inline-size:100%;font-size:16px;overflow:hidden}
 .settings-sheet input[type="date"]::-webkit-date-and-time-value{min-width:0;text-align:left}
 .settings-sheet input[type="date"]::-webkit-datetime-edit{min-width:0;padding:0}
