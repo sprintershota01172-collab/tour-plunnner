@@ -1,10 +1,10 @@
-const CACHE='tabi-planner-v52';
-const SHELL=['./index.html','./styles.css?v=20261012-40','./app.js?v=20261012-40','./sync.js?v=20261012-40','./manifest.webmanifest','./icon.svg'];
+const CACHE='tabi-planner-v53';
+const SHELL=['./index.html','./styles.css?v=20261012-41','./app.js?v=20261012-41','./sync.js?v=20261012-41','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('tabi-planner-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
   const request=event.request,url=new URL(request.url);
-  if(request.method!=='GET'||url.origin!==self.location.origin||url.pathname.includes('/api/')||url.pathname.endsWith('/mobile-check.html'))return;
+  if(request.method!=='GET'||url.origin!==self.location.origin||url.pathname.includes('/api/')||url.pathname.endsWith('/mobile-check.html')||url.pathname.endsWith('/icon-preview.html'))return;
   if(request.mode==='navigate'){
     event.respondWith((async()=>{
       const cache=await caches.open(CACHE),page=new URL('./index.html',self.registration.scope);
