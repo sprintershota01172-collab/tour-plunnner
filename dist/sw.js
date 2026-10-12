@@ -1,5 +1,5 @@
-const CACHE='tabi-planner-v64';
-const SHELL=['./index.html','./styles.css?v=20261012-51','./app.js?v=20261012-47','./notifications.js?v=20261012-52','./date-range.js?v=20261012-45','./sync.js?v=20261012-47','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
+const CACHE='tabi-planner-v65';
+const SHELL=['./index.html','./styles.css?v=20261012-51','./app.js?v=20261012-47','./notifications.js?v=20261012-53','./date-range.js?v=20261012-45','./sync.js?v=20261012-47','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('tabi-planner-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
@@ -22,7 +22,9 @@ self.addEventListener('fetch',event=>{
 });
 
 self.addEventListener('push',event=>event.waitUntil((async()=>{
-  await self.registration.showNotification('tabi',{body:'パートナーが旅行を更新しました。タップして確認できます。',icon:new URL('./icon-192.png',self.registration.scope).href,badge:new URL('./icon-192.png',self.registration.scope).href,tag:'tabi-partner-update',data:{url:self.registration.scope}});
+  let content={title:'tabi',body:'パートナーが旅行を更新しました。タップして確認できます。',tag:'tabi-partner-update'};
+  try{const payload=event.data?.json();if(payload?.web_push===8030&&payload.notification){const n=payload.notification;if(typeof n.title==='string')content.title=n.title.slice(0,80);if(typeof n.body==='string')content.body=n.body.slice(0,300);if(n.tag==='tabi-notification-test')content.tag=n.tag;}}catch{}
+  await self.registration.showNotification(content.title,{body:content.body,icon:new URL('./icon-192.png',self.registration.scope).href,badge:new URL('./icon-192.png',self.registration.scope).href,tag:content.tag,data:{url:self.registration.scope}});
   const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
   for(const client of windows)if(client.url.startsWith(self.registration.scope))client.postMessage({type:'tabi-partner-update'});
 })()));

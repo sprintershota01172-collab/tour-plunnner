@@ -47,7 +47,7 @@
       if(force&&subscription){await subscription.unsubscribe();subscription=null;}
       if(subscription?.options.applicationServerKey){const current=new Uint8Array(subscription.options.applicationServerKey);if(current.length!==key.length||current.some((v,i)=>v!==key[i])){await subscription.unsubscribe();subscription=null;}}
       if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});
-      await api(meta,'POST',{subscription:{endpoint:subscription.endpoint}});verified.add(meta.roomId);repair.delete(meta.roomId);
+      const data=subscription.toJSON();if(!data.keys?.p256dh||!data.keys?.auth)throw new Error('subscription_keys');await api(meta,'POST',{subscription:data});verified.add(meta.roomId);repair.delete(meta.roomId);
     };
     const enqueue=work=>{queue=queue.catch(()=>{}).then(work);return queue;};
     async function toggle(){
@@ -70,7 +70,7 @@
     }
     async function restore(){const meta=room();render();if(meta&&available()&&Notification.permission==='granted'&&preference(meta.roomId))try{await enqueue(()=>register(meta,repair.has(meta.roomId)));render();}catch{verified.delete(meta.roomId);feedback='error';message='端末の登録を確認できませんでした。「もう一度試す」で再登録してください。';render();} }
     async function test(){
-      const meta=room();if(busy)return;if(!meta||!preference(meta.roomId)||!available()||Notification.permission!=='granted'){feedback='blocked';message='先にこの旅行の通知をONにしてから、テストしてください。';render();return;}progress='テスト通知を送信しています…';busy=true;message='';feedback='';render();
+      const meta=room();if(busy)return;if(!meta||!preference(meta.roomId)||!available()||Notification.permission!=='granted'){feedback='blocked';message='先にこの旅行の通知をONにしてから、テストしてください。';render();return;}progress='テスト送信中…ホーム画面へ戻ってお待ちください。';busy=true;message='';feedback='';render();
       try{
         const result=await enqueue(()=>api(meta,'POST',{action:'test'}));
         if(result.accepted){feedback='success';message='通知サービスが送信を受け付けました。通知センターを確認してください。届かない場合は集中モードと端末の通知設定を確認してください。';}
