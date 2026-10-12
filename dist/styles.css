@@ -681,6 +681,40 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 .quick-add{position:absolute;z-index:7;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(70px + var(--safe-bottom,env(safe-area-inset-bottom,0px)));width:44px;height:44px;min-width:44px;min-height:44px;display:grid;place-items:center;padding:0;border:2px solid #173B61;border-radius:50%;background:#fbfaf7;color:#173B61;box-shadow:0 4px 14px #102b4e14;cursor:pointer;touch-action:manipulation}
 .quick-add svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;pointer-events:none}
 .quick-add[hidden]{display:none!important}
+.date-range-button{width:100%;min-height:44px;display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:12px;text-align:left;cursor:pointer}
+.date-range-button span{min-width:0;line-height:1.6;overflow-wrap:anywhere}
+.date-range-button svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.hotel-range-field{margin-top:9px}
+#rangeBackdrop{z-index:140}
+#rangeBackdrop .range-sheet{width:min(100%,420px);max-height:min(92dvh,620px);padding:8px 12px calc(10px + env(safe-area-inset-bottom,0px));overflow-y:auto}
+.range-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.range-header h2{margin:0;font:inherit;font-size:17px;color:var(--ink)}
+.range-header .icon-button{width:44px;height:44px;min-height:44px;flex:none}
+.range-selected{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.range-selected button{display:flex;flex-direction:column;gap:3px;min-width:0;min-height:50px;padding:6px 10px;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);text-align:left;font:inherit}
+.range-selected small{font-size:10px;color:var(--muted)}
+.range-selected span{font-size:12px;line-height:18px}
+.range-selected button.active{border-color:#436b91;background:color-mix(in srgb,#436b91 7%,var(--surface))}
+.range-hint{min-height:18px;margin:6px 0;font-size:11px;color:var(--muted);text-align:center;line-height:18px}
+.range-month-nav{display:flex;align-items:center;gap:6px;margin:0 0 6px}
+.range-month-nav button{width:44px;height:44px;min-width:44px;border:0;background:transparent;display:grid;place-items:center;color:var(--ink)}
+.range-month-nav svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.range-month-nav select{flex:1;min-width:0;min-height:44px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:16px;text-align:center;padding:4px}
+.range-calendar{margin:0 -6px}
+.range-weekdays,.range-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:0}
+.range-weekdays{font-size:10px;text-align:center;line-height:22px;color:var(--muted)}
+.range-day,.range-spacer{min-height:44px;height:44px;min-width:0}
+.range-day{position:relative;display:grid;place-items:center;border:0;border-radius:0;padding:0;background:transparent;color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
+.range-day:before{content:'';position:absolute;top:6px;bottom:6px;left:0;right:0;background:transparent}
+.range-day.in-range:before{background:color-mix(in srgb,#436b91 15%,var(--surface))}
+.range-day.range-start:before{left:50%}.range-day.range-end:before{right:50%}.range-day.range-single:before{display:none}
+.range-day span{position:relative;z-index:1;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;font-family:system-ui,sans-serif}
+.range-day.range-start span,.range-day.range-end span{background:#173B61;color:white}
+.range-day.range-today:not(.range-start):not(.range-end) span{border:1px solid var(--line)}
+.range-footer{position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:8px;margin-top:8px;padding:6px 0 0;background:var(--surface)}
+.range-footer button{height:44px;min-height:44px;font-size:12px;padding:0 12px}
+.range-footer .primary-button{background:#173B61;box-shadow:none}
+.range-footer button:disabled{opacity:.4;cursor:default}
 .quick-add:active{transform:scale(.95)}
 .wishlist-page{padding-bottom:72px}
 @media(prefers-color-scheme:dark){.wishlist-page .register-place-button{background:#e7edf4}}
