@@ -715,6 +715,16 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 .range-footer button{height:44px;min-height:44px;font-size:12px;padding:0 12px}
 .range-footer .primary-button{background:#173B61;box-shadow:none}
 .range-footer button:disabled{opacity:.4;cursor:default}
+#rangeBackdrop .range-sheet{border:0;scrollbar-width:none}
+#rangeBackdrop .range-sheet::-webkit-scrollbar{display:none}
+@media(max-height:650px){
+  .range-header{margin-bottom:4px}
+  .range-selected button{min-height:44px;gap:2px;padding:4px 8px}
+  .range-selected small{line-height:14px}
+  .range-hint{min-height:16px;line-height:16px;margin:2px 0}
+  .range-month-nav{margin-bottom:0}
+  .range-footer{margin-top:4px;padding-top:4px}
+}
 .quick-add:active{transform:scale(.95)}
 .wishlist-page{padding-bottom:72px}
 @media(prefers-color-scheme:dark){.wishlist-page .register-place-button{background:#e7edf4}}
