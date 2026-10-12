@@ -34,7 +34,7 @@
       const mode=busy?'busy':feedback==='error'?'error':enabled?'on':!meta?'setup':!supported?'unsupported':Notification.permission==='denied'?'blocked':saved&&!verified.has(meta.roomId)?'checking':'off';
       button.dataset.state=mode;button.textContent=busy?'設定中…':feedback==='error'?'もう一度試す':enabled?'✓ 通知 ON':saved&&!enabled?'登録を確認':saved?'通知設定を解除':'通知をONにする';
       button.setAttribute('aria-pressed',String(enabled));button.setAttribute('aria-busy',String(busy));button.disabled=busy;
-      const testButton=document.querySelector('#partnerNotifyTest');if(testButton){testButton.hidden=!enabled;testButton.disabled=busy;}
+      const testButton=document.querySelector('#partnerNotifyTest');if(testButton){testButton.hidden=false;testButton.disabled=busy;}
       if(status){status.dataset.state=mode;status.textContent={busy:'設定中',on:'通知 ON',off:'通知 OFF',checking:'登録確認中',setup:'共有の設定が必要',unsupported:'ホーム画面から設定',blocked:'通知の許可が必要',error:'設定できませんでした'}[mode];}
       hint.dataset.state=feedback||mode;
       hint.textContent=busy?progress:message||(!meta?'先に共有リンクを作成するか、パートナーの招待リンクから参加してください。':!supported?'iPhoneではSafariの共有から「ホーム画面に追加」。追加したtabiを開いて通知をONにしてください。':Notification.permission==='denied'?'端末の設定でtabiの通知を許可してください。':enabled?'ONになっています。もう一度押すと、この旅行の通知をOFFにできます。':'OFFになっています。ボタンを押して通知を許可してください。');
@@ -70,7 +70,7 @@
     }
     async function restore(){const meta=room();render();if(meta&&available()&&Notification.permission==='granted'&&preference(meta.roomId))try{await enqueue(()=>register(meta,repair.has(meta.roomId)));render();}catch{verified.delete(meta.roomId);feedback='error';message='端末の登録を確認できませんでした。「もう一度試す」で再登録してください。';render();} }
     async function test(){
-      const meta=room();if(!meta||busy)return;progress='テスト通知を送信しています…';busy=true;message='';feedback='';render();
+      const meta=room();if(busy)return;if(!meta||!preference(meta.roomId)||!available()||Notification.permission!=='granted'){feedback='blocked';message='先にこの旅行の通知をONにしてから、テストしてください。';render();return;}progress='テスト通知を送信しています…';busy=true;message='';feedback='';render();
       try{
         const result=await enqueue(()=>api(meta,'POST',{action:'test'}));
         if(result.accepted){feedback='success';message='通知サービスが送信を受け付けました。通知センターを確認してください。届かない場合は集中モードと端末の通知設定を確認してください。';}
