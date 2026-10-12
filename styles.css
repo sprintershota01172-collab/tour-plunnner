@@ -678,6 +678,11 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 
 /* Make the primary collection action easy to find without increasing its size. */
 .wishlist-page .register-place-button{border:3px solid #173B61;color:#173B61}
+.quick-add{position:absolute;z-index:7;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(70px + var(--safe-bottom,env(safe-area-inset-bottom,0px)));width:44px;height:44px;min-width:44px;min-height:44px;display:grid;place-items:center;padding:0;border:2px solid #173B61;border-radius:50%;background:#fbfaf7;color:#173B61;box-shadow:0 4px 14px #102b4e14;cursor:pointer;touch-action:manipulation}
+.quick-add svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;pointer-events:none}
+.quick-add[hidden]{display:none!important}
+.quick-add:active{transform:scale(.95)}
+.wishlist-page{padding-bottom:72px}
 @media(prefers-color-scheme:dark){.wishlist-page .register-place-button{background:#e7edf4}}
 
 .settings-sheet input[type="date"]{appearance:none;-webkit-appearance:none;inline-size:100%;min-inline-size:0;max-inline-size:100%;font-size:16px;overflow:hidden}
