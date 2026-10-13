@@ -894,3 +894,42 @@ body>.share-panel [data-share="partner"]{background:#315f59;color:#fff;font-weig
 .invite-card-copy strong{max-width:65%;line-height:1.25;overflow-wrap:anywhere}
 #partnerInviteDestination{max-width:63%}
 @media(max-width:390px){.invite-card-copy{top:34%!important}.invite-card-copy strong{font-size:clamp(15px,5vw,22px)}}
+
+/* v70 — Independent global preferences dialog and distinct font presets. */
+.app-settings-sheet{width:min(520px,100%);max-height:min(88dvh,800px);background:var(--surface);padding:16px 20px max(18px,env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain}
+.app-settings-sheet .sheet-header{margin-bottom:12px}
+.app-settings-sheet .sheet-header h2{font-size:21px}
+.app-preferences{display:grid;gap:16px}
+.global-pref-section{border:1px solid #e2e3e2;background:color-mix(in srgb,var(--surface) 89%,#edf1f6);border-radius:16px;padding:13px}
+.global-pref-eyebrow{font-size:10px;letter-spacing:.16em;font-weight:700;color:#496b8b;margin:0 0 9px}
+.global-pref-section h3{margin:0;font-size:15px;font-weight:650}
+.global-pref-desc,.global-pref-footnote{font-size:11px;color:var(--muted);line-height:1.6}
+.global-pref-desc{margin:3px 0 11px}
+.global-pref-footnote{margin:0 2px}
+.global-pref-section>.field select{width:100%;height:46px;border:1px solid #bfcbd6;background:var(--surface);border-radius:11px;padding:0 12px;color:var(--ink);font-size:16px}
+.font-template-choices{border:0;min-width:0;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.font-template-choices legend{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.font-template{position:relative;display:flex;align-items:center;justify-content:space-between;gap:4px;border:1.5px solid #d6dde4;background:var(--surface);border-radius:13px;padding:11px 9px;cursor:pointer;min-height:79px;color:var(--ink);min-width:0}
+.font-template input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.font-template:has(input:checked){background:#edf4f9;border:2px solid #173b61;padding:10.5px 8.5px;color:#173b61}
+.font-template:has(input:focus-visible){outline:3px solid #81b0cc;outline-offset:2px}
+.font-template-content{display:flex;flex-direction:column;gap:6px;min-width:0}
+.font-template-name{font-size:12px;font-weight:700}
+.font-template-sample{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.font-template-check{opacity:0;flex:none;font-size:13px;font-weight:800}
+.font-template:has(input:checked) .font-template-check{opacity:1}
+.font-hand .font-template-sample{font-family:"Caveat","Yomogi",cursive!important;font-size:17px}
+.font-clean .font-template-sample{font-family:"DM Sans","Noto Sans JP",sans-serif!important}
+.font-serif .font-template-sample{font-family:"Noto Serif JP",Georgia,serif!important}
+.font-round .font-template-sample{font-family:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif!important}
+.app-settings-footer{position:sticky;bottom:0;background:var(--surface);padding:12px 0 0;margin-top:13px;display:flex;justify-content:flex-end}
+.app-settings-footer button{background:#173b61;color:#fff;border:2px solid #173b61;border-radius:999px;padding:10px 26px;min-height:43px}
+.trip-summary.unregistered .summary-separator,.trip-summary.unregistered #travelerCount{display:none}
+.trip-list-empty{margin:8px 0 14px;padding:21px 12px;border:1px dashed #ced7df;border-radius:13px;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:380px){.font-template-choices{gap:7px}.font-template{padding:9px 7px}}
+@media(prefers-color-scheme:dark){.global-pref-section{background:#212938;border-color:#354254}.font-template{background:#222b38;border-color:#3c4c61;color:#e1e6ed}.font-template:has(input:checked){background:#233e55;color:#e8f2ff;border-color:#a7c7ea}.global-pref-section>.field select{background:#242e3c;color:#fff;border-color:#536678}}
+html[data-tabi-font="hand"]{--tabi-font:"Caveat","Yomogi","Hiragino Maru Gothic ProN",cursive}
+html[data-tabi-font="clean"]{--tabi-font:"DM Sans","Noto Sans JP","Helvetica Neue",sans-serif}
+html[data-tabi-font="serif"]{--tabi-font:"Noto Serif JP",Georgia,serif}
+html[data-tabi-font="round"]{--tabi-font:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif}
+html[data-tabi-font] body,html[data-tabi-font] body *:not(svg):not(path):not(circle):not(rect):not(polyline):not(line):not(polygon):not(ellipse):not(text):not(tspan){font-family:var(--tabi-font)!important}
