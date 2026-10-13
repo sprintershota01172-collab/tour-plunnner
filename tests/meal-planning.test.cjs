@@ -48,10 +48,15 @@ test('hotel time bar removed, with stay summary and meals outside timeline',()=>
 });
 test('phone planner uses a 2-column, 3-row tray showing up to six pieces',()=>{
  assert.match(styles,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
- assert.match(styles,/grid-template-rows:repeat\(3,minmax\(0,42px\)\)/);
+ assert.match(styles,/grid-auto-rows:42px/);
  for(const id of ['dayMeals','mealsBackdrop','mealEditorRows','foodFilterEmpty'])assert.match(html,new RegExp('id="'+id+'"'));
 });
 test('collaboration includes the meals field',()=>{
  assert.match(sync,/'packingItems','meals'/);
  assert.match(sync,/field==='meals'/);
+});
+
+test('daily meal tiles open the matching day editor, without changing the hour timeline',()=>{
+ assert.match(src,/data-open-day-meal/);
+ assert.match(src,/selectedDay=Number\(edit.dataset.openDayMeal\);renderDays\(\);openMealEditor\(\)/);
 });
