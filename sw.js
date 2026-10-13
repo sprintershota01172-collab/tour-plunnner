@@ -1,14 +1,14 @@
-const CACHE='tabi-planner-v69';
-const SHELL=['./line-invite.js?v=20261013-57','./index.html','./styles.css?v=20261013-57','./app.js?v=20261013-57','./notifications.js?v=20261013-57','./date-range.js?v=20261012-45','./sync.js?v=20261013-57','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
+const CACHE='tabi-planner-v70';
+const SHELL=['./line-share.html','./line-share.js?v=20261013-57','./line-invite.js?v=20261013-58','./index.html','./styles.css?v=20261013-58','./app.js?v=20261013-58','./notifications.js?v=20261013-58','./date-range.js?v=20261012-45','./sync.js?v=20261013-58','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('tabi-planner-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
   const request=event.request,url=new URL(request.url);
-  if(request.method!=='GET'||url.origin!==self.location.origin||url.pathname.includes('/api/')||url.pathname.endsWith('/mobile-check.html')||url.pathname.endsWith('/icon-preview.html'))return;
+  if(request.method!=='GET'||url.origin!==self.location.origin||url.pathname.includes('/api/')||url.pathname.endsWith('/mobile-check.html')||url.pathname.endsWith('/icon-preview.html')||url.pathname.endsWith('/line-config.json'))return;
   if(request.mode==='navigate'){
     event.respondWith((async()=>{
-      const cache=await caches.open(CACHE),page=new URL('./index.html',self.registration.scope);
-      try{const response=await fetch(new Request(page,{cache:'reload'}));if(response.ok&&response.type==='basic')await cache.put(page,response.clone());return response;}
+      const cache=await caches.open(CACHE),page=new URL(url.pathname.endsWith('/line-share.html')?'./line-share.html':'./index.html',self.registration.scope);
+      try{const response=await fetch(new Request(request,{cache:'reload'}));if(response.ok&&response.type==='basic')await cache.put(page,response.clone());return response;}
       catch{return(await cache.match(page))||Response.error();}
     })());
     return;
