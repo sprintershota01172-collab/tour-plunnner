@@ -932,4 +932,4 @@ html[data-tabi-font="hand"]{--tabi-font:"Caveat","Yomogi","Hiragino Maru Gothic 
 html[data-tabi-font="clean"]{--tabi-font:"DM Sans","Noto Sans JP","Helvetica Neue",sans-serif}
 html[data-tabi-font="serif"]{--tabi-font:"Noto Serif JP",Georgia,serif}
 html[data-tabi-font="round"]{--tabi-font:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif}
-html[data-tabi-font] body,html[data-tabi-font] body *:not(svg):not(path):not(circle):not(rect):not(polyline):not(line):not(polygon):not(ellipse):not(text):not(tspan){font-family:var(--tabi-font)!important}
+html[data-tabi-font] :where(body,body *){font-family:var(--tabi-font)!important}
