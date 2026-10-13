@@ -118,6 +118,59 @@
   function icon(name){const paths={pin:'<path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',bed:'<path d="M3 20v-9m0 4h18v5M3 15V8h6a4 4 0 0 1 4 4v3m0 0v-4a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3v4"/>',map:'<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3zM9 3v15m6-12v15"/>'};return `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name]||paths.pin}</svg>`;}
   function showToast(message){const el=$('#appToast');el.textContent=message;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2600);}
   function showUndoToast(message){const el=$('#appToast');el.innerHTML=`<span>${esc(message)}</span><button type="button" id="toastUndo">元に戻す</button>`;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),5000);}
+  function normalizeMeals(raw){
+    if(!raw||typeof raw!=='object'||Array.isArray(raw))return {};
+    const result={};
+    for(const [day,items] of Object.entries(raw)){
+      if(!/^(0|[1-9]\d{0,2})$/.test(day)||Number(day)>20||!items||typeof items!=='object')continue;
+      const meals={};
+      for(const [type] of MEALS){
+        const x=items[type];
+        if(!x||typeof x!=='object')continue;
+        const name=typeof x.name==='string'?x.name.trim().slice(0,100):'';
+        const placeId=typeof x.placeId==='string'?x.placeId.slice(0,120):'';
+        if(name||placeId)meals[type]={name,placeId};
+      }
+      if(Object.keys(meals).length)result[day]=meals;
+    }
+    return result;
+  }
+  function foodPlaces(){return state.places.filter(isFood);}
+  function mealAt(day,type){return state.meals?.[day]?.[type]||null;}
+  function mealText(m){return (m?.placeId&&state.places.find(p=>p.id===m.placeId)?.name)||m?.name||'';}
+  function updateMeal(day,type,record){
+    if(!MEALS.some(m=>m[0]===type)||!Number.isInteger(day)||day<0||day>=dayCount())return;
+    state.meals=normalizeMeals(state.meals);
+    const row={...(state.meals[String(day)]||{})};
+    const name=String(record?.name||'').trim().slice(0,100),placeId=String(record?.placeId||'').slice(0,120);
+    if(name||placeId)row[type]={name,placeId};else delete row[type];
+    if(Object.keys(row).length)state.meals[String(day)]=row;else delete state.meals[String(day)];
+    persist();renderDayMeals();renderItinerary();
+  }
+  function renderDayMeals(){
+    const panel=$('#dayMeals');if(!panel)return;
+    panel.hidden=!hasTripDates();if(panel.hidden)return;
+    panel.innerHTML=MEALS.map(([type,,short])=>{
+      const name=mealText(mealAt(selectedDay,type));
+      return '<button type="button" data-edit-meal="'+type+'" class="day-meal-pill '+(name?'is-set':'')+'" title="'+esc(name||'未定')+'"><b>'+short+'</b><span>'+esc(name||'＋ 未定')+'</span></button>';
+    }).join('');
+  }
+  function renderMealEditor(){
+    $('#mealEditorDay').textContent=fmtDate(dateAt(selectedDay),{month:'numeric',day:'numeric',weekday:'short'});
+    const foods=foodPlaces();
+    $('#mealEditorRows').innerHTML=MEALS.map(([type,label])=>{
+      const meal=mealAt(selectedDay,type),linked=foods.find(p=>p.id===meal?.placeId),custom=!!meal&&!linked;
+      const opts=foods.map(p=>'<option value="place:'+esc(p.id)+'" '+(linked?.id===p.id?'selected':'')+'>'+esc(p.name)+'</option>').join('');
+      return '<div class="meal-editor-row" data-meal-row="'+type+'"><label class="field"><span>'+label+'</span><select data-meal-select="'+type+'"><option value="" '+(!meal?'selected':'')+'>未定</option>'+opts+'<option value="custom" '+(custom?'selected':'')+'>直接入力する</option></select></label><input data-meal-custom="'+type+'" maxlength="100" placeholder="お店・食べたいもの" enterkeyhint="done" value="'+(custom?esc(meal.name):'')+'" '+(custom?'':'hidden')+'></div>';
+    }).join('');
+  }
+  function openMealEditor(){if(!hasTripDates()){requestTripDates();return;}renderMealEditor();openModal($('#mealsBackdrop'));}
+  function mealsSummary(day){return '<div class="itinerary-meals">'+MEALS.map(([kind,,short])=>'<span><b>'+short+'</b> '+esc(mealText(mealAt(day,kind))||'未定')+'</span>').join('')+'</div>';}
+  function staySummary(){
+    const stays=state.hotels.filter(h=>h.name&&h.start&&h.end);
+    if(!stays.length)return '';
+    return '<section class="itinerary-stays" aria-label="宿泊スケジュール"><h2>宿泊スケジュール</h2><div>'+stays.map(h=>'<div class="itinerary-stay-row"><span class="stay-mini-icon">'+icon('bed')+'</span><b>'+esc(h.name)+'</b><small>'+esc(h.start.slice(5).replace('-','/'))+'–'+esc(h.end.slice(5).replace('-','/'))+'</small></div>').join('')+'</div></section>';
+  }
   function dateHotel(day){if(!hasTripDates())return null;const key=dateKey(dateAt(day));return state.hotels.find(h=>h.name&&h.start&&h.end&&key>=h.start&&key<h.end)||null;}
   function sortPlaces(a,b){return (a.start==null?1:b.start==null?-1:a.start-b.start)||a.name.localeCompare(b.name,'ja');}
   function renderAll(){renderCategoryField();renderGroupManager();renderHeader();renderWishlist();renderDays();renderTimeline();renderItinerary();renderPacking();renderNavDot();renderTrips();}
