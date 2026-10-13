@@ -23,8 +23,8 @@
       try{
         if(!liff.isLoggedIn()){liff.login({redirectUri:new URL('./line-share.html',location.href).href});return;}
         if(!liff.isApiAvailable('shareTargetPicker')){status.textContent='この環境では送信できません。Safariで開くか、LINEを更新してください。';return;}
-        button.disabled=true;status.textContent='';
-        const result=await liff.shareTargetPicker([api.card(invite)],{isMultiple:false});
+        button.disabled=true;status.textContent='LINEの画面で送り先を選んでください。';
+        const result=await liff.shareTargetPicker([api.card(invite)],{isMultiple:true});
         if(result?.status==='success'){sessionStorage.removeItem(KEY);button.textContent='送信しました';status.textContent='招待カードを送りました。';}
         else {refresh();status.textContent='送信をキャンセルしました。';}
       }catch{refresh();status.textContent='送信できませんでした。接続を確認して、もう一度お試しください。';}
