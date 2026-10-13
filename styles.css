@@ -750,3 +750,25 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 .notification-test{display:block;width:100%;min-height:44px;margin:0 0 12px;font:600 12px system-ui,sans-serif;color:#182d4e;background:#eef2f8;border:1px solid #b9c6d8}.notification-test[hidden]{display:none}.notification-test:disabled{opacity:.65}
 .notification-settings{margin:18px 0;padding:14px;border:1px solid #d8dfdf;border-radius:16px;background:#f5f8f7;scroll-margin:16px}.notification-settings h3{margin:0;font-size:14px}.notification-settings .partner-notifications{margin:8px 0 12px;padding:0;border:0}.notification-settings .notification-privacy{font:11px/1.6 system-ui,sans-serif;margin:0;color:#68757a}.trip-edit-hint{font:10px/1 system-ui,sans-serif;color:#487b78;margin-left:6px;white-space:nowrap}.trip-row-copy b{cursor:pointer}.partner-update-notice{white-space:pre-line}.settings-sheet #partnerNotifyToggle{min-width:104px;white-space:normal;line-height:1.5;padding:9px 12px}.notification-settings button{touch-action:manipulation}
 .settings-tabs{display:flex;gap:4px;background:#e9eeec;border-radius:12px;padding:4px;margin:0 0 16px}.settings-tabs button{flex:1;min-height:40px;border:0;border-radius:9px;background:transparent;color:#657571;font:600 12px system-ui,sans-serif}.settings-tabs button.active{background:#182d4e;color:white}.settings-sheet [hidden]{display:none!important}.partner-invite-form{border-top:1px solid #deded8;padding-top:14px;margin-top:14px;display:grid;gap:10px}.partner-invite-form input{width:100%;min-width:0;font:14px/1.6 system-ui,sans-serif}.notification-settings[hidden]{display:none}
+
+/* One notification switch in Settings; optional actions stay collapsed. */
+.simple-notification{margin:0 0 14px;padding:14px;background:#f6f8f7}
+.simple-notification .partner-notifications{margin:0;align-items:center}
+.simple-notification .notification-label{font:600 13px/1.5 system-ui,sans-serif}
+.settings-sheet .simple-notification #partnerNotifyToggle{position:relative;flex:none;width:76px;min-width:76px;min-height:38px;padding:0 9px 0 31px;border:0;border-radius:22px;background:#88928f;color:#fff;font:700 11px system-ui,sans-serif;box-shadow:none;text-align:center}
+.settings-sheet .simple-notification #partnerNotifyToggle::before{content:"";position:absolute;left:5px;top:5px;width:28px;height:28px;border-radius:50%;background:white;box-shadow:0 1px 4px #0002;transition:transform 180ms ease}
+.settings-sheet .simple-notification #partnerNotifyToggle[aria-checked="true"]{background:#24734f;padding:0 31px 0 9px}
+.settings-sheet .simple-notification #partnerNotifyToggle[aria-checked="true"]::before{transform:translateX(38px)}
+.settings-sheet .simple-notification #partnerNotifyToggle[data-state="busy"]{background:#a56a20}
+.settings-sheet .simple-notification #partnerNotifyToggle[data-state="error"]{outline:2px solid #b04740;outline-offset:2px}
+.simple-notification .notification-details{margin-top:10px;border-top:1px solid #dfe6e2;padding-top:9px}
+.notification-details summary,.partner-more summary{cursor:pointer;font:12px/1.6 system-ui,sans-serif;color:#52736d;min-height:28px;padding:4px 0;touch-action:manipulation}
+.notification-details .notification-test{margin:9px 0 7px}
+.partner-more{border-top:1px solid #dddcd5;margin-top:14px;padding-top:10px}
+.partner-more[hidden],#partnerJoinDetails[hidden]{display:none}
+.partner-more .partner-invite-form{border:0;margin:8px 0 0;padding:0}
+.partner-more .secondary-button{width:100%;margin:8px 0 0;min-height:40px;font-size:12px}
+.partner-actions{display:grid;grid-template-columns:1fr;gap:10px}
+.partner-actions button[hidden]{display:none}
+.partner-status:empty{display:none}
+@media(prefers-reduced-motion:reduce){.settings-sheet .simple-notification #partnerNotifyToggle::before{transition:none}}

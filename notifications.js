@@ -61,12 +61,12 @@
       const button=document.querySelector('#partnerNotifyToggle'),hint=document.querySelector('#partnerNotifyHint'),status=document.querySelector('#partnerNotifyState');if(!button||!hint)return;
       const enabled=desired(),supported=available(),permitted=supported&&Notification.permission==='granted';
       const mode=busy?'busy':feedback==='error'?'error':enabled&&permitted?'on':!supported?'unsupported':supported&&Notification.permission==='denied'?'blocked':'off';
-      button.dataset.state=mode;button.textContent=busy?'設定中…':enabled?'✓ ON → OFFにする':'通知をONにする';
-      button.setAttribute('aria-pressed',String(enabled));button.setAttribute('aria-busy',String(busy));button.disabled=busy;
+      button.dataset.state=mode;button.textContent=busy?'…':enabled?'ON':'OFF';
+      button.setAttribute('aria-checked',String(enabled));button.setAttribute('aria-busy',String(busy));button.disabled=busy;
       const testButton=document.querySelector('#partnerNotifyTest');if(testButton){testButton.hidden=false;testButton.disabled=busy;}
-      if(status){status.dataset.state=mode;status.textContent={busy:'設定中',on:'通知 ON',off:'通知 OFF',unsupported:'ホーム画面から設定',blocked:'通知の許可が必要',error:'接続を確認してください'}[mode];}
+      if(status){status.dataset.state=mode;status.hidden=!['error','blocked','unsupported'].includes(mode);status.textContent={busy:'設定中',on:'通知 ON',off:'通知 OFF',unsupported:'ホーム画面から設定',blocked:'通知の許可が必要',error:'接続を確認してください'}[mode];}
       hint.dataset.state=feedback||mode;
-      hint.textContent=busy?progress:message||(!supported?'iPhoneではホーム画面に追加したtabiから設定してください。':Notification.permission==='denied'?'iPhoneの設定でtabiの通知を許可してください。':enabled?(room()?'この端末に、パートナーの追加・変更をお知らせします。':'通知はONです。共有リンクを作成・参加すると更新通知が届きます。'):'共有の前後どちらでも設定できます。テストを押して通知を許可することもできます。');
+      hint.textContent=busy?progress:message||(!supported?'iPhoneではホーム画面に追加したtabiから設定してください。':Notification.permission==='denied'?'iPhoneの設定でtabiの通知を許可してください。':enabled?(room()?'相手の追加・変更をお知らせします。':'共有を始めると、相手の更新が届きます。'):'相手の追加・変更をお知らせします。');
     };
     const enqueue=work=>{queue=queue.catch(()=>{}).then(work);return queue;};
     async function channel(){
@@ -114,7 +114,7 @@
       if(busy)return;const enabling=!desired(),request=enabling?permission():Promise.resolve(null);
       busy=true;feedback='';message='';progress=enabling?'通知をONにしています…':'通知をOFFにしています…';render();
       try{
-        if(enabling){if(await request!=='granted')throw new Error('denied');write(PREF,'on');await enqueue(registerAll);feedback='success';message=room()?'通知をONにしました。パートナーの変更内容が届きます。':'通知をONにしました。共有はこの後で設定できます。';}
+        if(enabling){if(await request!=='granted')throw new Error('denied');write(PREF,'on');await enqueue(registerAll);feedback='success';message=room()?'相手の追加・変更をお知らせします。':'共有を始めると、相手の更新が届きます。';}
         else{write(PREF,'off');await enqueue(unregisterAll);feedback='success';message='この端末の更新通知をOFFにしました。';}
       }catch(error){feedback='error';message=!enabling?'通知OFFを保存しました。接続が戻るとサーバー側の解除も完了します。':errorMessage(error);}
       finally{busy=false;render();}
