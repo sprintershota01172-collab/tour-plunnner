@@ -1127,3 +1127,68 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
 .itinerary-meals button.is-planned b{color:#173b61}
 @media(max-width:355px){#modalBackdrop .lower-fields{grid-template-columns:1fr}#modalBackdrop .lower-fields .entry-option-card{height:76px;min-height:76px}}
 @media(prefers-color-scheme:dark){#modalBackdrop .lower-fields .entry-option-card{background:#1f2b3c;color:#deebf8}#modalBackdrop .lower-fields .entry-option-title{color:#deebf8}#modalBackdrop .lower-fields .reservation-status-field .entry-option-bottom select{background:#182536;color:#deebf8}#modalBackdrop .food-meal-field small,.meal-editor-guidance{color:#bfd0dc}.meal-editor-scheduled{background:#273f50;color:#e2f1ff}.meal-editor-planned{color:#e2f1ff}}
+
+/* v88 — two clearly separated collections, with equal registration CTAs */
+.wishlist-page .collection-register-row{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;
+  width:100%;max-width:1200px;margin:0 auto 8px
+}
+.wishlist-page .collection-register-row .register-place-button{
+  display:flex;align-items:center;justify-content:flex-start;
+  width:100%;min-width:0;height:48px;min-height:48px;margin:0!important;
+  padding:6px 10px;gap:6px;border:2px solid #173b61!important;border-radius:11px;
+  background:#fffefa;color:#173b61;font-size:12px;font-weight:600;line-height:1.25;
+  box-shadow:none!important
+}
+.wishlist-page .collection-register-row .register-place-button>svg{
+  width:16px;height:16px;flex:none;stroke-width:2!important
+}
+.wishlist-page .collection-register-row .register-place-button>span{
+  min-width:0;flex:1;overflow-wrap:anywhere;text-align:left
+}
+.wishlist-page .collection-register-row .register-place-button>small{
+  display:none
+}
+.wishlist-page .collection-register-row .register-place-button:active{
+  background:#e6eff5
+}
+.wishlist-page .collection-switch{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;max-width:1200px;width:100%;margin:0 auto 8px
+}
+.wishlist-page .collection-tab{
+  display:flex;align-items:center;justify-content:center;
+  gap:9px;min-width:0;height:37px;min-height:37px;
+  padding:4px 8px;border:1.5px solid #d2dce4;border-radius:10px;
+  background:#f7f9f9;color:#62768a;
+  font:600 12px/1.2 "Caveat","Yomogi","Hiragino Maru Gothic ProN",sans-serif;
+  cursor:pointer
+}
+.wishlist-page .collection-tab>span{min-width:0;white-space:nowrap}
+.wishlist-page .collection-tab small{
+  display:grid;place-items:center;min-width:20px;height:20px;
+  padding:1px 5px;border-radius:6px;background:#e9eef3;
+  color:#546e86;font:600 10px/1.2 system-ui,sans-serif
+}
+.wishlist-page .collection-tab.active{
+  background:#173b61;border-color:#173b61;color:white;box-shadow:none
+}
+.wishlist-page .collection-tab.active small{background:#ebf3f9;color:#173b61}
+.wishlist-page .collection-tab:focus-visible{
+  outline:2px solid #6ca5ce;outline-offset:2px
+}
+@media(max-width:390px){
+  .wishlist-page .collection-register-row{gap:6px}
+  .wishlist-page .collection-register-row .register-place-button{
+    padding:6px 8px;gap:5px;font-size:11px;min-height:50px;height:50px
+  }
+  .wishlist-page .collection-register-row .register-place-button>svg{width:14px;height:14px}
+  .wishlist-page .collection-tab{gap:5px;font-size:11px;padding:4px 5px}
+}
+@media(prefers-color-scheme:dark){
+  .wishlist-page .collection-register-row .register-place-button{background:#1b2838;color:#e4eff7}
+  .wishlist-page .collection-register-row .register-place-button:active{background:#283f54}
+  .wishlist-page .collection-tab{background:#222d38;color:#d2dce5;border-color:#546679}
+  .wishlist-page .collection-tab small{background:#394c61;color:#f0f4f8}
+  .wishlist-page .collection-tab.active{background:#173b61;color:#fff;border-color:#6f9bbc}
+}
