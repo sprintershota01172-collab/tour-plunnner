@@ -1038,3 +1038,62 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
 .text-size-choices input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
 .text-size-choices label:has(input:focus-visible){outline:2px solid #6d9cc7;outline-offset:2px}
 @media(prefers-color-scheme:dark){.hotel-tab{background:#243142;color:#d3e0ea;border-color:#3c4a5a}.hotel-tab.active{background:#253e56;color:#fff;border-color:#a0bbd7}.text-size-choices label{background:#27313c;color:#eee;border-color:#445566}.text-size-choices label:has(input:checked){background:#304c66;color:#fff;border-color:#b4c8df}}
+
+
+/* v85 — deliberate no-scroll-first composition: compact 2 x 3 waiting pieces. */
+@media (max-width: 700px) {
+ .board-page{padding-top:5px!important;padding-bottom:5px!important}
+ .board-page>.board-heading{margin-bottom:4px!important}
+ .board-page>.day-tabs{padding-bottom:4px!important}
+ .board-page>.day-context{margin-bottom:4px!important;padding-block:4px!important;min-height:23px!important}
+ .board-layout{gap:5px!important;min-height:0;flex:1}
+ .timeline-card{flex:1 1 0;min-height:0!important}
+ .timeline-scroll{min-height:100px!important;flex:1 1 0}
+ .tray-card{padding:6px 7px!important;flex:0 0 auto}
+ .tray-head{min-height:24px!important}
+ .tray-head p{font-size:8px!important}
+ .tray-pieces{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,42px));gap:4px!important;max-height:138px!important;min-height:0!important;padding:4px 0 0!important;overflow-x:hidden!important;overflow-y:auto!important;scroll-snap-type:none!important;align-content:start}
+ .tray-piece{width:100%!important;min-width:0!important;max-width:100%!important;height:42px!important;min-height:42px!important;padding:4px 5px!important;gap:5px!important;scroll-snap-align:none!important}
+ .tray-piece .piece-photo{width:26px!important;height:26px!important;flex:0 0 26px!important}
+ .tray-piece .piece-info{min-width:0;overflow:hidden}
+ .tray-piece .piece-title{font-size:10px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .tray-piece .piece-category{font-size:8px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .tray-place-button{min-width:28px!important;width:28px!important;height:31px!important;min-height:31px!important;font-size:9px!important;padding:0!important;flex:none}
+ .tray-empty{grid-column:1/-1}
+ .day-meals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:0 10px 5px;flex:none;min-width:0}
+ .day-meal-pill{height:33px;min-height:33px;padding:4px 6px;border:1px solid #cbd9e3;border-radius:10px;background:#f7f9fa;color:#526b82;display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden}
+ .day-meal-pill b{font-size:10px;flex:none}
+ .day-meal-pill span{font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .day-meal-pill.is-set{background:#e7f2f7;border-color:#aac5d5;color:#163b5d}
+}
+/* iPhone landscape and compact-screen safeguard: show 4 first, scroll only for overflow. */
+@media(max-width:700px) and (max-height:640px){
+ .tray-pieces{grid-template-rows:repeat(2,minmax(0,42px));max-height:94px!important}
+ .board-page>.day-tabs{max-height:52px}
+}
+.day-meals[hidden],.food-filter-empty[hidden]{display:none!important}
+.food-filter-empty{padding:20px 12px;text-align:center;color:#87918f;font-size:12px}
+.meals-sheet{width:min(500px,100%);padding:12px 17px max(12px,env(safe-area-inset-bottom));max-height:calc(var(--sheet-visual-height,100svh) - 8px)!important;overflow-y:auto}
+.meals-sheet .sheet-header{margin-bottom:10px}
+.meals-sheet .sheet-header>div{min-width:0}
+.meals-sheet .sheet-header small{font-size:10px;color:#7d8a92}
+.meal-editor-rows{display:grid;grid-template-columns:1fr;gap:8px}
+.meal-editor-row{display:flex;align-items:center;gap:7px;min-width:0;border:1px solid #e1e5e7;padding:7px 9px;border-radius:12px;background:#fafbf9}
+.meal-editor-row>.field{flex:1;min-width:0;display:flex;align-items:center;gap:7px}
+.meal-editor-row>.field>span{font-size:12px;flex:none;min-width:28px}
+.meal-editor-row select{width:100%;min-width:0;height:40px!important;min-height:40px!important;font-size:16px!important}
+.meal-editor-row input{flex:1;min-width:0;height:40px!important;font-size:16px!important}
+.meal-editor-row input[hidden]{display:none!important}
+.meal-food-list-link{margin:12px 0 3px;padding:10px 12px;width:100%;min-height:38px;border:1px solid #bcd1dc;border-radius:10px;background:transparent;text-align:center;color:#173b61;font-size:12px}
+.itinerary-stays{padding:11px 13px;margin:0 0 9px;border-radius:14px;background:#eef4f7;border:1px solid #d8e4eb;color:#243d53}
+.itinerary-stays h2{font-size:12px;margin:0 0 7px;font-weight:650}
+.itinerary-stay-row{display:flex;align-items:center;gap:8px;min-height:30px;font-size:11px;padding:4px 0;border-top:1px solid #dbe5ea}
+.itinerary-stay-row b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:650}
+.itinerary-stay-row small{flex:none;font-size:10px}
+.stay-mini-icon svg{width:15px;height:15px;fill:none;stroke:currentColor}
+.itinerary-meals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:7px 12px;border-bottom:1px solid #e9eae8}
+.itinerary-meals span{padding:5px 6px;border-radius:7px;background:#f2f6f6;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px}
+.itinerary-meals b{color:#2f6689;margin-right:2px}
+@media(max-width:700px){.itinerary-day-head{flex-wrap:wrap;gap:4px}.itinerary-meals{padding:5px 9px}.itinerary-stays{margin:0 10px 9px}}
+@media(max-width:440px){.meal-editor-row{flex-wrap:wrap}.meal-editor-row input:not([hidden]){flex:1 0 100%}}
+@media(prefers-color-scheme:dark){.day-meal-pill,.meal-editor-row,.itinerary-meals span{background:#222f3c;color:#d8e2e8;border-color:#425467}.itinerary-stays{background:#253443;color:#e2edf2;border-color:#3d5367}.itinerary-stay-row{border-color:#3d5367}.meal-food-list-link{color:#c3dbf2;border-color:#496581}}
