@@ -11,15 +11,22 @@
   let brandName=read(NKEY,'tabi'),brandLogo=read(GKEY,'');
   const bases=new WeakMap(),attrs=new WeakMap();
   const preserve=new Set(['SCRIPT','STYLE','NOSCRIPT','TEXTAREA','OPTION']);
-  const skip='[contenteditable],.place-card,.timeline-piece,.tray-piece,.itinerary-stop,.place-swipe-background,.itinerary-content .hotel-name,#partnerMessagePreview,#partnerInviteTitle,#partnerInviteDestination,#tripList,.packing-item,#appToast,.toast,.partner-error';
+  const skip='[contenteditable],.place-card,.timeline-piece,.tray-piece,.itinerary-stop,.place-swipe-background,.itinerary-content .hotel-name,#partnerMessagePreview,#partnerInviteTitle,#partnerInviteDestination,#tripList,.packing-item,#appToast,.toast,.partner-error,#tripSummary,#itinerarySubtitle,#selectedDateLabel,#hotelEditList,#placeCount,#placedCount,#trayCount,#partnerLinkRow,#travelerCount,#partnerStatus,.trip-summary,.trip-list,.day-tabs';
   function textNode(node){
     const p=node.parentElement;
     if(!p||preserve.has(p.tagName)||p.closest(skip))return;
-    const raw=bases.get(node)??node.nodeValue;
-    if(!bases.has(node))bases.set(node,raw);
-    const middle=raw.trim(),translated=language==='en'?jpToEnglish[middle]:undefined;
+    const actual=node.nodeValue;
+    let record=bases.get(node);
+    // React to live changes: do not overwrite a newly-rendered destination with old text.
+    if(!record||(actual!==record.last&&actual!==record.base)){
+      record={base:actual,last:actual};
+      bases.set(node,record);
+    }
+    const raw=record.base,middle=raw.trim();
+    const translated=language==='en'?jpToEnglish[middle]:undefined;
     const wanted=translated?raw.replace(middle,translated):raw;
-    if(node.nodeValue!==wanted)node.nodeValue=wanted;
+    if(actual!==wanted)node.nodeValue=wanted;
+    record.last=wanted;
   }
   function translate(){
     if(!document.body)return;
@@ -47,6 +54,7 @@
     const selector=document.querySelector('#languageSelect');
     if(selector)selector.value=language;
     translate();
+    window.dispatchEvent(new CustomEvent('tabi-language-changed',{detail:{language}}));
   }
   async function imageData(file){
     if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>8*1024*1024)throw Error('format');

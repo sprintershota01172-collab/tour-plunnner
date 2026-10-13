@@ -44,12 +44,48 @@
 
   function openDB(){return new Promise((resolve)=>{if(!('indexedDB' in window)){resolve(null);return;}const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(DB_STORE))req.result.createObjectStore(DB_STORE);};req.onsuccess=()=>resolve(req.result);req.onerror=()=>resolve(null);});}
   async function loadState(){db=await openDB();let value=null,needsMigration=false;if(db){try{value=await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readonly');const req=tx.objectStore(DB_STORE).get('state');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}catch(e){console.warn('Local data could not be read',e);}}else{try{const raw=localStorage.getItem(DB_NAME);if(raw)value=JSON.parse(raw);}catch{}}
-    if(value?.trips?.length){trips=value.trips.map(normalizeState);if(trips.some(t=>!isEmptyTrip(t))){trips=trips.filter(t=>!isEmptyTrip(t));needsMigration=trips.length!==value.trips.length;}activeTripId=value.activeTripId||trips[0].id;state=trips.find(t=>t.id===activeTripId)||trips[0];activeTripId=state.id;}
+    if(value?.trips?.length){const loaded=value.trips.map(normalizeState);trips=cleanRedundantTrips(loaded,value.activeTripId);needsMigration=trips.length!==loaded.length;activeTripId=value.activeTripId||trips[0].id;state=trips.find(t=>t.id===activeTripId)||trips[0];activeTripId=state.id;}
     else if(value){state=normalizeState(value);trips=[state];activeTripId=state.id;needsMigration=true;}
     else{state=normalizeState(DEFAULTS);trips=[state];activeTripId=state.id;}
     renderAll();if(value||needsMigration)persist(false);notifications?.restore();if(pendingInvite||location.hash==='#invite-partner')openPartner();
   }
-  function isEmptyTrip(t){return !t?.collaboration&&!String(t?.destination||'').trim()&&!t?.startDate&&!t?.endDate&&!t?.datesConfigured&&!(t?.hotels||[]).some(h=>h.name||h.start||h.end)&&!(t?.places||[]).length&&!(t?.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name));}
+  function isEmptyTrip(t){
+    return !t?.collaboration&&!String(t?.destination||'').trim()&&!t?.startDate&&!t?.endDate&&!t?.datesConfigured
+      &&!(t?.hotels||[]).some(h=>h.name||h.start||h.end)&&!(t?.places||[]).length
+      &&!(t?.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g))
+      &&!(t?.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name));
+  }
+  // Preserve distinct journeys (even when they share the same destination).
+  // Only remove generated blank placeholders and genuinely equivalent non-shared copies.
+  function cleanRedundantTrips(items,preferredId){
+    if(items.length<=1)return items;
+    const meaningful=items.filter(t=>!isEmptyTrip(t));
+    if(!meaningful.length)return [items.find(t=>t.id===preferredId)||items[0]];
+    const unique=[];
+    for(const trip of meaningful){
+      if(trip.collaboration){unique.push(trip);continue;}
+      const same=unique.find(existing=>{
+        if(existing.collaboration)return false;
+        if(existing.destination.trim().toLocaleLowerCase()!==trip.destination.trim().toLocaleLowerCase())return false;
+        if(existing.startDate!==trip.startDate||existing.endDate!==trip.endDate)return false;
+        const identical=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+        const emptyDetails=t=>!(t.places||[]).length&&!(t.hotels||[]).some(h=>h.name||h.start||h.end)
+          &&!(t.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name))
+          &&!(t.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g));
+        if(emptyDetails(trip)&&!emptyDetails(existing))return true;
+        if(emptyDetails(existing)&&!emptyDetails(trip))return true;
+        return identical({places:existing.places,hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems,travelers:existing.travelers},
+          {places:trip.places,hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems,travelers:trip.travelers});
+      });
+      if(!same){unique.push(trip);continue;}
+      // A more detailed trip is always kept. No user-added places are dropped.
+      const existingIsEmpty=!(same.places||[]).length&&!(same.hotels||[]).some(h=>h.name||h.start||h.end);
+      const candidateIsEmpty=!(trip.places||[]).length&&!(trip.hotels||[]).some(h=>h.name||h.start||h.end);
+      if(existingIsEmpty&&!candidateIsEmpty){unique[unique.indexOf(same)]=trip;continue;}
+      if(existingIsEmpty===candidateIsEmpty&&trip.id===preferredId){unique[unique.indexOf(same)]=trip;}
+    }
+    return unique;
+  }
   function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
   function storagePayload(){trips=trips.map(t=>t.id===state.id?state:t);activeTripId=state.id;return {version:2,activeTripId,trips};}
   function persist(sync=true){if(sync&&sharedApi){if(undoSnapshot&&undoCheckpoint?.before!==undoSnapshot)undoCheckpoint={before:undoSnapshot,after:sharedApi.wire(state)};sharing.changed();}storagePayload();clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{const payload=storagePayload();if(db){try{await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(payload,'state');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}catch{showToast('保存できませんでした。端末の空き容量をご確認ください');}}else{try{localStorage.setItem(DB_NAME,JSON.stringify(payload));}catch{showToast('保存容量が不足しています');}}},100);}
@@ -63,7 +99,7 @@
 
   function dateKey(date){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
   function dayCount(){if(!hasTripDates())return 0;return Math.max(1,Math.min(21,Math.round((parseDate(state.endDate)-parseDate(state.startDate))/86400000)+1));}
-  function fmtDate(d,opts=dateOptions){return new Intl.DateTimeFormat('ja-JP',opts).format(d);}
+  function fmtDate(d,opts=dateOptions){return new Intl.DateTimeFormat(window.TabiLocale?.getLanguage()==='en'?'en-US':'ja-JP',opts).format(d);}
   function cleanGroupNames(names){return [...new Set(names.filter(n=>typeof n==='string').map(n=>n.trim().slice(0,32)).filter(n=>n&&n!=='すべて'&&n!==UNGROUPED))];}
   function groupNames(){return state.groups||CATEGORIES.map(c=>c.name);}
   function categoryFilters(){return ['すべて',...groupNames(),UNGROUPED];}
@@ -346,7 +382,7 @@
     $('#settingsBackdrop').addEventListener('click',e=>{if(e.target===$('#settingsBackdrop'))closeModal($('#settingsBackdrop'));});$('#modalBackdrop').addEventListener('click',e=>{if(e.target===$('#modalBackdrop'))closeModal($('#modalBackdrop'));});document.addEventListener('keydown',e=>{if(e.key==='Escape'){$$('.modal-backdrop.open').forEach(closeModal);$('#sharePanel').classList.remove('open');}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z')undo();});
     viewport.addEventListener('scroll',()=>{if(viewport.scrollLeft)viewport.scrollLeft=0;},{passive:true});
     viewport.addEventListener('pointerdown',e=>{if(e.target.closest('input,textarea,select,button,a,.edit-sheet,.place-row,.place-card,.timeline-piece,.tray-piece,.itinerary-stop'))return;swipeStart={x:e.clientX,y:e.clientY,time:Date.now()};});viewport.addEventListener('pointerup',e=>{if(!swipeStart)return;const dx=e.clientX-swipeStart.x,dy=e.clientY-swipeStart.y;if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.25){navigate(pageIndex+(dx<0?1:-1));}swipeStart=null;});
-    window.visualViewport?.addEventListener('resize',setVisualHeight);window.addEventListener('resize',setVisualHeight);window.addEventListener('online',updateConnectionStatus);window.addEventListener('offline',updateConnectionStatus);setVisualHeight();updateConnectionStatus();window.addEventListener('beforeunload',()=>{if(db)db.close();});
+    window.addEventListener('tabi-language-changed',()=>{renderAll();});window.visualViewport?.addEventListener('resize',setVisualHeight);window.addEventListener('resize',setVisualHeight);window.addEventListener('online',updateConnectionStatus);window.addEventListener('offline',updateConnectionStatus);setVisualHeight();updateConnectionStatus();window.addEventListener('beforeunload',()=>{if(db)db.close();});
   }
   const partnerStatusText={local:'',synced:'同期済み',syncing:'同期中…',waiting:'同期待ち',offline:'オフライン · 接続後に同期します',retry:'接続を確認しています · 変更は端末に保存済み',invalid:'共有リンクを確認してください', 'too-large':'写真の容量が大きいため同期できません'};
   function updatePartnerStatus(){
