@@ -356,7 +356,7 @@
   }
   function partnerInviteMessage(){return window.TabiLineInvite.message($('#partnerSenderName').value,state.destination);}
   function renderInviteMessage(){
-    $('#partnerMessagePreview').textContent=partnerInviteMessage();
+    $('#partnerMessagePreview').textContent=partnerInviteMessage();$('#partnerInviteTitle').textContent=state.destination?`${state.destination}へ、一緒に。`:'一緒に旅しよう';$('#partnerInviteDestination').textContent=state.destination||'TRAVEL TOGETHER';
   }
   function renderPartner(){
     const joined=!!state.collaboration&&!pendingInvite;
@@ -411,7 +411,7 @@
       if(error.name!=='AbortError')showToast('共有を開けませんでした。「招待URLをコピー」をお使いください');
     }finally{button.disabled=partnerBusy;}
   }
-  async function copyPartnerLink(){try{await navigator.clipboard.writeText(sharedApi.link(state.collaboration));showToast('招待リンクをコピーしました');}catch{$('#partnerMore').open=true;$('#partnerLink').focus({preventScroll:true});$('#partnerLink').select();showToast('リンクを長押ししてコピーしてください');}}
+  async function copyPartnerLink(){try{await navigator.clipboard.writeText(sharedApi.link(state.collaboration));returnToHome();showToast('招待リンクをコピーしました。送りたい相手に貼り付けてください');}catch{$('#partnerMore').open=true;$('#partnerLink').focus({preventScroll:true});$('#partnerLink').select();showToast('リンクを長押ししてコピーしてください');}}
   function bindPartner(){
     try{$('#partnerSenderName').value=localStorage.getItem('tabi-invite-sender')||'';}catch{}
     $('#partnerSenderName').addEventListener('input',()=>{try{localStorage.setItem('tabi-invite-sender',$('#partnerSenderName').value.trim());}catch{}renderInviteMessage();});

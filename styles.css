@@ -833,3 +833,38 @@ body>.share-panel [data-share="partner"]{background:#315f59;color:#fff;font-weig
  .empty-flight-art{background:#f6f2e9;border-radius:20px}
  #modalBackdrop .photo-add,#modalBackdrop .paste-button,#modalBackdrop .url-fetch,#modalBackdrop .secondary-button{background:#f6f2e9;color:#173b61}
 }
+
+/* v63: no automatic panel jumps during iPhone keyboard entry. */
+@media(pointer:coarse){
+ html,body{position:fixed!important;inset:0;overflow:hidden!important;overscroll-behavior:none}
+ .app-shell{position:fixed;inset:0;width:100%;height:var(--vh,100svh)!important;min-height:0!important;overflow:hidden}
+ .modal-backdrop{inset:0!important;height:var(--vh,100svh)!important;overflow:hidden;overscroll-behavior:none}
+ .modal-backdrop .edit-sheet{max-height:calc(var(--vh,100svh) - var(--keyboard-inset,0px) - 12px)!important;overflow-y:auto;overscroll-behavior:contain;scroll-behavior:auto;overflow-anchor:none;transform:none!important;transition:none!important}
+ .modal-backdrop .edit-sheet input,.modal-backdrop .edit-sheet textarea,.modal-backdrop .edit-sheet select{font-size:16px!important}
+ .editing-input .modal-backdrop .edit-sheet{transform:none!important}
+ .editing-input .sheet-footer{position:static!important}
+}
+/* v63: uniform navy weight for add and registration buttons. */
+:root{--action-navy:#173b61;--action-line:2px}
+.wishlist-page .register-place-button,.quick-add,.empty-add,
+#modalBackdrop .photo-add,#modalBackdrop .paste-button,#modalBackdrop .url-fetch,
+#modalBackdrop .secondary-button,#modalBackdrop .primary-button,
+#groupForm button,#packingForm button,#addHotelButton,.new-trip-button{
+ border:var(--action-line) solid var(--action-navy)!important;
+ border-color:var(--action-navy)!important;border-style:solid!important;color:var(--action-navy);box-shadow:none
+}
+#modalBackdrop .primary-button,#groupForm button,#packingForm button{background:var(--action-navy)!important;color:#fff!important}
+.wishlist-page .register-place-button svg,.quick-add svg,.empty-add svg,
+#modalBackdrop button svg,#modalBackdrop .photo-add svg,
+#groupForm button svg,#packingForm button svg,#addHotelButton svg,.new-trip-button svg{stroke-width:2!important}
+/* v63: handwritten boarding-pass invitation. */
+.invite-preview{margin:12px 0 8px}
+.invite-card-visual{position:relative;overflow:hidden;border-radius:18px 18px 0 0;background:#0d233c;isolation:isolate}
+.invite-card-art{width:100%;height:auto;display:block}
+.invite-card-copy{position:absolute;left:8%;right:8%;top:31%;display:flex;flex-direction:column;gap:3px;pointer-events:none;color:#fcfaf4;text-align:left}
+.invite-card-kicker{font:600 clamp(9px,2.2vw,13px)/1.1 'Caveat','Yomogi',cursive;letter-spacing:.16em;color:#a9dce9}
+.invite-card-copy strong{font:600 clamp(20px,6vw,35px)/1.4 'Caveat','Yomogi',cursive;letter-spacing:.015em;max-width:62%;overflow-wrap:anywhere;text-shadow:0 2px 12px #07152499}
+#partnerInviteDestination{font:500 clamp(10px,2.8vw,16px)/1.3 'Caveat','Yomogi',cursive;color:#d7ecf5;max-width:66%;overflow-wrap:anywhere}
+.partner-message-preview{font-family:'Caveat','Yomogi',cursive!important;font-size:16px;line-height:1.55;padding:12px 17px!important;color:#173b61;background:#f6f2e9;border:1px solid #dcd6cb;border-top:0}
+.partner-actions #partnerSend{background:#173b61!important;color:#fff;border:2px solid #173b61}
+@media(max-width:380px){.invite-card-copy{top:30%}.invite-card-copy strong{font-size:19px}}

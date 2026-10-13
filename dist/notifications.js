@@ -63,7 +63,6 @@
       const mode=busy?'busy':feedback==='error'?'error':enabled&&permitted?'on':!supported?'unsupported':supported&&Notification.permission==='denied'?'blocked':'off';
       button.dataset.state=mode;button.textContent=busy?'…':enabled?'ON':'OFF';
       button.setAttribute('aria-checked',String(enabled));button.setAttribute('aria-busy',String(busy));button.disabled=busy;
-      const testButton=document.querySelector('#partnerNotifyTest');if(testButton){testButton.hidden=false;testButton.disabled=busy;}
       if(status){status.dataset.state=mode;status.hidden=!['error','blocked','unsupported'].includes(mode);status.textContent={busy:'設定中',on:'通知 ON',off:'通知 OFF',unsupported:'ホーム画面から設定',blocked:'通知の許可が必要',error:'接続を確認してください'}[mode];}
       hint.dataset.state=feedback||mode;
       hint.textContent=busy?progress:message||(!supported?'iPhoneではホーム画面に追加したtabiから設定してください。':Notification.permission==='denied'?'iPhoneの設定でtabiの通知を許可してください。':enabled?(room()?'相手の追加・変更をお知らせします。':'共有を始めると、相手の更新が届きます。'):'相手の追加・変更をお知らせします。');
@@ -125,26 +124,12 @@
       try{await enqueue(async()=>{if(desired()&&available()&&Notification.permission==='granted')await registerAll();else if(!desired()&&known().length)await unregisterAll();});if(feedback==='error'){feedback='';message='';}}
       catch(error){feedback='error';message=errorMessage(error);}finally{restoring=false;render();}
     }
-    async function test(){
-      if(busy)return;const request=permission();busy=true;feedback='';message='';progress='テストの準備中…';render();
-      try{
-        if(await request!=='granted')throw new Error('denied');
-        const result=await enqueue(async()=>{await registerAll({testOnly:true});progress='送信中…ホーム画面へ戻ってお待ちください';render();return api(await channel(),'POST',{action:'test'});});
-        if(result.accepted){feedback='success';message='通知サービスが受け付けました。ホーム画面・通知センターで「tabi — 通知テスト」を確認してください。';}
-        else if(result.reason==='wait_ten_seconds'){feedback='blocked';message='10秒ほど待って、もう一度テストしてください。';}
-        else if(result.reason==='not_registered'||result.status===404||result.status===410){
-          const reg=await registration(),sub=await reg.pushManager.getSubscription();if(sub)await sub.unsubscribe();
-          feedback='error';message='古い端末登録を解除しました。もう一度テストを押すと再登録します。';
-        }else{feedback='error';message='送信に失敗しました（'+(result.reason||'connection')+' / '+(result.status||'通信エラー')+'）。';}
-      }catch(error){feedback='error';message=errorMessage(error);}finally{busy=false;render();}
-    }
     function notice(before,after){
       const el=document.querySelector('#partnerUpdateNotice'),text=describeUpdate(before,after);if(!el||!text)return;
       el.textContent=text;el.classList.add('show');clearTimeout(timer);timer=setTimeout(()=>el.classList.remove('show'),6500);
     }
     async function leave(meta){if(!meta)return;remember(meta);try{await enqueue(()=>api(meta,'DELETE'));forget(meta);}catch{}}
     document.querySelector('#partnerNotifyToggle')?.addEventListener('click',toggle);
-    document.querySelector('#partnerNotifyTest')?.addEventListener('click',test);
     navigator.serviceWorker?.addEventListener('message',e=>{if(e.data?.type==='tabi-partner-update')options.sync?.();});
     window.addEventListener('online',restore);window.addEventListener('focus',restore);
     return {render,notice,restore,leave};
