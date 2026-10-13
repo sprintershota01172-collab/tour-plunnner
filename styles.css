@@ -977,3 +977,64 @@ html[data-tabi-font] :where(body,body *){font-family:var(--tabi-font)!important}
     min-width: 0;
   }
 }
+
+/* v85: Prioritize a compact accommodation editor above the iPhone keyboard. */
+.hotel-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;margin:2px 0 8px;max-width:100%;padding:1px 0}
+.hotel-tabs::-webkit-scrollbar{display:none}
+.hotel-tabs[hidden]{display:none!important}
+.hotel-tab{flex:none;max-width:45%;min-height:34px;padding:5px 12px;border:1px solid #cdd9e2;border-radius:10px;background:#f9faf9;color:#31475f;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.hotel-tab.active{border:2px solid #173b61;background:#e8f1f8;padding:4px 11px;color:#173b61;font-weight:700}
+.settings-backdrop.hotel-only .edit-sheet{padding-top:7px;max-height:calc(var(--sheet-visual-height,100svh) - 8px)!important}
+.settings-backdrop.hotel-only .sheet-grabber{margin-bottom:4px}
+.settings-backdrop.hotel-only .sheet-header{margin-bottom:4px;min-height:36px}
+.settings-backdrop.hotel-only #partnerShortcut,
+.settings-backdrop.hotel-only #settingsForm>.form-grid{display:none!important}
+.settings-backdrop.hotel-only .hotel-editor{margin:0;padding:0;border:0}
+.settings-backdrop.hotel-only .hotel-editor-head{margin:0 0 6px}
+.settings-backdrop.hotel-only .hotel-editor-caption{display:none}
+.settings-backdrop.hotel-only .hotel-editor-head h3{font-size:13px}
+.settings-backdrop.hotel-only .hotel-edit-list{gap:0}
+.settings-backdrop.hotel-only .hotel-edit-card{padding:8px 12px;border-radius:13px}
+.settings-backdrop.hotel-only .hotel-edit-card-head{min-height:20px;margin-bottom:3px}
+.settings-backdrop.hotel-only .hotel-edit-card .field{gap:3px;margin:0 0 6px}
+.settings-backdrop.hotel-only .hotel-edit-card .field input{height:40px;min-height:40px}
+.settings-backdrop.hotel-only .hotel-range-field{margin:0!important}
+.settings-backdrop.hotel-only .hotel-range-field .date-range-button{min-height:40px;padding:6px 10px}
+.settings-backdrop.hotel-only #addHotelButton{min-height:36px;margin-top:6px}
+.settings-backdrop.hotel-only .sheet-footer{margin-top:7px;padding-top:7px}
+.settings-backdrop.hotel-typing #partnerShortcut,
+.settings-backdrop.hotel-typing #settingsForm>.form-grid,
+.settings-backdrop.hotel-typing .hotel-editor-caption,
+.settings-backdrop.hotel-typing #hotelTabs,
+.settings-backdrop.hotel-typing #addHotelButton{display:none!important}
+.settings-backdrop.hotel-typing .hotel-editor{margin:0!important;padding:0!important;border:0!important}
+.settings-backdrop.hotel-typing .hotel-editor-head{margin:0 0 4px!important}
+.settings-backdrop.hotel-typing .hotel-edit-card{padding:6px 10px!important}
+.settings-backdrop.hotel-typing .hotel-edit-card-head{min-height:20px;margin:0 0 2px!important}
+.settings-backdrop.hotel-typing .hotel-edit-card .field{margin:0 0 4px!important;gap:2px}
+.settings-backdrop.hotel-typing .hotel-edit-card .field input{min-height:40px!important}
+.settings-backdrop.hotel-typing .sheet-header{margin-bottom:5px!important}
+.settings-backdrop.hotel-typing .sheet-footer{margin-top:4px!important;padding-top:6px!important}
+.settings-backdrop.hotel-typing .sheet-grabber{margin-bottom:3px!important}
+.settings-backdrop.hotel-typing .sheet-header .eyebrow{display:none}
+@media(pointer:coarse){
+ .editing-input .settings-backdrop.open.hotel-typing>.edit-sheet{height:auto!important;max-height:calc(var(--sheet-visual-height,100svh) - 4px)!important}
+ .editing-input .settings-backdrop.open.hotel-typing .sheet-footer{position:sticky!important;bottom:0!important;z-index:2}
+}
+:root{--tabi-text-scale:.9}
+.page h1,.empty-state h2{font-size:calc(27px * var(--tabi-text-scale))}
+.sheet-header h2,.app-settings-sheet h2{font-size:calc(20px * var(--tabi-text-scale))}
+.page-subtitle,.hotel-editor-head h3,.global-pref-section h3{font-size:calc(13px * var(--tabi-text-scale))}
+.trip-summary,.stay-shortcut,.topbar .brand b{font-size:calc(12px * var(--tabi-text-scale))}
+.field>span,.hotel-edit-card .field>span,.hotel-edit-card-head,.hotel-editor-caption,.hotel-tab,.nav-item,.notification-label,
+.trip-row-copy b,.trip-row-copy small,.global-pref-desc,.global-pref-footnote,.field-hint,.partner-body,
+.date-range-button,.settings-sheet .secondary-button,.settings-sheet .primary-button,.hotel-add-button,.primary-button,.secondary-button,
+.place-name,.place-address,.place-meta,.chip,.day-number,.itinerary-day-head,.itinerary-stop,.packing-item,.font-template-name,
+.global-pref-eyebrow{font-size:calc(12px * var(--tabi-text-scale))}
+input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!important}
+.text-size-choices{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;border:0;padding:0;margin:12px 0 2px;min-width:0}
+.text-size-choices label{position:relative;min-width:0;display:grid;place-items:center;height:42px;border:1.5px solid #d6dde4;border-radius:11px;background:var(--surface);color:var(--ink);font-size:12px;cursor:pointer}
+.text-size-choices label:has(input:checked){border:2px solid #173b61;background:#edf4f9;color:#173b61;font-weight:700}
+.text-size-choices input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.text-size-choices label:has(input:focus-visible){outline:2px solid #6d9cc7;outline-offset:2px}
+@media(prefers-color-scheme:dark){.hotel-tab{background:#243142;color:#d3e0ea;border-color:#3c4a5a}.hotel-tab.active{background:#253e56;color:#fff;border-color:#a0bbd7}.text-size-choices label{background:#27313c;color:#eee;border-color:#445566}.text-size-choices label:has(input:checked){background:#304c66;color:#fff;border-color:#b4c8df}}

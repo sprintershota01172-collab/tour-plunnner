@@ -6,7 +6,7 @@ const {runInNewContext}=require('node:vm');
 function mount(){
  const node={nodeValue:'行き先未設定',parentElement:{tagName:'SPAN',closest:()=>false}};
  const storage=new Map();
- const document={body:{},documentElement:{lang:'ja',dataset:{}},title:'',
+ const document={body:{},documentElement:{lang:'ja',dataset:{},style:{setProperty(key,value){this[key]=value;}}},title:'',
    createTreeWalker(){let visited=false;return {currentNode:null,nextNode(){if(visited)return false;visited=true;this.currentNode=node;return true;}}},
    querySelector(){return null;},querySelectorAll(){return [];}};
  const window={dispatchEvent(){}};
@@ -36,3 +36,14 @@ test('static text can change language repeatedly',()=>{
 });
 
 test('four font styles are selectable',()=>{const {window}=mount();window.TabiLocale.setFont('serif');assert.equal(window.TabiLocale.getFont(),'serif');window.TabiLocale.setFont('round');assert.equal(window.TabiLocale.getFont(),'round');});
+
+test('text size presets can be changed and invalid values are rejected',()=>{
+ const {window}=mount();
+ assert.equal(window.TabiLocale.getTextSize(),90);
+ window.TabiLocale.setTextSize(80);
+ assert.equal(window.TabiLocale.getTextSize(),80);
+ window.TabiLocale.setTextSize(110);
+ assert.equal(window.TabiLocale.getTextSize(),110);
+ window.TabiLocale.setTextSize(500);
+ assert.equal(window.TabiLocale.getTextSize(),90);
+});
