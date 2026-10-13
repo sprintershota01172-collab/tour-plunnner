@@ -1,5 +1,5 @@
-const CACHE='tabi-planner-v74';
-const SHELL=['./flight-mark.svg?v=20261013-62','./invite-card-art.svg?v=20261013-62','./mobile-input.js?v=20261013-62','./line-share.html','./line-share.js?v=20261013-62','./line-invite.js?v=20261013-62','./index.html','./styles.css?v=20261013-62','./app.js?v=20261013-62','./notifications.js?v=20261013-62','./date-range.js?v=20261013-62','./sync.js?v=20261013-62','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
+const CACHE='tabi-planner-v75';
+const SHELL=['./flight-mark.svg?v=20261013-63','./invite-card-art.svg?v=20261013-63','./mobile-input.js?v=20261013-63','./line-share.html','./line-share.js?v=20261013-63','./line-invite.js?v=20261013-63','./index.html','./styles.css?v=20261013-63','./app.js?v=20261013-63','./notifications.js?v=20261013-63','./date-range.js?v=20261013-63','./sync.js?v=20261013-63','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('tabi-planner-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
