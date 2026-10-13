@@ -25,6 +25,8 @@ jobs:
           for file in app.js i18n.js mobile-input.js notifications.js line-invite.js line-share.js date-range.js sync.js; do
             node --check "$file"
           done
+      - name: Test password-protected sharing links
+        run: node --test tests/invite-security.test.cjs
       - name: Render LINE invitation card image
         run: |
           python -m pip install --quiet cairosvg
