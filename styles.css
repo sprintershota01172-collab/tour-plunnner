@@ -933,3 +933,47 @@ html[data-tabi-font="clean"]{--tabi-font:"DM Sans","Noto Sans JP","Helvetica Neu
 html[data-tabi-font="serif"]{--tabi-font:"Noto Serif JP",Georgia,serif}
 html[data-tabi-font="round"]{--tabi-font:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif}
 html[data-tabi-font] :where(body,body *){font-family:var(--tabi-font)!important}
+
+/* v83: iOS keyboard-safe dialogs. visualViewport.height is already keyboard-adjusted.
+   Do not subtract keyboard-inset from a viewport that may already have shrunk. */
+@media (pointer: coarse) {
+  .modal-backdrop.open {
+    position: fixed !important;
+    inset: auto 0 auto 0 !important;
+    top: var(--sheet-visual-top, 0px) !important;
+    height: var(--sheet-visual-height, 100svh) !important;
+    padding-top: 0 !important;
+    align-items: flex-start !important;
+    overflow: hidden !important;
+    overscroll-behavior: none;
+  }
+  .modal-backdrop.open > .edit-sheet {
+    box-sizing: border-box;
+    max-height: calc(var(--sheet-visual-height, 100svh) - 8px) !important;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    scroll-behavior: auto !important;
+    overflow-anchor: none;
+    transform: none !important;
+    transition: none !important;
+  }
+  .editing-input .modal-backdrop.open > .edit-sheet {
+    height: calc(var(--sheet-visual-height, 100svh) - 8px) !important;
+    max-height: calc(var(--sheet-visual-height, 100svh) - 8px) !important;
+  }
+  .editing-input .modal-backdrop.open .field input,
+  .editing-input .modal-backdrop.open .field textarea {
+    font-size: 16px !important;
+    scroll-margin-block: 20px;
+  }
+  .settings-backdrop .hotel-edit-card {
+    min-width: 0;
+  }
+  .settings-backdrop .hotel-edit-card input {
+    width: 100%;
+    min-width: 0;
+  }
+}
