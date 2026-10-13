@@ -57,32 +57,32 @@
   }
   // Preserve distinct journeys (even when they share the same destination).
   // Only remove generated blank placeholders and genuinely equivalent non-shared copies.
+  function hasPlanDetails(t){
+    return (t.places||[]).length>0||(t.hotels||[]).some(h=>h.name||h.start||h.end)
+      ||(t.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name))
+      ||(t.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g));
+  }
   function cleanRedundantTrips(items,preferredId){
     if(items.length<=1)return items;
     const meaningful=items.filter(t=>!isEmptyTrip(t));
     if(!meaningful.length)return [items.find(t=>t.id===preferredId)||items[0]];
     const unique=[];
     for(const trip of meaningful){
+      // Invitations are never coalesced: each shared room is a separate security boundary.
       if(trip.collaboration){unique.push(trip);continue;}
       const same=unique.find(existing=>{
         if(existing.collaboration)return false;
         if(existing.destination.trim().toLocaleLowerCase()!==trip.destination.trim().toLocaleLowerCase())return false;
-        if(existing.startDate!==trip.startDate||existing.endDate!==trip.endDate)return false;
-        const identical=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
-        const emptyDetails=t=>!(t.places||[]).length&&!(t.hotels||[]).some(h=>h.name||h.start||h.end)
-          &&!(t.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name))
-          &&!(t.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g));
-        if(emptyDetails(trip)&&!emptyDetails(existing))return true;
-        if(emptyDetails(existing)&&!emptyDetails(trip))return true;
-        return identical({places:existing.places,hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems,travelers:existing.travelers},
-          {places:trip.places,hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems,travelers:trip.travelers});
+        if(existing.startDate!==trip.startDate||existing.endDate!==trip.endDate||existing.travelers!==trip.travelers)return false;
+        // A generated empty plan may be dropped; a user's actual edits must be preserved.
+        if(!hasPlanDetails(trip)||!hasPlanDetails(existing))return true;
+        return JSON.stringify({places:existing.places,hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems})
+          ===JSON.stringify({places:trip.places,hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems});
       });
       if(!same){unique.push(trip);continue;}
-      // A more detailed trip is always kept. No user-added places are dropped.
-      const existingIsEmpty=!(same.places||[]).length&&!(same.hotels||[]).some(h=>h.name||h.start||h.end);
-      const candidateIsEmpty=!(trip.places||[]).length&&!(trip.hotels||[]).some(h=>h.name||h.start||h.end);
-      if(existingIsEmpty&&!candidateIsEmpty){unique[unique.indexOf(same)]=trip;continue;}
-      if(existingIsEmpty===candidateIsEmpty&&trip.id===preferredId){unique[unique.indexOf(same)]=trip;}
+      if(!hasPlanDetails(same)&&hasPlanDetails(trip)){unique[unique.indexOf(same)]=trip;continue;}
+      if(hasPlanDetails(same)&&!hasPlanDetails(trip))continue;
+      if(trip.id===preferredId)unique[unique.indexOf(same)]=trip;
     }
     return unique;
   }
