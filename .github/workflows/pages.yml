@@ -20,6 +20,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Verify JavaScript syntax
+        run: |
+          for file in app.js mobile-input.js notifications.js line-invite.js line-share.js date-range.js sync.js; do
+            node --check "$file"
+          done
+      - name: Render LINE invitation card image
+        run: |
+          python -m pip install --quiet cairosvg
+          python -c "from pathlib import Path; import cairosvg; [cairosvg.svg2png(url='invite-card-art.svg',write_to=str(p),output_width=1000,output_height=600) for p in (Path('invite-card-art.png'),Path('dist/invite-card-art.png'))]"
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
