@@ -772,3 +772,5 @@ body,button,input,textarea,select{font-family:"Caveat","Yomogi","Hiragino Maru G
 .partner-actions button[hidden]{display:none}
 .partner-status:empty{display:none}
 @media(prefers-reduced-motion:reduce){.settings-sheet .simple-notification #partnerNotifyToggle::before{transition:none}}
+
+.partner-invite-identity{margin:16px 0}.partner-invite-identity[hidden]{display:none}.partner-message-preview{padding:16px;border-radius:12px;background:#f3f0e9;color:#182d4e;font:500 14px/1.8 system-ui,sans-serif;overflow-wrap:anywhere}.partner-invite-identity input{font-size:16px}

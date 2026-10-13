@@ -1,5 +1,5 @@
-const CACHE='tabi-planner-v68';
-const SHELL=['./index.html','./styles.css?v=20261013-56','./app.js?v=20261013-56','./notifications.js?v=20261013-56','./date-range.js?v=20261012-45','./sync.js?v=20261013-56','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
+const CACHE='tabi-planner-v69';
+const SHELL=['./line-invite.js?v=20261013-57','./index.html','./styles.css?v=20261013-57','./app.js?v=20261013-57','./notifications.js?v=20261013-57','./date-range.js?v=20261012-45','./sync.js?v=20261013-57','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('tabi-planner-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
