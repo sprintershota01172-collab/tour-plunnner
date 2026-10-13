@@ -18,8 +18,12 @@
   }
   function encode(input){const bytes=new TextEncoder().encode(JSON.stringify(validate(input)));return btoa(Array.from(bytes,b=>String.fromCharCode(b)).join('')).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
   function decode(value){if(value.length>4000)throw new Error('invalid');const raw=atob(value.replace(/-/g,'+').replace(/_/g,'/'));return validate(JSON.parse(new TextDecoder().decode(Uint8Array.from(raw,c=>c.charCodeAt(0)))));}
+  const PENDING='tabi-line-invite-pending',TTL=30*60*1000;
+  function remember(input){const value={invite:validate(input),created:Date.now()};for(const name of ['sessionStorage','localStorage'])try{window[name].setItem(PENDING,JSON.stringify(value));}catch{}return value.invite;}
+  function recover(){for(const name of ['sessionStorage','localStorage'])try{const value=JSON.parse(window[name].getItem(PENDING));if(value&&Number.isFinite(value.created)&&Date.now()-value.created>=0&&Date.now()-value.created<TTL)return validate(value.invite);window[name].removeItem(PENDING);}catch{}return null;}
+  function forget(){for(const name of ['sessionStorage','localStorage'])try{window[name].removeItem(PENDING);}catch{}}
   let configPromise;
   function config(){return configPromise||(configPromise=fetch('./line-config.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('config');return r.json();}).catch(error=>{configPromise=null;throw error;}));}
   function configured(value){return /^\d+-[A-Za-z0-9]+$/.test(value?.liffId||'');}
-  window.TabiLineInvite={message,validate,card,encode,decode,config,configured};
+  window.TabiLineInvite={message,validate,card,encode,decode,remember,recover,forget,config,configured};
 })();
