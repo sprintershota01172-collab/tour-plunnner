@@ -2,8 +2,8 @@
 <defs><linearGradient id="midnight" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#204b73"/><stop offset=".48" stop-color="#112e4d"/><stop offset="1" stop-color="#091a30"/></linearGradient><linearGradient id="glint" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#a6d9e8"/><stop offset="1" stop-color="#f2e3c2"/></linearGradient></defs>
 <rect width="1000" height="600" fill="url(#midnight)"/>
 <rect x="23" y="24" width="954" height="552" rx="24" fill="none" stroke="#b7d4e3" stroke-opacity=".43" stroke-width="2"/><rect x="39" y="40" width="922" height="520" rx="13" fill="none" stroke="#b7d4e3" stroke-opacity=".14"/>
-<g transform="translate(46 30) scale(.58)"><path d="M112 270C180 203 274 162 390 139L360 182C266 197 184 226 112 270Z" fill="#fff"/><path d="M124 304C178 251 247 220 327 202L299 243C234 253 178 274 124 304Z" fill="#fff"/><path d="M139 337C180 297 228 272 282 259L257 296C211 305 172 320 139 337Z" fill="#9bd6e7"/></g>
-<text x="320" y="168" font-family="Caveat,cursive" font-style="italic" font-size="88" fill="#fff">tabi</text>
+<g transform="translate(65 -15) scale(.39)"><path d="M112 270C180 203 274 162 390 139L360 182C266 197 184 226 112 270Z" fill="#fff"/><path d="M124 304C178 251 247 220 327 202L299 243C234 253 178 274 124 304Z" fill="#fff"/><path d="M139 337C180 297 228 272 282 259L257 296C211 305 172 320 139 337Z" fill="#9bd6e7"/></g>
+<path d="M232 63v88" stroke="#B7D4E3" stroke-opacity=".37" stroke-width="2"/><text x="264" y="131" font-family="Caveat,cursive" font-style="italic" font-size="76" fill="#fff">tabi</text>
 <text x="78" y="542" font-family="Caveat,cursive" font-size="26" letter-spacing="4" fill="#b4dae5">THE JOURNEY IS BETTER TOGETHER</text>
 <path d="M74 468h852" fill="none" stroke="#b2d8e7" stroke-opacity=".45" stroke-width="2" stroke-dasharray="4 12"/><circle cx="74" cy="468" r="6" fill="#cce5ec"/><circle cx="926" cy="468" r="6" fill="#cce5ec"/>
 <circle cx="785" cy="285" r="172" fill="none" stroke="#acd5e5" stroke-opacity=".17" stroke-width="2"/><circle cx="785" cy="285" r="140" fill="none" stroke="#acd5e5" stroke-opacity=".13" stroke-width="2"/>

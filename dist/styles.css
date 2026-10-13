@@ -888,3 +888,9 @@ body>.share-panel [data-share="partner"]{background:#315f59;color:#fff;font-weig
 #partnerJoinPasswordWrap{margin:6px 0}
 @media(max-width:370px){.brand-pref-grid{grid-template-columns:1fr}}
 @media(prefers-color-scheme:dark){.brand-preferences{background:#202a34;border-color:#435566}.brand-pref-heading{color:#b6d5eb}.brand-image-control small,.brand-pref-help{color:#aebdc9}}
+
+/* Invitation v66: a discrete wordmark row and dedicated content zone. */
+.invite-card-copy{top:35%!important;left:8%!important;right:8%!important;max-width:84%}
+.invite-card-copy strong{max-width:65%;line-height:1.25;overflow-wrap:anywhere}
+#partnerInviteDestination{max-width:63%}
+@media(max-width:390px){.invite-card-copy{top:34%!important}.invite-card-copy strong{font-size:clamp(15px,5vw,22px)}}

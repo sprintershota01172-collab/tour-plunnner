@@ -29,7 +29,7 @@
   const dateOptions={weekday:'short',month:'short',day:'numeric'};
   let undoCheckpoint=null,partnerBusy=false,pendingInvite=null;
   const sharedApi=window.TabiSharing;
-  let protectedInvite={roomId:'',password:'',url:'',pending:false},inviteGeneration=0;
+  let protectedInvite={roomId:'',password:'',url:'',pending:false},inviteGeneration=0,inviteDebounce=0;
   const sharing=sharedApi?sharedApi.create({
     getContext:()=>({id:state.id,trip:state,metadata:state.collaboration}),
     isBusy:()=>!!(drag||resizeSession||placeSwipe||$('#modalBackdrop.open')||$('#settingsBackdrop.open')||$('#packingBackdrop.open')||$('#groupsBackdrop.open')||$('#tripsBackdrop.open')),
@@ -368,18 +368,19 @@
   function prepareInviteUrl(){
     const room=state.collaboration;if(!room)return;
     const password=$('#partnerInvitePassword').value;
-    if(protectedInvite.roomId===room.roomId&&protectedInvite.password===password&&protectedInvite.url)return;
+    if(protectedInvite.roomId===room.roomId&&protectedInvite.password===password&&(protectedInvite.url||protectedInvite.pending))return;
+    clearTimeout(inviteDebounce);
     const task=++inviteGeneration,hint=$('#invitePasswordHint');
     protectedInvite={roomId:room.roomId,password,url:'',pending:!!password};
     if(!password){protectedInvite.url=sharedApi.link(room);$('#partnerLink').value=protectedInvite.url;hint.textContent='パスワードなし：招待リンクを知る人が参加できます。';return;}
     $('#partnerLink').value='暗号化中…';
     if(password.length<12||password.length>128){protectedInvite.pending=false;hint.textContent='12～128文字のパスワードを入力してください。';return;}
     hint.textContent='安全な招待リンクを作成しています…';
-    sharedApi.protectInvite(room,password).then(url=>{
+    inviteDebounce=setTimeout(()=>sharedApi.protectInvite(room,password).then(url=>{
       if(task!==inviteGeneration||state.collaboration?.roomId!==room.roomId)return;
       protectedInvite={roomId:room.roomId,password,url,pending:false};
       $('#partnerLink').value=url;hint.textContent='パスワードで保護しました。パスワードは別の方法で伝えてください。';
-    }).catch(()=>{if(task!==inviteGeneration)return;protectedInvite.pending=false;hint.textContent='リンクを暗号化できませんでした。再入力してください。';});
+    }).catch(()=>{if(task!==inviteGeneration)return;protectedInvite.pending=false;hint.textContent='リンクを暗号化できませんでした。再入力してください。';}),500);
   }
   function renderPartner(){
     const joined=!!state.collaboration&&!pendingInvite;
@@ -441,8 +442,8 @@
     try{$('#partnerSenderName').value=localStorage.getItem('tabi-invite-sender')||'';}catch{}
     $('#partnerInvitePassword').addEventListener('input',prepareInviteUrl);
     $('#partnerSenderName').addEventListener('input',()=>{try{localStorage.setItem('tabi-invite-sender',$('#partnerSenderName').value.trim());}catch{}renderInviteMessage();});
-    $('#partnerShortcut').onclick=openPartner;$('#closePartner').onclick=()=>{pendingInvite=null;closeModal($('#partnerBackdrop'));};
-    $('#partnerBackdrop').addEventListener('click',e=>{if(e.target===$('#partnerBackdrop')){pendingInvite=null;closeModal($('#partnerBackdrop'));}});
+    $('#partnerShortcut').onclick=openPartner;$('#closePartner').onclick=()=>{pendingInvite=null;$('#partnerJoinPassword').value='';$('#partnerInvitePassword').value='';protectedInvite={roomId:'',password:'',url:'',pending:false};clearTimeout(inviteDebounce);++inviteGeneration;closeModal($('#partnerBackdrop'));};
+    $('#partnerBackdrop').addEventListener('click',e=>{if(e.target===$('#partnerBackdrop')){$('#closePartner').click();}});
     $('#partnerInviteForm').onsubmit=e=>{e.preventDefault();let invite;try{invite=sharedApi.parseInvite(new URL($('#partnerInviteInput').value.trim()).hash);}catch{}if(!invite){showToast('正しい招待リンクを貼り付けてください');return;}pendingInvite=invite;renderPartner();if(invite.locked)$('#partnerJoinPassword').focus({preventScroll:true});else joinPartnerRoom();};
     $('#partnerSend').onclick=sendPartnerLink;$('#partnerCreate').onclick=createPartnerRoom;$('#partnerJoin').onclick=joinPartnerRoom;$('#partnerCopy').onclick=copyPartnerLink;
     $('#partnerNative').onclick=async()=>{
