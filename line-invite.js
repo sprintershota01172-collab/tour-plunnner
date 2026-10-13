@@ -9,7 +9,7 @@
   function validate(data){
     if(!data||typeof data.sender!=='string'||!data.sender.trim()||data.sender.length>30||typeof data.destination!=='string'||data.destination.length>100)throw new Error('invalid');
     const url=new URL(data.url);
-    if(url.origin!==new URL(ROOT).origin||url.pathname!==new URL(ROOT).pathname||url.search||!/^#join=[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.[A-Za-z0-9_-]{43}$/.test(url.hash))throw new Error('invalid');
+    if(url.origin!==new URL(ROOT).origin||url.pathname!==new URL(ROOT).pathname||url.search||!/^#join(?:=[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.[A-Za-z0-9_-]{43}|p=[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{16}\.[A-Za-z0-9_-]{64})$/.test(url.hash))throw new Error('invalid');
     return {sender:data.sender.trim(),destination:data.destination.trim(),url:url.href};
   }
   function card(input){

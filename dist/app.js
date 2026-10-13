@@ -29,6 +29,7 @@
   const dateOptions={weekday:'short',month:'short',day:'numeric'};
   let undoCheckpoint=null,partnerBusy=false,pendingInvite=null;
   const sharedApi=window.TabiSharing;
+  let protectedInvite={roomId:'',password:'',url:'',pending:false},inviteGeneration=0;
   const sharing=sharedApi?sharedApi.create({
     getContext:()=>({id:state.id,trip:state,metadata:state.collaboration}),
     isBusy:()=>!!(drag||resizeSession||placeSwipe||$('#modalBackdrop.open')||$('#settingsBackdrop.open')||$('#packingBackdrop.open')||$('#groupsBackdrop.open')||$('#tripsBackdrop.open')),
@@ -43,11 +44,12 @@
 
   function openDB(){return new Promise((resolve)=>{if(!('indexedDB' in window)){resolve(null);return;}const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(DB_STORE))req.result.createObjectStore(DB_STORE);};req.onsuccess=()=>resolve(req.result);req.onerror=()=>resolve(null);});}
   async function loadState(){db=await openDB();let value=null,needsMigration=false;if(db){try{value=await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readonly');const req=tx.objectStore(DB_STORE).get('state');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}catch(e){console.warn('Local data could not be read',e);}}else{try{const raw=localStorage.getItem(DB_NAME);if(raw)value=JSON.parse(raw);}catch{}}
-    if(value?.trips?.length){trips=value.trips.map(normalizeState);activeTripId=value.activeTripId||trips[0].id;state=trips.find(t=>t.id===activeTripId)||trips[0];activeTripId=state.id;}
+    if(value?.trips?.length){trips=value.trips.map(normalizeState);if(trips.some(t=>!isEmptyTrip(t))){trips=trips.filter(t=>!isEmptyTrip(t));needsMigration=trips.length!==value.trips.length;}activeTripId=value.activeTripId||trips[0].id;state=trips.find(t=>t.id===activeTripId)||trips[0];activeTripId=state.id;}
     else if(value){state=normalizeState(value);trips=[state];activeTripId=state.id;needsMigration=true;}
     else{state=normalizeState(DEFAULTS);trips=[state];activeTripId=state.id;}
     renderAll();if(value||needsMigration)persist(false);notifications?.restore();if(pendingInvite||location.hash==='#invite-partner')openPartner();
   }
+  function isEmptyTrip(t){return !t?.collaboration&&!String(t?.destination||'').trim()&&!t?.startDate&&!t?.endDate&&!t?.datesConfigured&&!(t?.hotels||[]).some(h=>h.name||h.start||h.end)&&!(t?.places||[]).length&&!(t?.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name));}
   function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
   function storagePayload(){trips=trips.map(t=>t.id===state.id?state:t);activeTripId=state.id;return {version:2,activeTripId,trips};}
   function persist(sync=true){if(sync&&sharedApi){if(undoSnapshot&&undoCheckpoint?.before!==undoSnapshot)undoCheckpoint={before:undoSnapshot,after:sharedApi.wire(state)};sharing.changed();}storagePayload();clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{const payload=storagePayload();if(db){try{await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(payload,'state');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}catch{showToast('保存できませんでした。端末の空き容量をご確認ください');}}else{try{localStorage.setItem(DB_NAME,JSON.stringify(payload));}catch{showToast('保存容量が不足しています');}}},100);}
@@ -207,7 +209,7 @@
   function openTripPicker(){renderTrips();openModal($('#tripsBackdrop'));}
   function selectTrip(tripId){const trip=trips.find(t=>t.id===tripId);if(!trip||trip.id===state.id){closeModal($('#tripsBackdrop'));return;}state=trip;activeTripId=trip.id;selectedDay=0;selectedCategory='すべて';undoSnapshot=null;$('#searchPlaces').value='';completionShown=false;pageIndex=0;pages.style.transform='translate3d(0,0,0)';$$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===0));closeModal($('#tripsBackdrop'));persist();renderAll();showToast('旅行を切り替えました');}
   function localDateString(date){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
-  function createTrip(){const trip=normalizeState({id:id(),destination:'',travelers:2,startDate:'',endDate:'',datesConfigured:false,hotels:[],places:[],packingItems:structuredClone(PACKING_DEFAULTS)});trips.push(trip);state=trip;activeTripId=trip.id;selectedDay=0;selectedCategory='すべて';undoSnapshot=null;$('#searchPlaces').value='';pageIndex=0;pages.style.transform='translate3d(0,0,0)';$$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===0));closeModal($('#tripsBackdrop'));persist();renderAll();openSettings();}
+  function createTrip(){const trip=normalizeState({id:id(),destination:'',travelers:2,startDate:'',endDate:'',datesConfigured:false,hotels:[],places:[],packingItems:structuredClone(PACKING_DEFAULTS)});trips=trips.filter(t=>!isEmptyTrip(t));trips.push(trip);state=trip;activeTripId=trip.id;selectedDay=0;selectedCategory='すべて';undoSnapshot=null;$('#searchPlaces').value='';pageIndex=0;pages.style.transform='translate3d(0,0,0)';$$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===0));closeModal($('#tripsBackdrop'));persist();renderAll();openSettings();}
   function deleteTrip(tripId){if(trips.length<2)return;const trip=trips.find(t=>t.id===tripId);if(!trip)return;const title=trip.destination||'行き先未設定';if(!confirm(`「${title}」と登録したスポット・旅程を削除しますか？`))return;const wasActive=state.id===tripId;trips=trips.filter(t=>t.id!==tripId);if(wasActive){state=trips[0];activeTripId=state.id;selectedDay=0;selectedCategory='すべて';$('#searchPlaces').value='';undoSnapshot=null;completionShown=false;}persist();renderAll();showToast('旅行を削除しました');}
 
   function syncPageAccess(){$('#quickAdd').hidden=pageIndex!==0;$$('.page',pages).forEach((page,i)=>{page.inert=i!==pageIndex;page.setAttribute('aria-hidden',i===pageIndex?'false':'true');});if(viewport.scrollLeft)viewport.scrollLeft=0;}
@@ -358,16 +360,37 @@
   function renderInviteMessage(){
     $('#partnerMessagePreview').textContent=partnerInviteMessage();$('#partnerInviteTitle').textContent=state.destination?`${state.destination}へ、一緒に。`:'一緒に旅しよう';$('#partnerInviteDestination').textContent=state.destination||'TRAVEL TOGETHER';
   }
+  function readyInviteUrl(){
+    if(!state.collaboration)return null;
+    const password=$('#partnerInvitePassword').value;
+    return !password?sharedApi.link(state.collaboration):protectedInvite.roomId===state.collaboration.roomId&&protectedInvite.password===password&&!protectedInvite.pending?protectedInvite.url:null;
+  }
+  function prepareInviteUrl(){
+    const room=state.collaboration;if(!room)return;
+    const password=$('#partnerInvitePassword').value;
+    if(protectedInvite.roomId===room.roomId&&protectedInvite.password===password&&protectedInvite.url)return;
+    const task=++inviteGeneration,hint=$('#invitePasswordHint');
+    protectedInvite={roomId:room.roomId,password,url:'',pending:!!password};
+    if(!password){protectedInvite.url=sharedApi.link(room);$('#partnerLink').value=protectedInvite.url;hint.textContent='パスワードなし：招待リンクを知る人が参加できます。';return;}
+    $('#partnerLink').value='暗号化中…';
+    if(password.length<12||password.length>128){protectedInvite.pending=false;hint.textContent='12～128文字のパスワードを入力してください。';return;}
+    hint.textContent='安全な招待リンクを作成しています…';
+    sharedApi.protectInvite(room,password).then(url=>{
+      if(task!==inviteGeneration||state.collaboration?.roomId!==room.roomId)return;
+      protectedInvite={roomId:room.roomId,password,url,pending:false};
+      $('#partnerLink').value=url;hint.textContent='パスワードで保護しました。パスワードは別の方法で伝えてください。';
+    }).catch(()=>{if(task!==inviteGeneration)return;protectedInvite.pending=false;hint.textContent='リンクを暗号化できませんでした。再入力してください。';});
+  }
   function renderPartner(){
     const joined=!!state.collaboration&&!pendingInvite;
-    $('#partnerInviteIdentity').hidden=!!pendingInvite;renderInviteMessage();
+    $('#partnerInviteIdentity').hidden=!!pendingInvite;$('#partnerJoinPasswordWrap').hidden=!pendingInvite?.locked;renderInviteMessage();
     $('#partnerTitle').textContent=pendingInvite?'旅行に参加':'パートナーを招待';
     $('#partnerDescription').textContent=pendingInvite?'参加すると、相手と同じ旅行を編集できます。':joined?'場所・旅程・宿泊先・持ち物は自動で共有されます。':'招待URLを作成して、パートナーに送ってください。';
     $('#partnerMore').hidden=!joined;$('#partnerJoinDetails').hidden=!!pendingInvite;
     $('#partnerJoinDetails').open=false;
     $('#partnerCreate').hidden=joined||!!pendingInvite;$('#partnerJoin').hidden=!pendingInvite;
     ['partnerLinkRow','partnerCopy','partnerSend','partnerSendHint','partnerSendOptions','partnerNative','partnerSync','partnerLeave'].forEach(key=>$('#'+key).hidden=!joined);
-    if(joined)$('#partnerLink').value=sharedApi.link(state.collaboration);
+    if(joined)prepareInviteUrl();
     $('#partnerSendHint').textContent=navigator.share?'LINEなど、送りたいアプリを選べます。':'この端末ではURLをコピーして、送りたいアプリに貼り付けられます。';
     $$('.partner-actions button,#partnerSendOptions button,#partnerInviteForm button').forEach(button=>button.disabled=partnerBusy||!sharing);
     $('#partnerCreate').textContent=partnerBusy?'作成中…':'招待URLを作成する';
@@ -375,7 +398,7 @@
   }
   function openPartner(){if($('#settingsBackdrop.open')){if(!commitSettings())return;closeModal($('#settingsBackdrop'));}notifications?.restore();$('#partnerError').hidden=true;renderPartner();openModal($('#partnerBackdrop'));}
   function partnerError(error){
-    const message=error.message==='offline'?'オンラインでリンクを作成・参加してください。':error.message==='invalid_invite'?'招待リンクが無効です。パートナーにもう一度リンクをもらってください。':error.message==='browser_update'?'ブラウザを更新してから参加してください。':error.message==='photos_too_large'?'写真の容量が大きすぎます。写真を減らしてもう一度お試しください。':'接続できませんでした。旅行は端末に保存されています。もう一度お試しください。';
+    const message=error.message==='wrong_password'?'招待パスワードが違います。':error.message==='password_required'?'招待パスワードを入力してください。':error.message==='offline'?'オンラインでリンクを作成・参加してください。':error.message==='invalid_invite'?'招待リンクが無効です。パートナーにもう一度リンクをもらってください。':error.message==='browser_update'?'ブラウザを更新してから参加してください。':error.message==='photos_too_large'?'写真の容量が大きすぎます。写真を減らしてもう一度お試しください。':'接続できませんでした。旅行は端末に保存されています。もう一度お試しください。';
     $('#partnerError').textContent=message;$('#partnerError').hidden=false;
   }
   async function createPartnerRoom(){
@@ -389,9 +412,10 @@
   async function joinPartnerRoom(){
     if(!sharing||partnerBusy||!pendingInvite)return;partnerBusy=true;$('#partnerError').hidden=true;renderPartner();
     try{
-      const existing=trips.find(trip=>trip.collaboration?.roomId===pendingInvite.roomId&&trip.collaboration?.key===pendingInvite.key);
+      const invite=pendingInvite.locked?await sharedApi.unlockInvite(pendingInvite,$('#partnerJoinPassword').value):pendingInvite;
+      const existing=trips.find(trip=>trip.collaboration?.roomId===invite.roomId&&trip.collaboration?.key===invite.key);
       if(existing){selectTrip(existing.id);pendingInvite=null;closeModal($('#partnerBackdrop'));notifications?.restore();sharing.sync();return;}
-      const result=await sharing.join(pendingInvite),trip=normalizeState({...result.trip,id:id(),collaboration:result.metadata});
+      const result=await sharing.join(invite),trip=normalizeState({...result.trip,id:id(),collaboration:result.metadata});
       trips.push(trip);state=trip;activeTripId=trip.id;selectedDay=0;selectedCategory='すべて';selectedPieceId=null;undoSnapshot=null;undoCheckpoint=null;pendingInvite=null;
       $('#searchPlaces').value='';pageIndex=0;pages.style.transform='translate3d(0,0,0)';$$('.nav-item').forEach((button,i)=>button.classList.toggle('active',i===0));persist(false);renderAll();closeModal($('#partnerBackdrop'));closeModal($('#settingsBackdrop'));notifications?.restore();showToast('共有の旅行に参加しました');
     }catch(error){partnerError(error);}finally{partnerBusy=false;renderPartner();}
@@ -402,22 +426,24 @@
   async function sendPartnerLink(){
     if(!state.collaboration||partnerBusy)return;
     if(!$('#partnerSenderName').value.trim()){$('#partnerSenderName').focus({preventScroll:true});showToast('招待するあなたの名前を入力してください');return;}
+    const url=readyInviteUrl();if(!url){showToast('パスワードの長さとリンクの準備状況を確認してください');return;}
     if(!navigator.share){await copyPartnerLink();return;}
     const button=$('#partnerSend');button.disabled=true;
     try{
-      await navigator.share({title:'tabi 旅行への招待',text:partnerInviteMessage(),url:sharedApi.link(state.collaboration)});
+      await navigator.share({title:'tabi 旅行への招待',text:partnerInviteMessage(),url});
       returnToHome();
     }catch(error){
       if(error.name!=='AbortError')showToast('共有を開けませんでした。「招待URLをコピー」をお使いください');
     }finally{button.disabled=partnerBusy;}
   }
-  async function copyPartnerLink(){try{await navigator.clipboard.writeText(sharedApi.link(state.collaboration));returnToHome();showToast('招待リンクをコピーしました。送りたい相手に貼り付けてください');}catch{$('#partnerMore').open=true;$('#partnerLink').focus({preventScroll:true});$('#partnerLink').select();showToast('リンクを長押ししてコピーしてください');}}
+  async function copyPartnerLink(){const url=readyInviteUrl();if(!url){showToast('パスワードが12文字以上か確認してください');return;}try{await navigator.clipboard.writeText(url);returnToHome();showToast('招待リンクをコピーしました。送りたい相手に貼り付けてください');}catch{$('#partnerMore').open=true;$('#partnerLink').focus({preventScroll:true});$('#partnerLink').select();showToast('リンクを長押ししてコピーしてください');}}
   function bindPartner(){
     try{$('#partnerSenderName').value=localStorage.getItem('tabi-invite-sender')||'';}catch{}
+    $('#partnerInvitePassword').addEventListener('input',prepareInviteUrl);
     $('#partnerSenderName').addEventListener('input',()=>{try{localStorage.setItem('tabi-invite-sender',$('#partnerSenderName').value.trim());}catch{}renderInviteMessage();});
     $('#partnerShortcut').onclick=openPartner;$('#closePartner').onclick=()=>{pendingInvite=null;closeModal($('#partnerBackdrop'));};
     $('#partnerBackdrop').addEventListener('click',e=>{if(e.target===$('#partnerBackdrop')){pendingInvite=null;closeModal($('#partnerBackdrop'));}});
-    $('#partnerInviteForm').onsubmit=e=>{e.preventDefault();let invite;try{invite=sharedApi.parseInvite(new URL($('#partnerInviteInput').value.trim()).hash);}catch{}if(!invite){showToast('正しい招待リンクを貼り付けてください');return;}pendingInvite=invite;joinPartnerRoom();};
+    $('#partnerInviteForm').onsubmit=e=>{e.preventDefault();let invite;try{invite=sharedApi.parseInvite(new URL($('#partnerInviteInput').value.trim()).hash);}catch{}if(!invite){showToast('正しい招待リンクを貼り付けてください');return;}pendingInvite=invite;renderPartner();if(invite.locked)$('#partnerJoinPassword').focus({preventScroll:true});else joinPartnerRoom();};
     $('#partnerSend').onclick=sendPartnerLink;$('#partnerCreate').onclick=createPartnerRoom;$('#partnerJoin').onclick=joinPartnerRoom;$('#partnerCopy').onclick=copyPartnerLink;
     $('#partnerNative').onclick=async()=>{
       if(!$('#partnerSenderName').value.trim()){$('#partnerSenderName').focus({preventScroll:true});showToast('招待するあなたの名前を入力してください');return;}
@@ -425,7 +451,7 @@
       try{
         const api=window.TabiLineInvite,config=await api.config();
         if(!api.configured(config)){showToast('LINE招待は接続準備中です');return;}
-        const invite={sender:$('#partnerSenderName').value.trim(),destination:state.destination,url:sharedApi.link(state.collaboration)};
+        const url=readyInviteUrl();if(!url){showToast('招待リンクの準備をお待ちください');return;}const invite={sender:$('#partnerSenderName').value.trim(),destination:state.destination,url};
         api.remember(invite);location.href='./line-share.html#invite='+api.encode(invite);
       }catch{showToast('招待を準備できませんでした。接続を確認してください');}finally{button.disabled=false;}
     };

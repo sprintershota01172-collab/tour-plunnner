@@ -71,11 +71,39 @@
       }else scheduled.push(place);
     }return {trip:result,displaced};
   }
+  // A protected invitation wraps the room secret with a password-derived key.
+  // This keeps the usable room secret out of password-protected URLs.
+  const UUID='[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}';
   function parseInvite(hash){
-    const match=String(hash).match(/^#join=([0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})\.([A-Za-z0-9_-]{43})$/);
-    return match?{roomId:match[1],key:match[2]}:null;
+    const h=String(hash||'');
+    let match=h.match(new RegExp('^#join=('+UUID+')\\.([A-Za-z0-9_-]{43})$'));
+    if(match)return {roomId:match[1],key:match[2]};
+    match=h.match(new RegExp('^#joinp=('+UUID+')\\.([A-Za-z0-9_-]{22})\\.([A-Za-z0-9_-]{16})\\.([A-Za-z0-9_-]{64})$'));
+    return match?{roomId:match[1],locked:true,salt:match[2],nonce:match[3],wrapped:match[4]}:null;
   }
-  function link(metadata){const url=new URL(location.href);url.hash=`join=${metadata.roomId}.${metadata.key}`;url.search='';return url.href;}
+  function link(metadata){const u=new URL(location.origin+location.pathname);u.hash='join='+metadata.roomId+'.'+metadata.key;return u.href;}
+  async function inviteKey(password,salt){
+    const source=await crypto.subtle.importKey('raw',encoder.encode(password.normalize('NFKC')),'PBKDF2',false,['deriveKey']);
+    return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},source,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+  }
+  async function protectInvite(metadata,password){
+    if(!metadata?.roomId||typeof metadata.key!=='string'||decode64(metadata.key).length!==32)throw new Error('invalid_invite');
+    if(typeof password!=='string'||password.length<12||password.length>128)throw new Error('weak_password');
+    const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+    const wrapped=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:encoder.encode('tabi:invite:v1:'+metadata.roomId)},await inviteKey(password,salt),decode64(metadata.key)));
+    const u=new URL(location.origin+location.pathname);
+    u.hash='joinp='+metadata.roomId+'.'+encode64(salt)+'.'+encode64(iv)+'.'+encode64(wrapped);
+    return u.href;
+  }
+  async function unlockInvite(invite,password){
+    if(!invite?.locked)return invite;
+    if(!password)throw new Error('password_required');
+    try{
+      const secret=new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:decode64(invite.nonce),additionalData:encoder.encode('tabi:invite:v1:'+invite.roomId)},await inviteKey(password,decode64(invite.salt)),decode64(invite.wrapped)));
+      if(secret.length!==32)throw new Error('invalid_invite');
+      return {roomId:invite.roomId,key:encode64(secret)};
+    }catch{throw new Error('wrong_password');}
+  }
   function create(options){
     let currentId='',timer=0,poll=0,running=false,status='local',disposed=false;
     const transport=options.fetch||fetch;
@@ -86,12 +114,13 @@
     const busy=()=>options.isBusy?.()||false;
     function emit(next){status=next;options.onStatus?.(next);}
     function schedule(delay=700){clearTimeout(timer);if(!disposed)timer=setTimeout(()=>sync(),delay);}
-    async function request(metadata,method,body,revision,conditional=false){
+    async function request(metadata,method,body,revision,conditional=false,updateMessage=null){
       const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
       try{
         const headers={Authorization:`Bearer ${await auth(metadata.key)}`};
         if(method==='PUT'&&window.TabiNotifications?.clientId)headers['X-Tabi-Client']=window.TabiNotifications.clientId;
         if(body)headers['Content-Type']='application/octet-stream';
+        if(method==='PUT'&&updateMessage)headers['X-Tabi-Update']=encode64(encoder.encode(updateMessage.slice(0,300)));
         if(revision)headers[conditional?'If-None-Match':'X-Tabi-Revision']=conditional?`"${revision}"`:String(revision);
         const response=await transport(`${options.api||API}${metadata.roomId}`,{method,body,headers,cache:'no-store',credentials:'omit',signal:controller.signal});
         if(![200,201,304,409].includes(response.status))throw new Error(response.status===413?'photos_too_large':response.status===404?'invalid_invite':'connection');
@@ -120,7 +149,8 @@
           if(same(snapshot,remote)){emit('synced');return;}
           const body=await encrypt(snapshot,metadata.key,metadata.roomId);
           if(!valid(initial))return;
-          const saved=await request(metadata,'PUT',body,revision);
+          const updateMessage=window.TabiNotifications?.describeUpdate(remote,snapshot);
+          const saved=await request(metadata,'PUT',body,revision,false,updateMessage);
           if(!valid(initial))return;
           if(saved.status===409)continue;
           const nextRevision=Number(saved.headers.get('X-Tabi-Revision'));
@@ -154,5 +184,5 @@
     if(options.auto!==false){window.addEventListener('online',wake);window.addEventListener('offline',()=>emit(context()?.metadata?'offline':'local'));window.addEventListener('focus',wake);document.addEventListener('visibilitychange',()=>{if(!document.hidden)wake();});}
     return {attach,changed,sync,createRoom,join,getStatus:()=>status,dispose(){disposed=true;clearTimeout(timer);clearInterval(poll);}};
   }
-  window.TabiSharing={create,wire,merge,settleSchedule,parseInvite,link,encrypt,decrypt,auth};
+  window.TabiSharing={create,wire,merge,settleSchedule,parseInvite,link,protectInvite,unlockInvite,encrypt,decrypt,auth};
 })();
