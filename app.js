@@ -11,6 +11,9 @@
     {name:'その他',color:'#77878a',soft:'#e9efef',icon:'○'}
   ];
   const UNGROUPED='未分類';
+  const MEALS=[['breakfast','朝食','朝'],['lunch','昼食','昼'],['dinner','夕食','夜']];
+  const FOOD_FILTER='食べたい';
+  const isFood=p=>p.category==='グルメ'||p.category==='カフェ';
   const PACKING_DEFAULTS = [
     ['passport','パスポート','書類'],['esta','ESTA・渡航認証','書類'],['booking','航空券・ホテル控え','書類'],['insurance','旅行保険の控え','書類'],['wallet','カード・現金','書類'],
     ['clothes','着替え','衣類'],['underwear','下着・靴下','衣類'],['shoes','歩きやすい靴','衣類'],['swimwear','水着','海・プール'],['sunscreen','日焼け止め','海・プール'],['sunglasses','サングラス','海・プール'],
@@ -18,7 +21,7 @@
   ].map(([id,name,category])=>({id,name,category,checked:false}));
   const DEFAULTS = {
     destination:'', travelers:2, startDate:'', endDate:'', datesConfigured:false,
-    hotels:[],
+    hotels:[], meals:{},
     places:[], groups:CATEGORIES.map(c=>c.name), packingItems:PACKING_DEFAULTS
   };
   const DB_NAME='malie-honeymoon', DB_STORE='app';
@@ -52,14 +55,14 @@
   }
   function isEmptyTrip(t){
     return !t?.collaboration&&!String(t?.destination||'').trim()&&!t?.startDate&&!t?.endDate&&!t?.datesConfigured
-      &&!(t?.hotels||[]).some(h=>h.name||h.start||h.end)&&!(t?.places||[]).length
+      &&!(t?.hotels||[]).some(h=>h.name||h.start||h.end)&&!Object.values(t?.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))&&!(t?.places||[]).length
       &&!(t?.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g))
       &&!(t?.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name));
   }
   // Preserve distinct journeys (even when they share the same destination).
   // Only remove generated blank placeholders and genuinely equivalent non-shared copies.
   function hasPlanDetails(t){
-    return (t.places||[]).length>0||(t.hotels||[]).some(h=>h.name||h.start||h.end)
+    return (t.places||[]).length>0||(t.hotels||[]).some(h=>h.name||h.start||h.end)||Object.values(t.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))
       ||(t.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name))
       ||(t.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g));
   }
@@ -77,8 +80,8 @@
         if(existing.startDate!==trip.startDate||existing.endDate!==trip.endDate||existing.travelers!==trip.travelers)return false;
         // A generated empty plan may be dropped; a user's actual edits must be preserved.
         if(!hasPlanDetails(trip)||!hasPlanDetails(existing))return true;
-        return JSON.stringify({places:existing.places,hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems})
-          ===JSON.stringify({places:trip.places,hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems});
+        return JSON.stringify({places:existing.places,hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems,meals:existing.meals})
+          ===JSON.stringify({places:trip.places,hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems,meals:trip.meals});
       });
       if(!same){unique.push(trip);continue;}
       if(!hasPlanDetails(same)&&hasPlanDetails(trip)){unique[unique.indexOf(same)]=trip;continue;}
@@ -87,7 +90,7 @@
     }
     return unique;
   }
-  function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
+  function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.meals=normalizeMeals(data.meals);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
   function storagePayload(){trips=trips.map(t=>t.id===state.id?state:t);activeTripId=state.id;return {version:2,activeTripId,trips};}
   function persist(sync=true){if(sync&&sharedApi){if(undoSnapshot&&undoCheckpoint?.before!==undoSnapshot)undoCheckpoint={before:undoSnapshot,after:sharedApi.wire(state)};sharing.changed();}storagePayload();clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{const payload=storagePayload();if(db){try{await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(payload,'state');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}catch{showToast('保存できませんでした。端末の空き容量をご確認ください');}}else{try{localStorage.setItem(DB_NAME,JSON.stringify(payload));}catch{showToast('保存容量が不足しています');}}},100);}
   function id(){return crypto.randomUUID?crypto.randomUUID():`p-${Date.now()}-${Math.random().toString(36).slice(2,9)}`;}
@@ -103,7 +106,7 @@
   function fmtDate(d,opts=dateOptions){return new Intl.DateTimeFormat(window.TabiLocale?.getLanguage()==='en'?'en-US':'ja-JP',opts).format(d);}
   function cleanGroupNames(names){return [...new Set(names.filter(n=>typeof n==='string').map(n=>n.trim().slice(0,32)).filter(n=>n&&n!=='すべて'&&n!==UNGROUPED))];}
   function groupNames(){return state.groups||CATEGORIES.map(c=>c.name);}
-  function categoryFilters(){return ['すべて',...groupNames(),UNGROUPED];}
+  function categoryFilters(){return ['すべて',FOOD_FILTER,...groupNames().filter(g=>g!==FOOD_FILTER),UNGROUPED];}
   function cat(name){const preset=CATEGORIES.find(c=>c.name===name);if(preset)return preset;if(!name||name===UNGROUPED)return {...CATEGORIES.at(-1),name:UNGROUPED};let hash=0;for(const char of name)hash=(hash*31+char.codePointAt(0))>>>0;return {...CATEGORIES[hash%(CATEGORIES.length-1)],name,icon:'○'};}
   function renderCategoryField(value=$('#category').value){const names=[...groupNames(),UNGROUPED];$('#category').innerHTML=names.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join('');$('#category').value=names.includes(value)?value:names[0];}
   function renderGroupManager(){const list=$('#groupEditList');if(!list)return;list.innerHTML=groupNames().map(name=>{const c=cat(name),count=state.places.filter(p=>p.category===name).length;return `<div class="group-edit-row"><i class="group-color" style="background:${c.color}" aria-hidden="true"></i><span class="group-edit-name">${esc(name)}</span><small>${count}件</small><button type="button" class="group-delete-button" data-delete-group="${esc(name)}" aria-label="${esc(name)}グループを削除"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6m4-6v6M5 7l1 14h12l1-14M9 7V4h6v3"/></svg></button></div>`;}).join('')||'<p class="group-empty">グループはまだありません</p>';}
@@ -141,12 +144,12 @@
       return `<div class="trip-row ${selected?'current':''}"><button class="trip-row-select" type="button" data-trip="${esc(trip.id)}" aria-current="${selected?'true':'false'}"><span class="trip-row-mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 16.5 10.5 13 6 7.5a1 1 0 0 1 1.2-1.6l8 3.5 5-2a2 2 0 0 1 2.4 1.2 2 2 0 0 1-1.2 2.4L6 18l-3-.5Z"/></svg></span><span class="trip-row-copy"><b data-edit-trip="${esc(trip.id)}">${esc(destination)} <span class="trip-edit-hint">${english?'Edit':'編集'}</span></b><small>${esc(dates)} · ${trip.travelers||2}${english?' travelers':'人'} · ${trip.places.length} SPOT</small></span>${selected?'<span class="trip-current-tag">NOW</span>':''}</button>${visible.length>1?`<button class="trip-delete" type="button" data-delete-trip="${esc(trip.id)}" aria-label="${esc(destination)}を削除"><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6m4-6v6M5 7l1 14h12l1-14M9 7V4h6v3"/></svg></button>`:''}</div>`;
     }).join('')||`<p class="trip-list-empty">${english?'No trips saved yet. Add a destination to get started.':'登録した旅行はまだありません。行き先を登録してください。'}</p>`;
   }
-  function renderWishlist(){placeSwipe?.();if(!categoryFilters().includes(selectedCategory))selectedCategory='すべて';$('#filterToggle span').textContent=selectedCategory;const query=$('#searchPlaces').value.trim().toLowerCase();const items=state.places.filter(p=>(selectedCategory==='すべて'||p.category===selectedCategory)&&(!query||`${p.name} ${p.address} ${p.notes}`.toLowerCase().includes(query)));
+  function renderWishlist(){placeSwipe?.();if(!categoryFilters().includes(selectedCategory))selectedCategory='すべて';$('#filterToggle span').textContent=selectedCategory;const query=$('#searchPlaces').value.trim().toLowerCase();const items=state.places.filter(p=>(selectedCategory==='すべて'||(selectedCategory===FOOD_FILTER?isFood(p):p.category===selectedCategory))&&(!query||`${p.name} ${p.address} ${p.notes}`.toLowerCase().includes(query)));
     $('#placeCount').textContent=`${state.places.length} SPOT${state.places.length===1?'':'S'}`;
     const unplaced=state.places.filter(p=>p.start==null).length;
     $('#placementCta').hidden=unplaced===0;
     $('#placementCount').textContent=`${unplaced}件`;
-    $('#placeHeading').textContent='PLACES TO GO';
+    $('#placeHeading').textContent=selectedCategory===FOOD_FILTER?'FOOD WISHLIST':'PLACES TO GO';$('#foodFilterEmpty').hidden=selectedCategory!==FOOD_FILTER||items.length>0;
     $('#categoryChips').innerHTML=categoryFilters().map(name=>`<button class="chip ${selectedCategory===name?'active':''}" data-cat="${esc(name)}">${esc(name)}</button>`).join('');
     $('#placeGrid').innerHTML=items.map(p=>placeCard(p)).join('');
     $('#emptyWishlist').classList.toggle('visible',state.places.length===0);
@@ -154,15 +157,15 @@
   }
   function placeCard(p){const c=cat(p.category),remove='<span><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6m4-6v6M5 7l1 14h12l1-14M9 7V4h6v3"/></svg>削除</span>';return `<div class="place-row"><div class="place-swipe-background" aria-hidden="true">${remove}${remove}</div><article class="place-card" data-edit="${esc(p.id)}" style="--card-color:${c.color};--card-soft:${c.soft}"><div class="place-thumb">${p.photos?.[0]?`<img src="${esc(p.photos[0])}" alt="" draggable="false">`:`<svg viewBox="0 0 40 40"><path d="M6 25c4-8 8.7-12 14-12s10 4 14 12M8 30c3.6-4 7.6-6 12-6s8.4 2 12 6"/><circle cx="20" cy="8" r="2"/></svg>`}</div><div class="place-body"><div class="place-topline"><span class="category-tag"><i class="tag-dot"></i>${esc(p.category||'その他')}</span>${p.mustGo?'<span class="must-badge">絶対行きたい</span>':''}${p.booked?'<span class="reservation-badge booked">予約済み</span>':p.reservationRequired?'<span class="reservation-badge">要予約</span>':''}</div><h2 class="place-name">${esc(p.name)}</h2><p class="place-address">${esc(p.address||'住所未設定')}</p><div class="place-meta"><span>${icon('clock')}${p.duration||60}分</span>${p.start!=null?`<span>${esc(dayLabel(p.day))}</span>`:''}</div></div></article></div>`;}
   function dayLabel(day){if(!hasTripDates())return '日程未設定';return `${dateAt(day).getMonth()+1}/${dateAt(day).getDate()}`;}
-  function renderDays(){const count=dayCount();$('#autoArrange').disabled=!count;$('#dayClear').disabled=!count;if(!count){selectedDay=0;$('#dayTabs').innerHTML='';$('#dayContext').innerHTML=tripDatesButton();$('#selectedDateLabel').textContent='日程未設定';$('#placedCount').textContent='';return;}if(selectedDay>=count)selectedDay=count-1;$('#dayTabs').innerHTML=Array.from({length:count},(_,i)=>{const date=dateAt(i);return `<button class="day-tab ${i===selectedDay?'selected':''} ${state.places.some(p=>p.day===i&&p.start!=null)?'has-place':''}" data-day="${i}" role="tab" aria-selected="${i===selectedDay}"><span class="day-week">${i===0?'DAY 1':`DAY ${i+1}`}</span><b class="day-number">${date.getMonth()+1}/${date.getDate()}</b></button>`;}).join('');
+  function renderDays(){const count=dayCount();$('#autoArrange').disabled=!count;$('#dayClear').disabled=!count;if(!count){selectedDay=0;$('#dayTabs').innerHTML='';$('#dayContext').innerHTML=tripDatesButton();$('#selectedDateLabel').textContent='日程未設定';$('#placedCount').textContent='';renderDayMeals();return;}if(selectedDay>=count)selectedDay=count-1;$('#dayTabs').innerHTML=Array.from({length:count},(_,i)=>{const date=dateAt(i);return `<button class="day-tab ${i===selectedDay?'selected':''} ${state.places.some(p=>p.day===i&&p.start!=null)?'has-place':''}" data-day="${i}" role="tab" aria-selected="${i===selectedDay}"><span class="day-week">${i===0?'DAY 1':`DAY ${i+1}`}</span><b class="day-number">${date.getMonth()+1}/${date.getDate()}</b></button>`;}).join('');
     const stay=dateHotel(selectedDay);$('#dayContext').innerHTML=`<span class="hotel-symbol">${icon('bed')}</span><span>${stay?`宿泊：${esc(stay.name)}`:'宿泊先未設定 · '}</span><span>${fmtDate(dateAt(selectedDay),{month:'long',day:'numeric',weekday:'short'})}</span>`;
     $('#selectedDateLabel').textContent=fmtDate(dateAt(selectedDay),{month:'long',day:'numeric',weekday:'short'});
-    $('#placedCount').textContent=`${state.places.filter(p=>p.day===selectedDay&&p.start!=null).length}件 · タップで調整 / 長押しで移動`;
+    $('#placedCount').textContent=`${state.places.filter(p=>p.day===selectedDay&&p.start!=null).length}件 · タップで調整 / 長押しで移動`;renderDayMeals();
   }
   const START_MIN=6*60, END_MIN=23*60, PX_PER_HOUR=44, PX_PER_MIN=PX_PER_HOUR/60;
   function renderTimeline(){renderDays();const inner=$('#timelineInner');if(!hasTripDates()){selectedPieceId=null;inner.style.height='100%';inner.innerHTML=emptyTripMarkup();renderTimelineAdjuster();renderTray();return;}inner.innerHTML='';inner.style.height=`${(END_MIN-START_MIN)*PX_PER_MIN}px`;
     for(let t=START_MIN;t<=END_MIN;t+=60){const y=(t-START_MIN)*PX_PER_MIN;const line=document.createElement('div');line.className='timeline-hour-line';line.style.top=`${y}px`;inner.appendChild(line);if(t<END_MIN){const label=document.createElement('span');label.className='time-label';label.style.top=`${y}px`;label.textContent=`${String(Math.floor(t/60)).padStart(2,'0')}:00`;inner.appendChild(label);const half=document.createElement('div');half.className='timeline-half-line';half.style.top=`${y+PX_PER_HOUR/2}px`;inner.appendChild(half);}}
-    const stay=dateHotel(selectedDay);if(stay){const band=document.createElement('div');band.className='timeline-hotel-band';band.style.top=`${(7*60-START_MIN)*PX_PER_MIN}px`;band.style.height=`${55*PX_PER_MIN}px`;band.innerHTML=`<b>${esc(stay.name)}</b> <span>· 滞在中</span>`;inner.appendChild(band);}
+    // The stay duration is presented in the accommodation summary, not as a fabricated 7 AM time event.
     const dayPlaces=state.places.filter(p=>p.day===selectedDay&&p.start!=null).sort(sortPlaces);
     if(dayPlaces.length===0){const hint=document.createElement('div');hint.className='drop-zone-hint';hint.style.top=`${(9*60-START_MIN)*PX_PER_MIN}px`;hint.textContent='空いている時間にピースを置いてください';inner.appendChild(hint);}
     for(const p of dayPlaces){const c=cat(p.category);const el=document.createElement('article');el.className=`timeline-piece${p.id===selectedPieceId?' selected':''}`;el.dataset.pid=p.id;el.style.setProperty('--piece-color',c.color);el.style.background=c.soft;el.style.top=`${(p.start-START_MIN)*PX_PER_MIN}px`;el.style.height=`${Math.max(28,(p.duration||60)*PX_PER_MIN-3)}px`;el.innerHTML=`${p.photos?.[0]?`<img class="piece-photo" src="${esc(p.photos[0])}" alt="">`:`<span class="piece-photo" style="display:grid;place-items:center;color:${c.color};font-size:13px">${c.icon}</span>`}<span class="piece-info"><span class="piece-time">${fmtTime(p.start)} — ${fmtTime(p.start+(p.duration||60))}</span><span class="piece-title">${esc(p.name)}</span></span><span class="piece-duration">${p.duration||60}分</span>`;inner.appendChild(el);}
@@ -293,7 +296,7 @@
   function setVisualHeight(){window.TabiViewport?.refresh();}
   function updateConnectionStatus(){const status=$('#connectionStatus');if(status)status.hidden=navigator.onLine;}
 
-  function openPlace(idValue){const p=state.places.find(x=>x.id===idValue);editingPhotos=p?.photos?[...p.photos]:[];candidate=null;$('#candidateBox').hidden=true;$('#candidateBox').innerHTML='';const form=$('#placeForm');form.reset();form.elements.id.value=p?.id||'';form.elements.latitude.value=p?.latitude??'';form.elements.longitude.value=p?.longitude??'';form.elements.name.value=p?.name||'';renderCategoryField(p?.category||(groupNames().includes(selectedCategory)?selectedCategory:groupNames()[0])||UNGROUPED);form.elements.duration.value=String(p?.duration||60);form.elements.address.value=p?.address||'';form.elements.url.value=p?.url||'';form.elements.hours.value=p?.hours||'';form.elements.phone.value=p?.phone||'';form.elements.notes.value=p?.notes||'';$('#optionalDetails').open=!!(p&&(p.address||p.url||p.hours||p.phone||p.notes));form.elements.mustGo.checked=!!p?.mustGo;form.elements.reservationStatus.value=p?.booked?'booked':p?.reservationRequired?'required':'none';$('#sheetTitle').textContent=p?'場所を編集':'場所を追加';$('#sheetEyebrow').textContent=p?'EDIT PLACE':'NEW PLACE';$('#deletePlace').hidden=!p;renderPhotos();openModal($('#modalBackdrop'));}
+  function openPlace(idValue){const p=state.places.find(x=>x.id===idValue);editingPhotos=p?.photos?[...p.photos]:[];candidate=null;$('#candidateBox').hidden=true;$('#candidateBox').innerHTML='';const form=$('#placeForm');form.reset();form.elements.id.value=p?.id||'';form.elements.latitude.value=p?.latitude??'';form.elements.longitude.value=p?.longitude??'';form.elements.name.value=p?.name||'';renderCategoryField(p?.category||(selectedCategory===FOOD_FILTER?'グルメ':groupNames().includes(selectedCategory)?selectedCategory:groupNames()[0])||UNGROUPED);form.elements.duration.value=String(p?.duration||60);form.elements.address.value=p?.address||'';form.elements.url.value=p?.url||'';form.elements.hours.value=p?.hours||'';form.elements.phone.value=p?.phone||'';form.elements.notes.value=p?.notes||'';$('#optionalDetails').open=!!(p&&(p.address||p.url||p.hours||p.phone||p.notes));form.elements.mustGo.checked=!!p?.mustGo;form.elements.reservationStatus.value=p?.booked?'booked':p?.reservationRequired?'required':'none';$('#sheetTitle').textContent=p?'場所を編集':'場所を追加';$('#sheetEyebrow').textContent=p?'EDIT PLACE':'NEW PLACE';$('#deletePlace').hidden=!p;renderPhotos();openModal($('#modalBackdrop'));}
   function openModal(el){el.classList.add('open');el.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';setTimeout(()=>{if($('#rangeBackdrop.open'))return;const field=el.querySelector('input:not([type=hidden]):not([type=checkbox]),select,textarea');if(!matchMedia('(pointer: coarse)').matches)field?.focus({preventScroll:true});},260);}
   function closeModal(el){if(el.id==='settingsBackdrop')el.classList.remove('hotel-only','hotel-typing');const abandoned=el.id==='settingsBackdrop'&&creatingTrip;if(el.contains(document.activeElement))document.activeElement.blur();el.classList.remove('open');el.setAttribute('aria-hidden','true');if(!$('.modal-backdrop.open'))document.body.style.overflow='';if(abandoned)discardTripDraft();}
   function initFields(){renderCategoryField(groupNames()[0]||UNGROUPED);const dur=$('#duration');dur.innerHTML=Array.from({length:32},(_,i)=>15*(i+1)).map(m=>`<option value="${m}">${m>=60?`${Math.floor(m/60)}時間${m%60?`${m%60}分`:''}`:`${m}分`}</option>`).join('');}
