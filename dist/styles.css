@@ -1103,3 +1103,27 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
 .itinerary-meals button:focus-visible{outline:2px solid #7896aa;outline-offset:2px}
 .itinerary-meals button b{color:#2f6689;margin-right:2px}
 @media(prefers-color-scheme:dark){.itinerary-meals button{background:#222f3c;color:#d8e2e8}}
+
+/* v87 — identical priority/booking tiles and linked food puzzle UI */
+#modalBackdrop .lower-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;gap:9px}
+#modalBackdrop .lower-fields .entry-option-card{display:flex;flex-direction:column;justify-content:space-between;min-width:0;min-height:91px;height:91px;box-sizing:border-box;margin:0;padding:11px 12px;gap:9px;border:2px solid #173b61!important;border-radius:13px;background:#fffefa;color:#173b61;box-shadow:none}
+#modalBackdrop .lower-fields .entry-option-title{display:block;margin:0;color:#173b61;font-size:13px;font-weight:650;line-height:1.3}
+#modalBackdrop .lower-fields .entry-option-bottom{display:flex;align-items:center;justify-content:space-between;gap:7px;min-height:33px;width:100%;min-width:0}
+#modalBackdrop .lower-fields .priority-toggle .entry-option-bottom small{display:block;min-width:0;margin:0;color:#718090;font-size:10px;white-space:nowrap}
+#modalBackdrop .lower-fields .priority-toggle input:focus-visible+.toggle-ui{outline:2px solid #173b61;outline-offset:3px}
+#modalBackdrop .lower-fields .priority-toggle input:checked+.toggle-ui{background:#173b61}
+#modalBackdrop .lower-fields .reservation-status-field .entry-option-bottom select{width:100%;min-width:0;height:33px;min-height:33px;max-height:33px;padding:0 25px 0 9px;border:1px solid #c4d2df;border-radius:8px;background:#f6f9fb;color:#173b61;font:600 13px/1.2 'Caveat','Yomogi',sans-serif}
+#modalBackdrop .food-meal-field{grid-column:1/-1;min-width:0}
+#modalBackdrop .food-meal-field[hidden]{display:none!important}
+#modalBackdrop .food-meal-field select{min-width:0;border:1.5px solid #173b61}
+#modalBackdrop .food-meal-field small{font-size:10px;line-height:1.5;color:#6d8192;font-weight:400}
+.meal-type-badge{font-size:9px;color:#a16b42;background:#f7eadc;border-radius:8px;padding:2px 5px;white-space:nowrap}
+.meal-editor-guidance{margin:0 0 12px;font-size:11px;line-height:1.6;color:#637587}
+.meal-editor-scheduled{display:flex;align-items:center;gap:7px;background:#eaf3f7;border-color:#b7d1df;flex-wrap:wrap}
+.meal-editor-planned{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;color:#173b61}
+.meal-editor-planned b{font-size:12px}.meal-editor-planned span{font-size:12px;line-height:1.45;overflow-wrap:anywhere}
+.meal-editor-scheduled .meal-jump{background:#173b61;border:1px solid #173b61;border-radius:9px;color:#fff;padding:7px 10px;font-size:11px;min-height:35px;flex:none}
+.day-meal-pill.is-planned,.itinerary-meals button.is-planned{background:#e3f0f7;color:#173b61;border-color:#a9c9dc}
+.itinerary-meals button.is-planned b{color:#173b61}
+@media(max-width:355px){#modalBackdrop .lower-fields{grid-template-columns:1fr}#modalBackdrop .lower-fields .entry-option-card{height:76px;min-height:76px}}
+@media(prefers-color-scheme:dark){#modalBackdrop .lower-fields .entry-option-card{background:#1f2b3c;color:#deebf8}#modalBackdrop .lower-fields .entry-option-title{color:#deebf8}#modalBackdrop .lower-fields .reservation-status-field .entry-option-bottom select{background:#182536;color:#deebf8}#modalBackdrop .food-meal-field small,.meal-editor-guidance{color:#bfd0dc}.meal-editor-scheduled{background:#273f50;color:#e2f1ff}.meal-editor-planned{color:#e2f1ff}}
