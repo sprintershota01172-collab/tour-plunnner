@@ -279,7 +279,20 @@
     state.destination=f.destination.value.trim();state.travelers=travelers;state.startDate=start;state.endDate=end;state.datesConfigured=hasDates;
     state.places=state.places.map(p=>p.day==null?p:hasDates?{...p,day:Math.min(Math.max(0,p.day-delta),Math.max(0,dayCount()-1))}:{...p,day:null,start:null});
     state.hotels=hotelDraft.map(h=>({id:h.id||id(),name:h.name.trim(),start:h.start,end:h.end})).filter(h=>h.name||h.start||h.end);
-    selectedDay=Math.max(0,Math.min(selectedDay,dayCount()-1));persist();renderAll();return true;
+    selectedDay=Math.max(0,Math.min(selectedDay,dayCount()-1));
+    // Remove a newly-created duplicate immediately, not only on the next reload.
+    const updatedTrips=trips.map(t=>t.id===state.id?state:t);
+    const cleaned=cleanRedundantTrips(updatedTrips,state.id);
+    if(cleaned.length<updatedTrips.length){
+      const wasRemoved=!cleaned.some(t=>t.id===state.id);
+      trips=cleaned;
+      if(wasRemoved){
+        state=cleaned.find(t=>t.destination.trim().toLocaleLowerCase()===f.destination.value.trim().toLocaleLowerCase()&&t.startDate===start&&t.endDate===end)||cleaned[0];
+        activeTripId=state.id;selectedDay=0;
+        showToast('同じ旅行が登録済みのため、既存の旅を開きました');
+      }
+    }
+    persist();renderAll();return true;
   }
 
   function startDrag(e,element){
@@ -457,8 +470,16 @@
       $('#searchPlaces').value='';pageIndex=0;pages.style.transform='translate3d(0,0,0)';$$('.nav-item').forEach((button,i)=>button.classList.toggle('active',i===0));persist(false);renderAll();closeModal($('#partnerBackdrop'));closeModal($('#settingsBackdrop'));notifications?.restore();showToast('共有の旅行に参加しました');
     }catch(error){partnerError(error);}finally{partnerBusy=false;renderPartner();}
   }
+  function clearInviteSecrets(){
+    $('#partnerJoinPassword').value='';$('#partnerInvitePassword').value='';
+    protectedInvite={roomId:'',password:'',url:'',pending:false};
+    clearTimeout(inviteDebounce);++inviteGeneration;
+  }
   function returnToHome(){
-    $$('.modal-backdrop.open').forEach(closeModal);$('#sharePanel').classList.remove('open');navigate(0);syncPageAccess();$('.wishlist-page').scrollTop=0;
+    clearInviteSecrets();
+    $('.modal-backdrop.open').forEach(closeModal);
+    $('#sharePanel').classList.remove('open');navigate(0);syncPageAccess();
+    $('.wishlist-page').scrollTop=0;
   }
   async function sendPartnerLink(){
     if(!state.collaboration||partnerBusy)return;
@@ -478,7 +499,7 @@
     try{$('#partnerSenderName').value=localStorage.getItem('tabi-invite-sender')||'';}catch{}
     $('#partnerInvitePassword').addEventListener('input',prepareInviteUrl);
     $('#partnerSenderName').addEventListener('input',()=>{try{localStorage.setItem('tabi-invite-sender',$('#partnerSenderName').value.trim());}catch{}renderInviteMessage();});
-    $('#partnerShortcut').onclick=openPartner;$('#closePartner').onclick=()=>{pendingInvite=null;$('#partnerJoinPassword').value='';$('#partnerInvitePassword').value='';protectedInvite={roomId:'',password:'',url:'',pending:false};clearTimeout(inviteDebounce);++inviteGeneration;closeModal($('#partnerBackdrop'));};
+    $('#partnerShortcut').onclick=openPartner;$('#closePartner').onclick=()=>{pendingInvite=null;clearInviteSecrets();closeModal($('#partnerBackdrop'));};
     $('#partnerBackdrop').addEventListener('click',e=>{if(e.target===$('#partnerBackdrop')){$('#closePartner').click();}});
     $('#partnerInviteForm').onsubmit=e=>{e.preventDefault();let invite;try{invite=sharedApi.parseInvite(new URL($('#partnerInviteInput').value.trim()).hash);}catch{}if(!invite){showToast('正しい招待リンクを貼り付けてください');return;}pendingInvite=invite;renderPartner();if(invite.locked)$('#partnerJoinPassword').focus({preventScroll:true});else joinPartnerRoom();};
     $('#partnerSend').onclick=sendPartnerLink;$('#partnerCreate').onclick=createPartnerRoom;$('#partnerJoin').onclick=joinPartnerRoom;$('#partnerCopy').onclick=copyPartnerLink;
