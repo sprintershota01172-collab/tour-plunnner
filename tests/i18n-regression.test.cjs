@@ -6,7 +6,7 @@ const {runInNewContext}=require('node:vm');
 function mount(){
  const node={nodeValue:'行き先未設定',parentElement:{tagName:'SPAN',closest:()=>false}};
  const storage=new Map();
- const document={body:{},documentElement:{lang:'ja'},title:'',
+ const document={body:{},documentElement:{lang:'ja',dataset:{}},title:'',
    createTreeWalker(){let visited=false;return {currentNode:null,nextNode(){if(visited)return false;visited=true;this.currentNode=node;return true;}}},
    querySelector(){return null;},querySelectorAll(){return [];}};
  const window={dispatchEvent(){}};
@@ -34,3 +34,5 @@ test('static text can change language repeatedly',()=>{
  window.TabiLocale.setLanguage('en');
  assert.equal(node.nodeValue,'Destination not set');
 });
+
+test('four font styles are selectable',()=>{const {window}=mount();window.TabiLocale.setFont('serif');assert.equal(window.TabiLocale.getFont(),'serif');window.TabiLocale.setFont('round');assert.equal(window.TabiLocale.getFont(),'round');});
