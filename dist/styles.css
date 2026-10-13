@@ -868,3 +868,23 @@ body>.share-panel [data-share="partner"]{background:#315f59;color:#fff;font-weig
 .partner-message-preview{font-family:'Caveat','Yomogi',cursive!important;font-size:16px;line-height:1.55;padding:12px 17px!important;color:#173b61;background:#f6f2e9;border:1px solid #dcd6cb;border-top:0}
 .partner-actions #partnerSend{background:#173b61!important;color:#fff;border:2px solid #173b61}
 @media(max-width:380px){.invite-card-copy{top:30%}.invite-card-copy strong{font-size:19px}}
+
+/* Personal language and brand settings (per-device, never synchronized). */
+.brand-preferences{border:1px solid #d9e2e9;border-radius:16px;padding:14px;margin:0 0 18px;background:rgba(236,243,247,.42)}
+.brand-pref-heading{font:600 13px/1.2 "Caveat","Yomogi",cursive;letter-spacing:.11em;color:#173b61;margin:0 0 10px}
+.brand-pref-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-width:0}
+.brand-pref-grid .field,.brand-image-control{min-width:0}
+.brand-pref-grid input,.brand-pref-grid select{width:100%;min-height:44px;font-size:16px}
+.brand-image-control{margin:12px 0 6px}
+.brand-image-control input{padding:9px!important;min-height:44px;font-size:13px!important;max-width:100%}
+.brand-image-control small,.brand-pref-help{color:#6d7882;font-size:11px;line-height:1.6;font-weight:400}
+.brand-preview-row{display:flex;align-items:center;gap:12px;margin-top:10px}
+.brand-preview-row img{width:44px;height:44px;object-fit:cover;border-radius:12px;background:#183653}
+.brand-preview-row .secondary-button{font-size:12px;min-height:40px}
+.brand-pref-help{margin:12px 0 0}
+.invite-password-field{margin-top:10px}
+.invite-password-field small{line-height:1.6;color:#6f7d8c;font-size:11px}
+#partnerJoinPasswordWrap[hidden]{display:none!important}
+#partnerJoinPasswordWrap{margin:6px 0}
+@media(max-width:370px){.brand-pref-grid{grid-template-columns:1fr}}
+@media(prefers-color-scheme:dark){.brand-preferences{background:#202a34;border-color:#435566}.brand-pref-heading{color:#b6d5eb}.brand-image-control small,.brand-pref-help{color:#aebdc9}}
