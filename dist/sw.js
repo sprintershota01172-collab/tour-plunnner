@@ -1,5 +1,5 @@
-const CACHE='tabi-planner-v72';
-const SHELL=['./mobile-input.js?v=20261013-60','./line-share.html','./line-share.js?v=20261013-60','./line-invite.js?v=20261013-60','./index.html','./styles.css?v=20261013-60','./app.js?v=20261013-60','./notifications.js?v=20261013-60','./date-range.js?v=20261012-45','./sync.js?v=20261013-60','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
+const CACHE='tabi-planner-v73';
+const SHELL=['./mobile-input.js?v=20261013-61','./line-share.html','./line-share.js?v=20261013-61','./line-invite.js?v=20261013-61','./index.html','./styles.css?v=20261013-61','./app.js?v=20261013-61','./notifications.js?v=20261013-61','./date-range.js?v=20261013-61','./sync.js?v=20261013-61','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('tabi-planner-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{

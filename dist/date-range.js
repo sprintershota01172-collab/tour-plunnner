@@ -4,7 +4,7 @@
   function parse(value){if(!/^\d{4}-\d{2}-\d{2}$/.test(value||''))return null;const [y,m,d]=value.split('-').map(Number),date=new Date(y,m-1,d,12);return date.getFullYear()===y&&date.getMonth()===m-1&&date.getDate()===d?date:null;}
   function iso(date){return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;}
   function daysBetween(start,end){const a=parse(start),b=parse(end);return a&&b?Math.round((Date.UTC(b.getFullYear(),b.getMonth(),b.getDate())-Date.UTC(a.getFullYear(),a.getMonth(),a.getDate()))/86400000):NaN;}
-  function calendarDays(year,month){const first=new Date(year,month,1,12),last=new Date(year,month+1,0,12),days=Array(first.getDay()).fill(null);for(let d=1;d<=last.getDate();d++)days.push(iso(new Date(year,month,d,12)));while(days.length%7)days.push(null);return days;}
+  function calendarDays(year,month){const first=new Date(year,month,1,12),last=new Date(year,month+1,0,12),days=Array(first.getDay()).fill(null);for(let d=1;d<=last.getDate();d++)days.push(iso(new Date(year,month,d,12)));while(days.length<42)days.push(null);return days;}
   function selectRange(current,value,options={}){
     if(!parse(value))return current;
     if(current.phase!=='end'||!parse(current.start))return{start:value,end:'',phase:'end',error:''};
