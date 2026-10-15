@@ -430,7 +430,7 @@
     creatingTrip=false;draftPreviousTripId=null;
     if(previous){state=previous;activeTripId=previous.id;selectedDay=0;selectedCategory='すべて';renderAll();}
   }
-  function deleteTrip(tripId){if(trips.length<2)return;const trip=trips.find(t=>t.id===tripId);if(!trip)return;const title=trip.destination||'行き先未設定';if(!confirm(`「${title}」と登録したスポット・旅程を削除しますか？`))return;const wasActive=state.id===tripId;trips=trips.filter(t=>t.id!==tripId);if(wasActive){state=trips[0];activeTripId=state.id;selectedDay=0;selectedCategory='すべて';$('#searchPlaces').value='';undoSnapshot=null;completionShown=false;}persist();renderAll();showToast('旅行を削除しました');}
+  function deleteTrip(tripId){if(trips.length<2)return;const trip=trips.find(t=>t.id===tripId);if(!trip)return;const title=trip.destination||'行き先未設定';if(!confirm(`「${title}」と登録したスポット・旅程を削除しますか？`))return;const wasActive=state.id===tripId;if(trip.collaboration)window.TabiAccountUI?.notifyTripDeleted?.(trip.collaboration.roomId);trips=trips.filter(t=>t.id!==tripId);if(wasActive){state=trips[0];activeTripId=state.id;selectedDay=0;selectedCategory='すべて';$('#searchPlaces').value='';undoSnapshot=null;completionShown=false;}persist();renderAll();showToast('旅行を削除しました');}
 
   function syncPageAccess(){$('#quickAdd').hidden=pageIndex!==0;$$('.page',pages).forEach((page,i)=>{page.inert=i!==pageIndex;page.setAttribute('aria-hidden',i===pageIndex?'false':'true');});if(viewport.scrollLeft)viewport.scrollLeft=0;}
   function navigate(index){index=Math.max(0,Math.min(2,index));if(index===pageIndex)return;pageIndex=index;pages.style.transform=`translate3d(-${index*33.333333}%,0,0)`;$$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===index));syncPageAccess();}
@@ -880,6 +880,19 @@
       if(first&&isEmptyTrip(state)){state=first;activeTripId=first.id;selectedDay=0;selectedCategory='すべて';}
       if(count){persist(false);renderAll();notifications?.restore();}
       return {count,failed};
+    },
+    dropRooms(roomIds){
+      const removed=new Set(roomIds);
+      if(!removed.size)return;
+      const current=trips.length;
+      trips=trips.filter(t=>!t.collaboration||!removed.has(t.collaboration.roomId));
+      if(current===trips.length)return;
+      if(!trips.length)trips=[normalizeState(DEFAULTS)];
+      if(!trips.some(t=>t.id===state.id)){
+        state=trips[0];activeTripId=state.id;selectedDay=0;selectedCategory='すべて';
+        undoSnapshot=null;$('#searchPlaces').value='';
+      }
+      persist(false);renderAll();
     }
   };
 
