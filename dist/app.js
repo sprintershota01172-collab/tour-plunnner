@@ -692,7 +692,7 @@
     status.dataset.status=sharing?.getStatus()||'local';
     const shortcut=$('#partnerShortcutStatus');if(shortcut)shortcut.textContent=state.collaboration?'共有中':'未共有';
   }
-  function partnerInviteMessage(){return window.TabiLineInvite.message($('#partnerSenderName').value,state.destination);}
+  function partnerInviteMessage(){const sender=$('#partnerSenderName').value.trim();return sender?window.TabiLineInvite.message(sender,state.destination):'tabiで旅行の予定を一緒に編集しましょう。';}
   function renderInviteMessage(){
     $('#partnerMessagePreview').textContent=partnerInviteMessage();$('#partnerInviteTitle').textContent=state.destination?`${state.destination}へ、一緒に。`:'一緒に旅しよう';$('#partnerInviteDestination').textContent=state.destination||'TRAVEL TOGETHER';
   }
@@ -720,7 +720,7 @@
   }
   function renderPartner(){
     const joined=!!state.collaboration&&!pendingInvite;
-    $('#partnerInviteIdentity').hidden=!!pendingInvite;$('#partnerJoinPasswordWrap').hidden=!pendingInvite?.locked;renderInviteMessage();
+    $('#partnerInviteIdentity').hidden=!!pendingInvite;$('#partnerInvitePreview').hidden=!!pendingInvite;$('#partnerJoinPasswordWrap').hidden=!pendingInvite?.locked;renderInviteMessage();
     $('#partnerTitle').textContent=pendingInvite?'旅行に参加':'パートナーを招待';
     $('#partnerDescription').textContent=pendingInvite?'参加すると、相手と同じ旅行を編集できます。':joined?'場所・旅程・宿泊先・持ち物は自動で共有されます。':'招待URLを作成して、パートナーに送ってください。';
     $('#partnerMore').hidden=!joined;$('#partnerJoinDetails').hidden=!!pendingInvite;
@@ -768,20 +768,36 @@
     $('#sharePanel').classList.remove('open');navigate(0);syncPageAccess();
     $('.wishlist-page').scrollTop=0;
   }
+  // Call navigator.share before any await so iOS retains the user's tap gesture.
   async function sendPartnerLink(){
     if(!state.collaboration||partnerBusy)return;
-    if(!$('#partnerSenderName').value.trim()){$('#partnerSenderName').focus({preventScroll:true});showToast('招待するあなたの名前を入力してください');return;}
-    const url=readyInviteUrl();if(!url){showToast('パスワードの長さとリンクの準備状況を確認してください');return;}
+    const url=readyInviteUrl();
+    if(!url){showToast(protectedInvite.pending?'招待リンクを準備しています。少ししてから押してください':'招待パスワードを確認してください');return;}
     if(!navigator.share){await copyPartnerLink();return;}
     const button=$('#partnerSend');button.disabled=true;
     try{
       await navigator.share({title:'tabi 旅行への招待',text:partnerInviteMessage(),url});
       returnToHome();
     }catch(error){
-      if(error.name!=='AbortError')showToast('共有を開けませんでした。「招待URLをコピー」をお使いください');
+      // Cancelling is intentional; other share failures fall back to copying.
+      if(error?.name!=='AbortError')await copyPartnerLink();
     }finally{button.disabled=partnerBusy;}
   }
-  async function copyPartnerLink(){const url=readyInviteUrl();if(!url){showToast('パスワードが12文字以上か確認してください');return;}try{await navigator.clipboard.writeText(url);returnToHome();showToast('招待リンクをコピーしました。送りたい相手に貼り付けてください');}catch{$('#partnerMore').open=true;$('#partnerLink').focus({preventScroll:true});$('#partnerLink').select();showToast('リンクを長押ししてコピーしてください');}}
+  function selectPartnerLink(url){
+    const details=$('#partnerMore'),field=$('#partnerLink');
+    details.hidden=false;details.open=true;field.value=url;
+    field.focus({preventScroll:true});field.select();
+    try{return !!document.execCommand?.('copy');}catch{return false;}
+  }
+  async function copyPartnerLink(){
+    const url=readyInviteUrl();
+    if(!url){showToast(protectedInvite.pending?'招待リンクを準備中です':'招待パスワードを確認してください');return;}
+    let copied=false;
+    try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(url);copied=true;}}catch{}
+    if(!copied)copied=selectPartnerLink(url);
+    if(copied){returnToHome();showToast('招待URLをコピーしました。LINEなどに貼り付けてください');}
+    else showToast('招待URLを選択しました。長押しでコピーしてください');
+  }
   function bindPartner(){
     try{$('#partnerSenderName').value=localStorage.getItem('tabi-invite-sender')||'';}catch{}
     $('#partnerInvitePassword').addEventListener('input',prepareInviteUrl);
