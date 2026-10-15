@@ -68,9 +68,9 @@
       openPartner();
       if(pendingInvite&&!pendingInvite.locked&&isHomeApp())joinPartnerRoom();
     }else if(!value&&isHomeApp()){
-      openPartner();
-      $('#partnerJoinDetails').open=true;
-      $('#partnerDescription').textContent='Safariとホーム画面アプリは別々に保存されます。招待された旅行を表示するには、受け取った招待リンクを貼り付けて参加してください。';
+      // On a new installed device, offer account login before asking for invites.
+      openAppSettings();
+      $('#accountMessage').textContent='別端末に保存した旅行がある場合は、同じIDとパスワードでログインしてください。招待URLで参加することもできます。';
     }
     appLoaded=true;window.dispatchEvent(new Event('tabi-account-ready'));
   }
