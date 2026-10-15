@@ -31,10 +31,11 @@ test('foreground poll checks every 2 seconds and local edits are sent promptly',
 });
 test('an update during a running request causes an immediate follow-up sync',async()=>{
   const h=harness(),data=trip(),metadata={roomId:'room-1',key:'secret',revision:1,baseline:data};
-  let firstResponse,requests=0;
+  let firstResponse,requests=0;const statuses=[];
   const response=()=>({status:304,headers:{get:()=> '1'}});
   const sharing=h.window.TabiSharing.create({
     getContext:()=>({id:'trip-1',metadata,trip:data}),
+    onStatus:status=>statuses.push(status),
     setMetadata(next){metadata=next;},
     fetch:async()=>{requests++;if(requests===1)return new Promise(resolve=>{firstResponse=resolve;});return response();}
   });
@@ -46,7 +47,7 @@ test('an update during a running request causes an immediate follow-up sync',asy
   firstResponse(response());
   await first;
   const followup=[...h.timers.values()].find(v=>v.delay===0);
-  assert.ok(followup,'a queued sync should run without the periodic poll delay');
+  assert.ok(followup,'queued sync missing; timers='+[...h.timers.values()].map(v=>v.delay).join(',')+'; statuses='+statuses.join(','));
   followup.cb();
   await new Promise(resolve=>setImmediate(resolve));
   assert.equal(requests,2);
