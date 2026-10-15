@@ -116,6 +116,13 @@
     }catch(error){status(errorMessage(error),true);}
     finally{busy=false;render();}
   }
+  function addInvitedRoom(roomId){
+    if(!session||!roomId)return;
+    for(const trip of bridge.trips()){
+      if(trip.collaboration?.roomId===roomId)skipIds.delete(trip.id);
+    }
+    notifyTripChange();
+  }
   async function authenticate(register){
     if(busy)return;
     const name=$('#accountId').value.trim(),password=$('#accountPassword').value;
@@ -143,7 +150,12 @@
         status('ログインしました。'+imported.count+'件の旅行を復元しました。元からこの端末にある別の旅行は「この端末の旅行を同期」で追加できます。');
       }
     }catch(error){status(errorMessage(error),true);}
-    finally{busy=false;render();}
+    finally{
+      busy=false;render();
+      if(session&&bridge.hasPendingInvite?.()){
+        try{await bridge.resumePendingInvite();}catch(error){status(errorMessage(error),true);}
+      }
+    }
   }
   function logout(){
     if(busy)return;
@@ -175,6 +187,6 @@
     window.addEventListener('focus',()=>{if(ready&&session&&!busy)pull(true);});
     setInterval(()=>{if(ready&&session&&!busy&&!document.hidden)pull(true);},45000);
   }
-  window.TabiAccountUI={notifyTripChange,notifyTripDeleted,render};
+  window.TabiAccountUI={notifyTripChange,notifyTripDeleted,addInvitedRoom,render};
   init();
 })();
