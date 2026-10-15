@@ -35,5 +35,5 @@ test('opening an invite no longer removes its fragment before installation',()=>
   const source=readFileSync('app.js','utf8');
   assert.match(source,/pendingInvite=sharedApi\.parseInvite\(location\.hash\)/);
   assert.doesNotMatch(source,/pendingInvite=sharedApi\.parseInvite\(location\.hash\);if\(pendingInvite\)history\.replaceState/);
-  assert.match(source,/if\(pendingInvite&&!pendingInvite\.locked&&isHomeApp\(\)\)joinPartnerRoom\(\)/);
+  assert.match(source,/if\(pendingInvite&&!pendingInvite\.locked&&isHomeApp\(\)&&accountSession\)joinPartnerRoom\(\)/);
 });
