@@ -81,6 +81,14 @@
     match=h.match(new RegExp('^#joinp=('+UUID+')\\.([A-Za-z0-9_-]{22})\\.([A-Za-z0-9_-]{16})\\.([A-Za-z0-9_-]{64})$'));
     return match?{roomId:match[1],locked:true,salt:match[2],nonce:match[3],wrapped:match[4]}:null;
   }
+  function parseInviteUrl(input){
+    try{
+      const url=new URL(String(input||'').trim());
+      const normalizedPath=pathname=>pathname.endsWith('/index.html')?pathname.slice(0,-'index.html'.length):pathname;
+      if(url.origin!==location.origin||normalizedPath(url.pathname)!==normalizedPath(location.pathname)||url.search)return null;
+      return parseInvite(url.hash);
+    }catch{return null;}
+  }
   function link(metadata){const u=new URL(location.origin+location.pathname);u.hash='join='+metadata.roomId+'.'+metadata.key;return u.href;}
   async function inviteKey(password,salt){
     const source=await crypto.subtle.importKey('raw',encoder.encode(password.normalize('NFKC')),'PBKDF2',false,['deriveKey']);
@@ -184,5 +192,5 @@
     if(options.auto!==false){window.addEventListener('online',wake);window.addEventListener('offline',()=>emit(context()?.metadata?'offline':'local'));window.addEventListener('focus',wake);document.addEventListener('visibilitychange',()=>{if(!document.hidden)wake();});}
     return {attach,changed,sync,createRoom,join,getStatus:()=>status,dispose(){disposed=true;clearTimeout(timer);clearInterval(poll);}};
   }
-  window.TabiSharing={create,wire,merge,settleSchedule,parseInvite,link,protectInvite,unlockInvite,encrypt,decrypt,auth};
+  window.TabiSharing={create,wire,merge,settleSchedule,parseInvite,parseInviteUrl,link,protectInvite,unlockInvite,encrypt,decrypt,auth};
 })();
