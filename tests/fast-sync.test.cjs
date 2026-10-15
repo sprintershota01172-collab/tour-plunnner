@@ -30,7 +30,7 @@ test('foreground poll checks every 2 seconds and local edits are sent promptly',
   sharing.dispose();
 });
 test('an update during a running request causes an immediate follow-up sync',async()=>{
-  const h=harness(),data=trip(),metadata={roomId:'room-1',key:'secret',revision:1,baseline:data};
+  const h=harness(),data=trip();let metadata={roomId:'room-1',key:'secret',revision:1,baseline:data};
   let firstResponse,requests=0;const statuses=[];const errors=[];
   const response=()=>({status:304,headers:{get:()=> '1'}});
   const sharing=h.window.TabiSharing.create({
