@@ -170,6 +170,7 @@
         }
         emit('waiting');schedule(1500);
        }catch(error){
+        options.onError?.(error);
         failed=true;
         if(valid(initial)){
           emit(!online()?'offline':error.message==='photos_too_large'?'too-large':error.message==='invalid_invite'?'invalid':'retry');
