@@ -36,6 +36,7 @@
   const sharedApi=window.TabiSharing;
   let protectedInvite={roomId:'',password:'',url:'',pending:false},inviteGeneration=0,inviteDebounce=0;
   let creatingTrip=false,draftPreviousTripId=null;
+  let accountSession=null,appLoaded=false;
   const sharing=sharedApi?sharedApi.create({
     getContext:()=>({id:state.id,trip:state,metadata:state.collaboration}),
     isBusy:()=>!!(drag||resizeSession||placeSwipe||$('#modalBackdrop.open')||$('#settingsBackdrop.open')||$('#appSettingsBackdrop.open')||$('#packingBackdrop.open')||$('#groupsBackdrop.open')||$('#tripsBackdrop.open')),
@@ -53,6 +54,7 @@
 
   function openDB(){return new Promise((resolve)=>{if(!('indexedDB' in window)){resolve(null);return;}const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains(DB_STORE))req.result.createObjectStore(DB_STORE);};req.onsuccess=()=>resolve(req.result);req.onerror=()=>resolve(null);});}
   async function loadState(){db=await openDB();let value=null,needsMigration=false;if(db){try{value=await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readonly');const req=tx.objectStore(DB_STORE).get('state');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}catch(e){console.warn('Local data could not be read',e);}}else{try{const raw=localStorage.getItem(DB_NAME);if(raw)value=JSON.parse(raw);}catch{}}
+    accountSession=window.TabiAccounts?.validSession(value?.accountSession)?value.accountSession:null;
     if(value?.trips?.length){const loaded=value.trips.map(normalizeState);trips=cleanRedundantTrips(loaded,value.activeTripId);needsMigration=trips.length!==loaded.length;activeTripId=value.activeTripId||trips[0].id;state=trips.find(t=>t.id===activeTripId)||trips[0];activeTripId=state.id;}
     else if(value){state=normalizeState(value);trips=[state];activeTripId=state.id;needsMigration=true;}
     else{state=normalizeState(DEFAULTS);trips=[state];activeTripId=state.id;}
@@ -70,6 +72,7 @@
       $('#partnerJoinDetails').open=true;
       $('#partnerDescription').textContent='Safariとホーム画面アプリは別々に保存されます。招待された旅行を表示するには、受け取った招待リンクを貼り付けて参加してください。';
     }
+    appLoaded=true;window.dispatchEvent(new Event('tabi-account-ready'));
   }
   function isEmptyTrip(t){
     return !t?.collaboration&&!String(t?.destination||'').trim()&&!t?.startDate&&!t?.endDate&&!t?.datesConfigured
@@ -109,8 +112,8 @@
     return unique;
   }
   function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.meals=normalizeMeals(data.meals);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,listType:isFood(p)?'food':'place',mealType:validMealType(p.mealType),reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
-  function storagePayload(){trips=trips.map(t=>t.id===state.id?state:t);activeTripId=state.id;return {version:2,activeTripId,trips};}
-  function persist(sync=true){if(sync&&sharedApi){if(undoSnapshot&&undoCheckpoint?.before!==undoSnapshot)undoCheckpoint={before:undoSnapshot,after:sharedApi.wire(state)};sharing.changed();}storagePayload();clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{const payload=storagePayload();if(db){try{await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(payload,'state');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}catch{showToast('保存できませんでした。端末の空き容量をご確認ください');}}else{try{localStorage.setItem(DB_NAME,JSON.stringify(payload));}catch{showToast('保存容量が不足しています');}}},100);}
+  function storagePayload(){trips=trips.map(t=>t.id===state.id?state:t);activeTripId=state.id;return {version:3,activeTripId,trips,accountSession};}
+  function persist(sync=true){if(sync&&sharedApi){if(undoSnapshot&&undoCheckpoint?.before!==undoSnapshot)undoCheckpoint={before:undoSnapshot,after:sharedApi.wire(state)};sharing.changed();}storagePayload();window.TabiAccountUI?.notifyTripChange?.();clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{const payload=storagePayload();if(db){try{await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(payload,'state');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}catch{showToast('保存できませんでした。端末の空き容量をご確認ください');}}else{try{localStorage.setItem(DB_NAME,JSON.stringify(payload));}catch{showToast('保存容量が不足しています');}}},100);}
   function id(){return crypto.randomUUID?crypto.randomUUID():`p-${Date.now()}-${Math.random().toString(36).slice(2,9)}`;}
   function dateAt(index){const date=parseDate(state.startDate);date.setDate(date.getDate()+index);return date;}
   function parseDate(value){if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return new Date(NaN);const [y,m,d]=value.split('-').map(Number),date=new Date(y,m-1,d,12);return date.getFullYear()===y&&date.getMonth()===m-1&&date.getDate()===d?date:new Date(NaN);}
@@ -842,6 +845,44 @@
     $('#trayPieces').addEventListener('click',e=>{const button=e.target.closest('[data-place-now]');if(button){e.preventDefault();placeAtNextSlot(button.dataset.placeNow);return;}if(e.target.closest('[data-back-to-spots]'))navigate(0);});
     $('#trayPieces').addEventListener('pointerdown',e=>{if(e.target.closest('button'))e.stopImmediatePropagation();},true);
   }
+
+  // Only a narrow bridge to app state: account secrets never enter trip exports.
+  window.TabiAccountBridge={
+    isReady:()=>appLoaded,
+    session:()=>accountSession,
+    saveSession:session=>{accountSession=session;persist(false);},
+    trips:()=>{storagePayload();return trips.map(t=>({id:t.id,destination:t.destination,collaboration:t.collaboration,empty:isEmptyTrip(t)}));},
+    async ensureRoom(tripId){
+      const trip=trips.find(t=>t.id===tripId);
+      if(!trip||isEmptyTrip(trip))return null;
+      if(trip.collaboration)return {roomId:trip.collaboration.roomId,key:trip.collaboration.key};
+      const metadata=await sharing.createRoom(trip);
+      const latest=trips.find(t=>t.id===tripId);
+      if(!latest)throw new Error('room_missing');
+      if(!latest.collaboration){
+        latest.collaboration=metadata;
+        if(state.id===tripId){state.collaboration=metadata;sharing.attach();}
+        persist(false);
+      }
+      return {roomId:latest.collaboration.roomId,key:latest.collaboration.key};
+    },
+    async importRooms(entries){
+      let count=0,failed=0,first=null;
+      for(const entry of entries){
+        const existing=trips.find(t=>t.collaboration?.roomId===entry.roomId);
+        if(existing){if(existing.collaboration.key!==entry.key)failed++;continue;}
+        try{
+          const result=await sharing.join(entry);
+          const incoming=normalizeState({...result.trip,id:id(),collaboration:result.metadata});
+          trips.push(incoming);count++;first=first||incoming;
+        }catch{failed++;}
+      }
+      if(first&&isEmptyTrip(state)){state=first;activeTripId=first.id;selectedDay=0;selectedCategory='すべて';}
+      if(count){persist(false);renderAll();notifications?.restore();}
+      return {count,failed};
+    }
+  };
+
   async function registerSW(){if('serviceWorker' in navigator&&location.protocol.startsWith('http'))try{const registration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});registration.update().catch(()=>{});}catch(e){console.warn('PWA offline cache could not start',e);}}
   bind();bindPlacementHelpers();loadState();registerSW();
 })();
