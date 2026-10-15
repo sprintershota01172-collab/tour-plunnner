@@ -3,7 +3,7 @@
   const account=window.TabiAccounts,bridge=window.TabiAccountBridge;
   if(!account||!bridge)return;
   const $=s=>document.querySelector(s);
-  let busy=false,timer=0,session=null,indexed=new Set(),skipIds=new Set();
+  let busy=false,timer=0,session=null,indexed=new Set(),skipIds=new Set(),pendingDeletes=new Set();
   let ready=false;
   function status(message,error=false){
     const node=$('#accountMessage');
@@ -46,6 +46,27 @@
     clearTimeout(timer);
     timer=setTimeout(()=>upload(true,false),2500);
   }
+  function persistAccountIndex(){
+    if(!session)return;
+    session.knownRooms=[...indexed];
+    session.pendingDeletes=[...pendingDeletes];
+    bridge.saveSession(session);
+  }
+  async function applyPendingDeletions(){
+    for(const roomId of [...pendingDeletes]){
+      await account.forgetRoom(session,roomId);
+      pendingDeletes.delete(roomId);indexed.delete(roomId);
+      persistAccountIndex();
+    }
+  }
+  function notifyTripDeleted(roomId){
+    if(!ready||!session||!roomId)return;
+    pendingDeletes.add(roomId);
+    indexed.delete(roomId);
+    persistAccountIndex();
+    clearTimeout(timer);
+    timer=setTimeout(()=>pull(true),250);
+  }
   async function importEntries(entries){
     const result=await bridge.importRooms(entries);
     entries.forEach(entry=>indexed.add(entry.roomId));
@@ -55,8 +76,15 @@
     if(!session||busy)return;
     busy=true;render();
     try{
+      await applyPendingDeletions();
+      const previouslyIndexed=new Set(indexed);
       const remote=await account.pull(session);
-      const imported=await importEntries(remote.entries);
+      const visible=remote.entries.filter(entry=>!pendingDeletes.has(entry.roomId));
+      const imported=await importEntries(visible);
+      const current=new Set(visible.map(entry=>entry.roomId));
+      bridge.dropRooms([...previouslyIndexed].filter(roomId=>!current.has(roomId)));
+      indexed=current;
+      persistAccountIndex();
       if(imported.failed){
         status(imported.failed+'件の旅行を取得できませんでした。通信状況をご確認ください。',true);
       }else if(!silent){
@@ -67,6 +95,7 @@
   }
   async function uploadCore(manual){
     if(manual)skipIds.clear();
+    await applyPendingDeletions();
     const candidates=bridge.trips().filter(t=>!t.empty&&!skipIds.has(t.id));
     const entries=[];
     for(const trip of candidates){
@@ -75,6 +104,7 @@
     }
     const remote=await account.addRooms(session,entries);
     remote.entries.forEach(entry=>indexed.add(entry.roomId));
+    persistAccountIndex();
     return remote.entries.length;
   }
   async function upload(silent=false,manual=true){
@@ -98,12 +128,13 @@
         ?{session:await account.register(name,password),remote:{entries:[]}}
         :await account.login(name,password);
       session=result.session;
-      indexed=new Set();
+      indexed=new Set();pendingDeletes=new Set();
       skipIds=new Set(register?[]:bridge.trips().map(t=>t.id));
       bridge.saveSession(session);
       $('#accountPassword').value='';
       $('#accountPasswordConfirm').value='';
       const imported=await importEntries(result.remote.entries);
+      persistAccountIndex();
       if(imported.failed)status('一部の旅行を復元できませんでした。もう一度同期してください。',true);
       else if(register){
         const count=await uploadCore(true);
@@ -117,7 +148,7 @@
   function logout(){
     if(busy)return;
     clearTimeout(timer);
-    session=null;indexed=new Set();skipIds=new Set();
+    session=null;indexed=new Set();skipIds=new Set();pendingDeletes=new Set();
     bridge.saveSession(null);
     $('#accountPassword').value='';$('#accountPasswordConfirm').value='';
     status('ログアウトしました。この端末に保存済みの旅行は消えません。');
@@ -126,6 +157,7 @@
   function onReady(){
     if(ready)return;
     ready=true;session=bridge.session();
+    if(session){indexed=new Set(session.knownRooms||[]);pendingDeletes=new Set(session.pendingDeletes||[]);}
     render();
     if(session)pull(true);
   }
@@ -143,6 +175,6 @@
     window.addEventListener('focus',()=>{if(ready&&session&&!busy)pull(true);});
     setInterval(()=>{if(ready&&session&&!busy&&!document.hidden)pull(true);},45000);
   }
-  window.TabiAccountUI={notifyTripChange,render};
+  window.TabiAccountUI={notifyTripChange,notifyTripDeleted,render};
   init();
 })();
