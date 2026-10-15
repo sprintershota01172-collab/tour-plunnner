@@ -93,5 +93,19 @@
     }
     throw new Error('conflict');
   }
-  window.TabiAccounts={derive,register,login,pull,addRooms,validSession,accountIdOk};
+  async function forgetRoom(session,roomId){
+    if(!UUID.test(roomId))throw new Error('invalid_account');
+    for(let attempt=0;attempt<5;attempt++){
+      const remote=await pull(session);
+      if(!remote.entries.some(entry=>entry.roomId===roomId))return remote;
+      const remaining=remote.entries.filter(entry=>entry.roomId!==roomId);
+      const body=await window.TabiSharing.encrypt(vault(remaining),session.key,session.roomId);
+      const response=await request(session,'PUT',body,remote.revision);
+      if(response.status===409)continue;
+      if(response.status!==200&&response.status!==201)throw new Error('connection');
+      return {entries:remaining,revision:Number(response.headers.get('X-Tabi-Revision'))};
+    }
+    throw new Error('conflict');
+  }
+  window.TabiAccounts={derive,register,login,pull,addRooms,forgetRoom,validSession,accountIdOk};
 })();
