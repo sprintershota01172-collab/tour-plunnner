@@ -11,7 +11,7 @@ function harness(){
   const timers=new Map();
   const window={addEventListener(){}};
   const context={window,document:{hidden:false,addEventListener(){}},navigator:{onLine:true},
-    crypto:webcrypto,TextEncoder,TextDecoder,structuredClone,Uint8Array,
+    crypto:webcrypto,TextEncoder,TextDecoder,structuredClone,Uint8Array,AbortController,btoa,atob,fetch:async()=>{throw new Error('unexpected network');},
     setTimeout(cb,delay){const id=next++;timers.set(id,{cb,delay});return id;},
     clearTimeout(id){timers.delete(id);},
     setInterval(_fn,delay){interval=delay;return next++;},clearInterval(){}};
@@ -40,7 +40,7 @@ test('an update during a running request causes an immediate follow-up sync',asy
   });
   sharing.attach();
   const first=sharing.sync();
-  await new Promise(resolve=>setImmediate(resolve));
+  for(let i=0;i<40&&requests===0;i++)await new Promise(resolve=>setImmediate(resolve));
   assert.equal(requests,1);
   sharing.changed();
   firstResponse(response());
