@@ -3,7 +3,7 @@
   "short_name": "tabi",
   "description": "行きたい場所を集めて、日ごとの旅程を組み立てるプランナー",
   "lang": "ja",
-  "start_url": "./",
+  "id": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
