@@ -1,5 +1,5 @@
-const CACHE='tabi-planner-v95';
-const SHELL=['./flight-mark.svg?v=20261015-95','./invite-card-art.svg?v=20261015-95','./mobile-input.js?v=20261015-95','./line-share.html','./line-share.js?v=20261015-95','./line-invite.js?v=20261015-95','./index.html','./styles.css?v=20261015-95','./i18n.js?v=20261015-95','./app.js?v=20261015-95','./notifications.js?v=20261015-95','./date-range.js?v=20261015-95','./sync.js?v=20261015-95','./accounts.js?v=20261015-95','./account-ui.js?v=20261015-95','./account.css?v=20261015-95','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
+const CACHE='tabi-planner-v96';
+const SHELL=['./flight-mark.svg?v=20261015-96','./invite-card-art.svg?v=20261015-96','./mobile-input.js?v=20261015-96','./line-share.html','./line-share.js?v=20261015-96','./line-invite.js?v=20261015-96','./index.html','./styles.css?v=20261015-96','./i18n.js?v=20261015-96','./app.js?v=20261015-96','./notifications.js?v=20261015-96','./date-range.js?v=20261015-96','./sync.js?v=20261015-96','./accounts.js?v=20261015-96','./account-ui.js?v=20261015-96','./account.css?v=20261015-96','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('tabi-planner-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
@@ -24,9 +24,14 @@ self.addEventListener('fetch',event=>{
 self.addEventListener('push',event=>event.waitUntil((async()=>{
   let content={title:'tabi',body:'パートナーが旅行を更新しました。タップして確認できます。',tag:'tabi-partner-update'};
   try{const payload=event.data?.json();if(payload?.web_push===8030&&payload.notification){const n=payload.notification;if(typeof n.title==='string')content.title=n.title.slice(0,80);if(typeof n.body==='string')content.body=n.body.slice(0,300);if(n.tag==='tabi-notification-test')content.tag=n.tag;}}catch{}
-  await self.registration.showNotification(content.title,{body:content.body,icon:new URL('./icon-192.png',self.registration.scope).href,badge:new URL('./icon-192.png',self.registration.scope).href,tag:content.tag,data:{url:self.registration.scope}});
-  const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
-  for(const client of windows)if(client.url.startsWith(self.registration.scope))client.postMessage({type:'tabi-partner-update'});
+  // Foreground refresh and system notification should run concurrently.
+  await Promise.all([
+    self.registration.showNotification(content.title,{body:content.body,icon:new URL('./icon-192.png',self.registration.scope).href,badge:new URL('./icon-192.png',self.registration.scope).href,tag:content.tag,data:{url:self.registration.scope}}),
+    (async()=>{
+      const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+      for(const client of windows)if(client.url.startsWith(self.registration.scope))client.postMessage({type:'tabi-partner-update'});
+    })()
+  ]);
 })()));
 self.addEventListener('notificationclick',event=>{
   event.notification.close();event.waitUntil((async()=>{

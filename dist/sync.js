@@ -113,7 +113,7 @@
     }catch{throw new Error('wrong_password');}
   }
   function create(options){
-    let currentId='',timer=0,poll=0,running=false,status='local',disposed=false;
+    let currentId='',timer=0,poll=0,running=false,rerunRequested=false,status='local',disposed=false;
     const transport=options.fetch||fetch;
     const online=()=>options.online?options.online():navigator.onLine!==false;
     const context=()=>options.getContext();
@@ -121,7 +121,7 @@
     const valid=ctx=>!disposed&&tag(context())===tag(ctx);
     const busy=()=>options.isBusy?.()||false;
     function emit(next){status=next;options.onStatus?.(next);}
-    function schedule(delay=700){clearTimeout(timer);if(!disposed)timer=setTimeout(()=>sync(),delay);}
+    function schedule(delay=120){clearTimeout(timer);if(!disposed)timer=setTimeout(()=>{timer=0;void sync();},delay);}
     async function request(metadata,method,body,revision,conditional=false,updateMessage=null){
       const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
       try{
@@ -137,9 +137,10 @@
     }
     async function sync(){
       const initial=context();if(!initial?.metadata||disposed)return;
-      if(!online()){emit('offline');return;}if(running)return;
-      if(busy()){emit('waiting');schedule(1000);return;}
-      running=true;emit('syncing');
+      if(!online()){emit('offline');return;}
+      if(running){rerunRequested=true;return;}
+      if(busy()){emit('waiting');schedule(250);return;}
+      running=true;rerunRequested=false;let failed=false;emit('syncing');
       try{
         for(let attempt=0;attempt<5;attempt++){
           if(!valid(initial))return;
@@ -149,7 +150,7 @@
           if(!Number.isSafeInteger(revision)||revision<1)throw new Error('connection');
           const remote=response.status===304?metadata.baseline:await decrypt(await response.arrayBuffer(),metadata.key,metadata.roomId);
           if(!valid(initial))return;
-          if(busy()){emit('waiting');schedule(1000);return;}
+          if(busy()){emit('waiting');schedule(250);return;}
           const latest=context(),merged=settleSchedule(merge(metadata.baseline,wire(latest.trip),remote));
           if(!same(wire(latest.trip),merged.trip)){options.applyTrip(merged.trip);if(merged.displaced)options.onConflict?.(merged.displaced);}
           options.setMetadata({...context().metadata,revision,baseline:copy(remote)});
@@ -168,15 +169,28 @@
           return;
         }
         emit('waiting');schedule(1500);
-      }catch(error){if(valid(initial)){emit(!online()?'offline':error.message==='photos_too_large'?'too-large':error.message==='invalid_invite'?'invalid':'retry');}}
-      finally{running=false;if(tag(context())!==tag(initial)&&context()?.metadata)schedule(100);}
+       }catch(error){
+        failed=true;
+        if(valid(initial)){
+          emit(!online()?'offline':error.message==='photos_too_large'?'too-large':error.message==='invalid_invite'?'invalid':'retry');
+          if(online()&&error.message!=='invalid_invite'&&error.message!=='photos_too_large')schedule(2500);
+        }
+      }finally{
+        running=false;
+        if(tag(context())!==tag(initial)&&context()?.metadata)schedule(100);
+        else if(rerunRequested&&valid(initial)){
+          rerunRequested=false;
+          // An edit or incoming push received during a request triggers a follow-up sync.
+          schedule(failed?1500:0);
+        }
+      }
     }
     function attach(){
-      const ctx=context(),next=tag(ctx);if(next===currentId)return;currentId=next;clearTimeout(timer);clearInterval(poll);
+      const ctx=context(),next=tag(ctx);if(next===currentId)return;currentId=next;clearTimeout(timer);clearInterval(poll);rerunRequested=false;
       if(!next){emit('local');return;}emit(online()?'waiting':'offline');
-      if(options.auto!==false){poll=setInterval(()=>{if(typeof document==='undefined'||!document.hidden)sync();},5000);schedule(100);}
+      if(options.auto!==false){poll=setInterval(()=>{if(typeof document==='undefined'||!document.hidden)sync();},2000);schedule(100);}
     }
-    function changed(){attach();if(context()?.metadata){emit(online()?'waiting':'offline');if(options.auto!==false)schedule();}}
+    function changed(){attach();if(context()?.metadata){emit(online()?'waiting':'offline');if(options.auto!==false){if(running)rerunRequested=true;schedule();}}}
     async function createRoom(trip){
       if(!online())throw new Error('offline');
       const metadata={roomId:crypto.randomUUID(),key:encode64(crypto.getRandomValues(new Uint8Array(32))),revision:1,baseline:wire(trip)};

@@ -24,12 +24,12 @@
     const changes=[],oldPlaces=new Map((before.places||[]).map(p=>[p.id,p])),newPlaces=new Map((after.places||[]).map(p=>[p.id,p]));
     for(const p of after.places||[]){
       const old=oldPlaces.get(p.id);
-      if(!old){changes.push(named(p.name)+'を行きたいリストに追加しました');continue;}
+      if(!old){changes.push(named(p.name)+'をリストに追加しました');continue;}
       if(old.booked!==p.booked||old.reservationRequired!==p.reservationRequired)changes.push(named(p.name)+'の予約を'+(p.booked?'予約済み':p.reservationRequired?'予約が必要':'予約不要')+'にしました');
       if(old.day!==p.day||old.start!==p.start||old.duration!==p.duration)changes.push(named(p.name)+'の予定を'+scheduleLabel(after,p)+(p.start!=null?'（'+p.duration+'分）':'')+'に変更しました');
       else if(!equal({...old,booked:p.booked,reservationRequired:p.reservationRequired},p))changes.push(named(p.name)+'の情報を編集しました');
     }
-    for(const p of before.places||[])if(!newPlaces.has(p.id))changes.push(named(p.name)+'を行きたいリストから削除しました');
+    for(const p of before.places||[])if(!newPlaces.has(p.id))changes.push(named(p.name)+'をリストから削除しました');
     const oldHotels=new Map((before.hotels||[]).map((h,i)=>[h.id||String(i),h])),newHotels=new Map((after.hotels||[]).map((h,i)=>[h.id||String(i),h]));
     for(const [id,h] of newHotels){const old=oldHotels.get(id);if(!old||!equal(old,h))changes.push('宿泊先'+named(h.name)+'を'+(!old?'追加':'変更')+'しました'+(h.start&&h.end?'（'+dayLabel(h.start)+'〜'+dayLabel(h.end)+'）':''));}
     for(const [id,h] of oldHotels)if(!newHotels.has(id))changes.push('宿泊先'+named(h.name)+'を削除しました');
@@ -39,7 +39,7 @@
     const packing=new Map((before.packingItems||[]).map(p=>[p.id,p]));
     for(const p of after.packingItems||[]){const old=packing.get(p.id);if(!old)changes.push('持ち物'+named(p.name)+'を追加しました');else if(old.checked!==p.checked)changes.push('持ち物'+named(p.name)+'を'+(p.checked?'準備済み':'未準備')+'にしました');else if(!equal(old,p))changes.push('持ち物'+named(p.name)+'を編集しました');}
     const currentPacking=new Set((after.packingItems||[]).map(p=>p.id));for(const p of before.packingItems||[])if(!currentPacking.has(p.id))changes.push('持ち物'+named(p.name)+'を削除しました');
-    if(!equal(before.groups,after.groups))changes.push('行きたいリストのグループを変更しました');
+    if(!equal(before.groups,after.groups))changes.push('リストのグループを変更しました');
     if(!changes.length)return null;
     return ('パートナーが'+changes.slice(0,2).join('\n')+(changes.length>2?'\nほか'+(changes.length-2)+'件の更新':'')).slice(0,300);
   }
