@@ -1,0 +1,21 @@
+/* Account controls use the existing tabi navy and rounded-sheet design. */
+.account-pref-section{padding-bottom:18px}
+.account-pref-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.account-pref-heading h3{margin-top:3px}
+.account-header-status{display:inline-flex;align-items:center;max-width:100%;font-size:11px;font-weight:700;color:#173b61;background:#e7edf2;border:1px solid #d2dce6;border-radius:20px;padding:6px 10px;overflow-wrap:anywhere}
+.account-fields{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.account-fields .field{width:100%;min-width:0}
+.account-fields input{max-width:100%;font-family:inherit;font-size:16px;box-sizing:border-box}
+.account-actions{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap}
+.account-actions button{flex:1 1 140px;min-height:43px;font-size:13px;padding:9px 12px}
+.account-visibility{background:transparent;border:0;text-align:right;align-self:flex-end;color:#173b61;font-weight:600;font-size:12px;padding:5px}
+.account-signed-in{margin-top:14px}
+.account-signed-in>b{display:block;color:#173b61;font-size:15px;overflow-wrap:anywhere}
+.account-signed-in>small{display:block;margin:4px 0 14px;color:#718092}
+.account-logout{display:block;margin:14px auto 0;padding:7px 12px;border:0;background:transparent;color:#805d56;font-size:12px;text-decoration:underline}
+.account-caution{font-size:11px;line-height:1.75;color:#6d7884;margin-top:12px}
+.account-message{font-size:12px;line-height:1.7;color:#225c64;margin-top:9px;overflow-wrap:anywhere}
+.account-message:empty{display:none}
+.account-message[data-error="true"]{color:#a64747}
+#accountSignedOut[hidden],#accountSignedIn[hidden]{display:none!important}
+@media(max-width:370px){.account-actions button{flex:1 1 100%;}}
