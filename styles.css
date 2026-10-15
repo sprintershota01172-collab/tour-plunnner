@@ -1192,3 +1192,49 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
   .wishlist-page .collection-tab small{background:#394c61;color:#f0f4f8}
   .wishlist-page .collection-tab.active{background:#173b61;color:#fff;border-color:#6f9bbc}
 }
+
+/* v94 — Settings sheet: independently scrolling content with a true bottom dock.
+   A sticky footer inside a scrolling sheet floated above the iPhone safe area. */
+#appSettingsBackdrop.open > .app-settings-sheet{
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  overflow:hidden!important;
+  padding-bottom:0!important;
+}
+#appSettingsBackdrop.open > .app-settings-sheet > .sheet-header{
+  flex:0 0 auto;
+}
+#appSettingsBackdrop.open > .app-settings-sheet > .app-preferences{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+  scroll-padding-block:14px;
+  padding:0 2px 16px;
+}
+#appSettingsBackdrop.open > .app-settings-sheet > .app-settings-footer{
+  position:relative;
+  inset:auto;
+  z-index:2;
+  flex:0 0 auto;
+  margin:0 -20px;
+  padding:12px 20px max(12px,env(safe-area-inset-bottom,0px));
+  background:var(--surface);
+  border-top:1px solid var(--line);
+  box-shadow:none;
+}
+@media(pointer:coarse){
+  #appSettingsBackdrop.open > .app-settings-sheet{
+    height:calc(var(--sheet-visual-height,100svh) - 8px)!important;
+    max-height:calc(var(--sheet-visual-height,100svh) - 8px)!important;
+  }
+}
+@media(max-width:600px){
+  #appSettingsBackdrop.open > .app-settings-sheet > .app-settings-footer{
+    margin-inline:-16px;
+    padding-inline:16px;
+  }
+}
