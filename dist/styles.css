@@ -1238,3 +1238,11 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
     padding-inline:16px;
   }
 }
+
+/* v95 — Single collection, single primary action. */
+.wishlist-page .collection-register-row{grid-template-columns:minmax(0,1fr);margin-bottom:10px}
+.wishlist-page .collection-register-row .register-place-button{height:44px;min-height:44px;justify-content:center;background:#173b61;color:#fff}
+.wishlist-page .collection-register-row .register-place-button>span{text-align:center;flex:0 1 auto}
+.wishlist-page .collection-register-row .register-place-button:active{background:#294d75;color:#fff}
+@media(max-width:390px){.wishlist-page .collection-register-row .register-place-button{height:44px;min-height:44px}}
+@media(prefers-color-scheme:dark){.wishlist-page .collection-register-row .register-place-button{background:#173b61;color:#fff}}
