@@ -571,7 +571,7 @@
   function deleteTrip(tripId){if(trips.length<2)return;const trip=trips.find(t=>t.id===tripId);if(!trip)return;const title=trip.destination||'行き先未設定';if(!confirm(`「${title}」と登録したスポット・旅程を削除しますか？`))return;const wasActive=state.id===tripId;if(trip.collaboration)window.TabiAccountUI?.notifyTripDeleted?.(trip.collaboration.roomId);trips=trips.filter(t=>t.id!==tripId);if(wasActive){state=trips[0];activeTripId=state.id;selectedDay=0;selectedCategory='すべて';$('#searchPlaces').value='';undoSnapshot=null;completionShown=false;}persist();renderAll();showToast('旅行を削除しました');}
 
   function syncPageAccess(){$('#quickAdd').hidden=pageIndex!==0;$$('.page',pages).forEach((page,i)=>{page.inert=i!==pageIndex;page.setAttribute('aria-hidden',i===pageIndex?'false':'true');});if(viewport.scrollLeft)viewport.scrollLeft=0;}
-  function navigate(index){index=Math.max(0,Math.min(2,index));if(index===pageIndex)return;pageIndex=index;pages.style.transform=`translate3d(-${index*33.333333}%,0,0)`;$$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===index));syncPageAccess();}
+  function navigate(index){index=Math.max(0,Math.min(3,index));if(index===pageIndex)return;pageIndex=index;pages.style.transform=`translate3d(-${index*25}%,0,0)`;$$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===index));syncPageAccess();}
   function setVisualHeight(){window.TabiViewport?.refresh();}
   function updateConnectionStatus(){const status=$('#connectionStatus');if(status)status.hidden=navigator.onLine;}
 

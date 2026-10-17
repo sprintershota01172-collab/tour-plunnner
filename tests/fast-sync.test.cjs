@@ -19,7 +19,7 @@ function harness(){
   return {window,timers,interval:()=>interval};
 }
 function trip(){return {destination:'Hawaii',travelers:2,startDate:'',endDate:'',
-  datesConfigured:false,hotels:[],groups:['観光'],places:[],packingItems:[],meals:{}};}
+  datesConfigured:false,hotels:[],groups:['観光'],places:[],packingItems:[],meals:{},souvenirs:[]};}
 test('foreground poll checks every 2 seconds and local edits are sent promptly',()=>{
   const h=harness(),data=trip(),metadata={roomId:'room-1',key:'secret',revision:1,baseline:data};
   const sharing=h.window.TabiSharing.create({getContext:()=>({id:'trip-1',metadata,trip:data})});
