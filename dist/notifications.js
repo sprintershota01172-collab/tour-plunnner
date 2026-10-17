@@ -47,6 +47,14 @@
       else if(!equal(old,gift))changes.push('お土産'+named(gift.name)+'を編集しました');
     }
     for(const gift of before.souvenirs||[])if(!newGifts.has(gift.id))changes.push('お土産'+named(gift.name)+'を削除しました');
+    const oldPeople=new Map((before.souvenirPeople||[]).map(person=>[person.id,person]));
+    const newPeople=new Map((after.souvenirPeople||[]).map(person=>[person.id,person]));
+    for(const person of after.souvenirPeople||[]){
+      const old=oldPeople.get(person.id);
+      if(!old)changes.push('お土産の人物'+named(person.name)+'を登録しました');
+      else if(old.name!==person.name)changes.push('お土産の人物名を'+named(person.name)+'に変更しました');
+    }
+    for(const person of before.souvenirPeople||[])if(!newPeople.has(person.id))changes.push('お土産の人物'+named(person.name)+'を削除しました');
     if(!equal(before.groups,after.groups))changes.push('リストのグループを変更しました');
     if(!changes.length)return null;
     return ('パートナーが'+changes.slice(0,2).join('\n')+(changes.length>2?'\nほか'+(changes.length-2)+'件の更新':'')).slice(0,300);

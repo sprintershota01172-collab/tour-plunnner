@@ -24,10 +24,10 @@
   const DEFAULTS = {
     destination:'', travelers:2, startDate:'', endDate:'', datesConfigured:false,
     hotels:[], meals:{},
-    places:[], groups:CATEGORIES.map(c=>c.name), packingItems:PACKING_DEFAULTS, souvenirs:[]
+    places:[], groups:CATEGORIES.map(c=>c.name), packingItems:PACKING_DEFAULTS, souvenirs:[], souvenirPeople:[]
   };
   const DB_NAME='malie-honeymoon', DB_STORE='app';
-  let state=structuredClone(DEFAULTS), trips=[], activeTripId='', selectedDay=0, pageIndex=0, selectedCategory='すべて', souvenirFilter='all', editingPhotos=[], candidate=null;
+  let state=structuredClone(DEFAULTS), trips=[], activeTripId='', selectedDay=0, pageIndex=0, selectedCategory='すべて', souvenirFilter='all', souvenirPersonFilter='all', souvenirPersonEditing='', editingPhotos=[], candidate=null;
   let db=null, saveTimer=0, toastTimer=0, completionShown=false, undoSnapshot=null, drag=null, resizeSession=null, swipeStart=null, focusScroll=null, ignorePlaceClickUntil=0, undoMessage='直前の操作を戻しました', hotelDraft=[], selectedHotelIndex=0, selectedPieceId=null, dragAutoFrame=0, placeSwipe=null;
   const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
   const pages=$('#pages'), viewport=$('#viewport'), timelineScroll=$('#timelineScroll');
@@ -77,13 +77,13 @@
   function isEmptyTrip(t){
     return !t?.collaboration&&!String(t?.destination||'').trim()&&!t?.startDate&&!t?.endDate&&!t?.datesConfigured
       &&!(t?.hotels||[]).some(h=>h.name||h.start||h.end)&&!Object.values(t?.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))&&!(t?.places||[]).length
-      &&!(t?.souvenirs||[]).length&&!(t?.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g))
+      &&!(t?.souvenirs||[]).length&&!(t?.souvenirPeople||[]).length&&!(t?.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g))
       &&!(t?.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name));
   }
   // Preserve distinct journeys (even when they share the same destination).
   // Only remove generated blank placeholders and genuinely equivalent non-shared copies.
   function hasPlanDetails(t){
-    return (t.souvenirs||[]).length>0||(t.places||[]).length>0||(t.hotels||[]).some(h=>h.name||h.start||h.end)||Object.values(t.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))
+    return (t.souvenirs||[]).length>0||(t.souvenirPeople||[]).length>0||(t.places||[]).length>0||(t.hotels||[]).some(h=>h.name||h.start||h.end)||Object.values(t.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))
       ||(t.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name))
       ||(t.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g));
   }
@@ -101,8 +101,8 @@
         if(existing.startDate!==trip.startDate||existing.endDate!==trip.endDate||existing.travelers!==trip.travelers)return false;
         // A generated empty plan may be dropped; a user's actual edits must be preserved.
         if(!hasPlanDetails(trip)||!hasPlanDetails(existing))return true;
-        return JSON.stringify({places:existing.places,hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems,meals:existing.meals,souvenirs:existing.souvenirs})
-          ===JSON.stringify({places:trip.places,hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems,meals:trip.meals,souvenirs:trip.souvenirs});
+        return JSON.stringify({places:existing.places,hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems,meals:existing.meals,souvenirs:existing.souvenirs,souvenirPeople:existing.souvenirPeople})
+          ===JSON.stringify({places:trip.places,hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems,meals:trip.meals,souvenirs:trip.souvenirs,souvenirPeople:trip.souvenirPeople});
       });
       if(!same){unique.push(trip);continue;}
       if(!hasPlanDetails(same)&&hasPlanDetails(trip)){unique[unique.indexOf(same)]=trip;continue;}
@@ -111,7 +111,7 @@
     }
     return unique;
   }
-  function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.meals=normalizeMeals(data.meals);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,listType:isFood(p)?'food':'place',mealType:validMealType(p.mealType),reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.souvenirs=normalizeSouvenirs(data.souvenirs);s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
+  function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.meals=normalizeMeals(data.meals);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,listType:isFood(p)?'food':'place',mealType:validMealType(p.mealType),reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.souvenirs=normalizeSouvenirs(data.souvenirs);s.souvenirPeople=normalizeSouvenirPeople(data.souvenirPeople,s.souvenirs);s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
   function normalizeSouvenirs(raw){
     if(!Array.isArray(raw))return [];
     const seen=new Set();
@@ -119,7 +119,8 @@
       .map(item=>({
         id:item.id,
         name:String(item.name||'').slice(0,100),
-        recipient:String(item.recipient||'').slice(0,60),
+        recipient:String(item.recipient||'').trim().slice(0,60),
+        personId:typeof item.personId==='string'?item.personId.slice(0,200):'',
         quantity:Math.min(99,Math.max(1,Math.round(Number(item.quantity)||1))),
         unitPrice:item.unitPrice===null||item.unitPrice===''||item.unitPrice===undefined?null:
           Number.isFinite(Number(item.unitPrice))?Math.min(1000000,Math.max(0,Number(item.unitPrice))):null,
@@ -128,6 +129,31 @@
         note:String(item.note||'').slice(0,300),
         bought:!!item.bought
       })).filter(item=>item.name.trim());
+  }
+  function normalizeSouvenirPeople(raw,items){
+    const people=[],names=new Set(),ids=new Set();
+    for(const entry of Array.isArray(raw)?raw:[]){
+      if(!entry||typeof entry!=='object'||typeof entry.id!=='string')continue;
+      const idValue=entry.id.slice(0,200),name=String(entry.name||'').trim().slice(0,60);
+      const key=name.toLocaleLowerCase();
+      if(!idValue||!name||ids.has(idValue)||names.has(key))continue;
+      people.push({id:idValue,name});ids.add(idValue);names.add(key);
+    }
+    for(const item of items){
+      const matched=people.find(p=>p.id===item.personId);
+      if(matched){item.recipient=matched.name;continue;}
+      const name=String(item.recipient||'').trim().slice(0,60),key=name.toLocaleLowerCase();
+      if(!name){item.personId='';item.recipient='';continue;}
+      let person=people.find(p=>p.name.toLocaleLowerCase()===key);
+      if(!person){
+        // Stable legacy keys make importing the same shared list on two phones deterministic.
+        person={id:'legacy:'+encodeURIComponent(key),name};
+        if(ids.has(person.id))person={id:'legacy:'+encodeURIComponent(name),name};
+        people.push(person);ids.add(person.id);names.add(key);
+      }
+      item.personId=person.id;item.recipient=person.name;
+    }
+    return people;
   }
   function storagePayload(){trips=trips.map(t=>t.id===state.id?state:t);activeTripId=state.id;return {version:3,activeTripId,trips,accountSession};}
   function persist(sync=true){if(sync&&sharedApi){if(undoSnapshot&&undoCheckpoint?.before!==undoSnapshot)undoCheckpoint={before:undoSnapshot,after:sharedApi.wire(state)};sharing.changed();}storagePayload();window.TabiAccountUI?.notifyTripChange?.();clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{const payload=storagePayload();if(db){try{await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(payload,'state');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}catch{showToast('保存できませんでした。端末の空き容量をご確認ください');}}else{try{localStorage.setItem(DB_NAME,JSON.stringify(payload));}catch{showToast('保存容量が不足しています');}}},100);}
@@ -345,8 +371,29 @@
       maximumFractionDigits:currency==='JPY'?0:2
     }).format(value);
   }
+  function souvenirPersonName(item){
+    return state.souvenirPeople.find(p=>p.id===item.personId)?.name||item.recipient||'人物未設定';
+  }
+  function renderSouvenirPeople(){
+    const people=state.souvenirPeople||[],all=state.souvenirs||[];
+    if(souvenirPersonFilter!=='all'&&souvenirPersonFilter!=='unassigned'&&!people.some(p=>p.id===souvenirPersonFilter))
+      souvenirPersonFilter='all';
+    $('#souvenirPeopleCount').textContent=people.length+'人';
+    const tabs=[{id:'all',name:'全員'},{id:'unassigned',name:'未設定'},...people];
+    $('#souvenirPeopleTabs').innerHTML=tabs.map(person=>{
+      const items=all.filter(item=>person.id==='all'||(person.id==='unassigned'?!item.personId:item.personId===person.id));
+      const selected=souvenirPersonFilter===person.id;
+      return `<button type="button" class="souvenir-person-chip ${selected?'active':''}" data-souvenir-person="${esc(person.id)}" aria-pressed="${selected}">
+        <span>${esc(person.name)}</span><small>${items.filter(item=>item.bought).length}/${items.length}</small>
+      </button>`;
+    }).join('');
+    $('#souvenirPersonManage').hidden=!(souvenirPersonFilter!=='all'&&souvenirPersonFilter!=='unassigned');
+    $('#souvenirPersonAddHint').textContent=souvenirPersonFilter==='all'?'人物を選んでから登録すると、その人のリストに追加されます。':
+      souvenirPersonFilter==='unassigned'?'人物を登録すると個人別に振り分けられます。':
+      '「'+(people.find(p=>p.id===souvenirPersonFilter)?.name||'')+'」のお土産を表示中';
+  }
   function renderSouvenirs(){
-    const all=state.souvenirs||[],bought=all.filter(item=>item.bought).length;
+    const all=state.souvenirs||[],people=state.souvenirPeople||[],bought=all.filter(item=>item.bought).length;
     $('#souvenirCount').textContent=all.length+'件';
     $('#souvenirProgress').textContent=bought+' / '+all.length+' 購入済み';
     $('#souvenirProgressBar').style.width=all.length?(100*bought/all.length)+'%':'0%';
@@ -358,19 +405,18 @@
     }
     $('#souvenirBudget').textContent=['USD','JPY'].filter(c=>used[c])
       .map(c=>souvenirMoney(amounts[c],c)).join(' / ')||'未設定';
-    $('#souvenirFilters [data-souvenir-filter]').forEach(button=>{
+    renderSouvenirPeople();
+    $$('#souvenirFilters [data-souvenir-filter]').forEach(button=>{
       const selected=button.dataset.souvenirFilter===souvenirFilter;
       button.classList.toggle('active',selected);
       button.setAttribute('aria-pressed',String(selected));
     });
-    const items=all.filter(item=>souvenirFilter==='all'||(souvenirFilter==='bought')===item.bought)
-      .slice().sort((a,b)=>Number(a.bought)-Number(b.bought));
-    $('#souvenirList').innerHTML=items.map(item=>{
-      const details=[
-        item.recipient?'渡す相手：'+item.recipient:'渡す相手：未設定',
-        item.quantity+'個',
-        item.unitPrice!=null?souvenirMoney(item.unitPrice*item.quantity,item.currency):'予算未設定'
-      ];
+    const visible=all.filter(item=>(souvenirPersonFilter==='all'||
+      (souvenirPersonFilter==='unassigned'?!item.personId:item.personId===souvenirPersonFilter))&&
+      (souvenirFilter==='all'||(souvenirFilter==='bought')===item.bought));
+    const row=item=>{
+      const details=[item.quantity+'個',
+        item.unitPrice!=null?souvenirMoney(item.unitPrice*item.quantity,item.currency):'予算未設定'];
       return `<article class="souvenir-item ${item.bought?'is-bought':''}" data-souvenir-id="${esc(item.id)}">
         <label class="souvenir-check-label" title="${esc(item.name)}の購入状態">
           <input type="checkbox" data-souvenir-check="${esc(item.id)}" ${item.bought?'checked':''} aria-label="${esc(item.name)}を購入済みにする">
@@ -386,16 +432,80 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16 4l4 4L9 19l-5 1 1-5L16 4Z"/></svg>
         </button>
       </article>`;
-    }).join('');
-    $('#souvenirEmpty').hidden=items.length>0;
-    $('#souvenirEmpty').textContent=all.length?'この条件に合うお土産はありません':'買いたいお土産をリストアップしましょう';
+    };
+    const group=(pid,name)=>{
+      const items=visible.filter(item=>pid==='unassigned'?!item.personId:item.personId===pid);
+      if(!items.length&&pid==='unassigned')return '';
+      const completed=items.filter(item=>item.bought).length;
+      const sorted=items.slice().sort((a,b)=>Number(a.bought)-Number(b.bought));
+      return `<section class="souvenir-person-section">
+        <div class="souvenir-person-section-head"><h2>${esc(name)}</h2>
+          <span>${completed} / ${items.length} 購入済み</span></div>
+        <div class="souvenir-person-items">${sorted.map(row).join('')||'<p class="souvenir-person-blank">まだお土産は登録されていません</p>'}</div>
+      </section>`;
+    };
+    $('#souvenirList').innerHTML=souvenirPersonFilter==='all'
+      ?people.map(p=>group(p.id,p.name)).join('')+group('unassigned','人物未設定')
+      :souvenirPersonFilter==='unassigned'?group('unassigned','人物未設定')
+        :group(souvenirPersonFilter,people.find(p=>p.id===souvenirPersonFilter)?.name||'人物未設定');
+    $('#souvenirEmpty').hidden=visible.length>0||people.length>0;
+    $('#souvenirEmpty').textContent=all.length?'この条件に合うお土産はありません':'まず人物を登録して、欲しいものを追加しましょう';
+  }
+  function selectSouvenirPerson(personId){
+    souvenirPersonFilter=personId;
+    cancelSouvenirPersonEdit();
+    renderSouvenirs();
+  }
+  function cancelSouvenirPersonEdit(){
+    souvenirPersonEditing='';
+    $('#souvenirPersonName').value='';
+    $('#souvenirPersonSubmit').textContent='人物を登録';
+    $('#souvenirPersonCancel').hidden=true;
+  }
+  function addSouvenirPerson(event){
+    event.preventDefault();
+    const name=$('#souvenirPersonName').value.trim();
+    if(!name)return;
+    const samePerson=state.souvenirPeople.find(p=>p.name.toLocaleLowerCase()===name.toLocaleLowerCase()&&p.id!==souvenirPersonEditing);
+    if(samePerson){showToast('同じ名前の人物が登録されています');return;}
+    const updating=state.souvenirPeople.find(p=>p.id===souvenirPersonEditing);
+    let pid;
+    if(updating){
+      updating.name=name;pid=updating.id;
+      state.souvenirs=state.souvenirs.map(item=>item.personId===pid?{...item,recipient:name}:item);
+    }else{
+      const person={id:id(),name};state.souvenirPeople.push(person);pid=person.id;
+    }
+    cancelSouvenirPersonEdit();souvenirPersonFilter=pid;
+    persist();renderSouvenirs();
+    showToast(updating?'人物名を変更しました':'人物を登録しました');
+  }
+  function editSouvenirPerson(){
+    const person=state.souvenirPeople.find(p=>p.id===souvenirPersonFilter);
+    if(!person)return;
+    souvenirPersonEditing=person.id;
+    $('#souvenirPersonName').value=person.name;
+    $('#souvenirPersonSubmit').textContent='名前を保存';
+    $('#souvenirPersonCancel').hidden=false;
+    $('#souvenirPersonName').focus({preventScroll:true});
+  }
+  function removeSouvenirPerson(){
+    const person=state.souvenirPeople.find(p=>p.id===souvenirPersonFilter);
+    if(!person||!confirm('「'+person.name+'」を削除しますか？ お土産は消さず「人物未設定」へ移します。'))return;
+    state.souvenirPeople=state.souvenirPeople.filter(p=>p.id!==person.id);
+    state.souvenirs=state.souvenirs.map(item=>item.personId===person.id?{...item,personId:'',recipient:''}:item);
+    souvenirPersonFilter='all';cancelSouvenirPersonEdit();
+    persist();renderSouvenirs();showToast('人物を削除しました（お土産は保持しました）');
   }
   function openSouvenir(itemId=''){
     const item=state.souvenirs.find(x=>x.id===itemId);
     const form=$('#souvenirForm');form.reset();
     form.elements.id.value=item?.id||'';
     form.elements.name.value=item?.name||'';
-    form.elements.recipient.value=item?.recipient||'';
+    $('#souvenirPersonSelect').innerHTML='<option value="">人物未設定</option>'+
+      state.souvenirPeople.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
+    const preferred=item?item.personId:(souvenirPersonFilter==='all'||souvenirPersonFilter==='unassigned'?'':souvenirPersonFilter);
+    form.elements.personId.value=state.souvenirPeople.some(p=>p.id===preferred)?preferred:'';
     form.elements.quantity.value=item?.quantity||1;
     form.elements.unitPrice.value=item?.unitPrice??'';
     form.elements.currency.value=item?.currency||'USD';
@@ -406,18 +516,19 @@
     $('#deleteSouvenir').hidden=!item;
     openModal($('#souvenirBackdrop'));
   }
-  function saveSouvenir(e){
-    e.preventDefault();
-    const form=e.currentTarget.elements,name=form.name.value.trim();
+  function saveSouvenir(event){
+    event.preventDefault();
+    const form=event.currentTarget.elements,name=form.name.value.trim();
     if(!name)return;
     const old=state.souvenirs.find(x=>x.id===form.id.value);
     const amount=form.unitPrice.value===''?null:Number(form.unitPrice.value);
     if(amount!==null&&(!Number.isFinite(amount)||amount<0||amount>1000000)){
       showToast('予算は0〜100万円（または100万ドル）以内で入力してください');return;
     }
+    const person=state.souvenirPeople.find(p=>p.id===form.personId.value);
     const item={
-      id:old?.id||id(),name:name.slice(0,100),recipient:form.recipient.value.trim().slice(0,60),
-      quantity:Math.min(99,Math.max(1,Number(form.quantity.value)||1)),
+      id:old?.id||id(),name:name.slice(0,100),personId:person?.id||'',recipient:person?.name||'',
+      quantity:Math.min(99,Math.max(1,Math.round(Number(form.quantity.value)||1))),
       unitPrice:amount,currency:form.currency.value==='JPY'?'JPY':'USD',
       shop:form.shop.value.trim().slice(0,100),note:form.note.value.trim().slice(0,300),
       bought:form.bought.checked
@@ -437,6 +548,14 @@
   }
   function bindSouvenirs(){
     $('#addSouvenir').onclick=()=>openSouvenir();
+    $('#souvenirPersonForm').onsubmit=addSouvenirPerson;
+    $('#souvenirPeopleTabs').onclick=event=>{
+      const button=event.target.closest('[data-souvenir-person]');
+      if(button)selectSouvenirPerson(button.dataset.souvenirPerson);
+    };
+    $('#souvenirPersonEdit').onclick=editSouvenirPerson;
+    $('#souvenirPersonDelete').onclick=removeSouvenirPerson;
+    $('#souvenirPersonCancel').onclick=cancelSouvenirPersonEdit;
     $('#souvenirFilters').onclick=e=>{
       const target=e.target.closest('[data-souvenir-filter]');
       if(!target)return;

@@ -35,9 +35,9 @@ test('souvenir edits and checks are available and synchronized as individual rec
     assert.ok(html.includes('id="'+id+'"'),id);
   for(const name of ['renderSouvenirs','openSouvenir','saveSouvenir','deleteSouvenir','bindSouvenirs'])
     assert.ok(app.includes('function '+name+'('),name);
-  assert.match(sync,/'packingItems','meals','souvenirs'/);
-  assert.match(sync,/\['places','hotels','packingItems','souvenirs'\]/);
-  assert.match(sync,/field==='souvenirs'\?\(Array\.isArray\(trip\[field\]\)\?trip\[field\]:\[\]\)/);
+  assert.match(sync,/'packingItems','meals','souvenirs','souvenirPeople'/);
+  assert.match(sync,/\['places','hotels','packingItems','souvenirs','souvenirPeople'\]/);
+  assert.match(sync,/\['souvenirs','souvenirPeople'\]\.includes\(field\)/);
   assert.match(notifications,/oldGifts=new Map/);
   assert.match(notifications,/お土産.*購入済み/);
 });
@@ -57,5 +57,33 @@ test('souvenir-only trip cannot be discarded as empty or merged away',()=>{
 test('root and dist files match and offline cache is updated',()=>{
   for(const name of ['app.js','index.html','styles.css','sync.js','notifications.js','i18n.js','sw.js'])
     assert.equal(readFileSync(name,'utf8'),readFileSync('dist/'+name,'utf8'));
-  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v99/);
+  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v100/);
+});
+
+test('legacy recipient names become distinct stable person records',()=>{
+  const a=app.indexOf('function normalizeSouvenirs('),b=app.indexOf('function storagePayload(',a);
+  const helpers=runInNewContext(app.slice(a,b)+';({normalizeSouvenirs,normalizeSouvenirPeople})');
+  const items=helpers.normalizeSouvenirs([
+    {id:'a',name:'Macadamia',recipient:'母'},
+    {id:'b',name:'Cookies',recipient:'母'},
+    {id:'c',name:'Chocolate',recipient:'友人'}
+  ]);
+  const people=helpers.normalizeSouvenirPeople(undefined,items);
+  assert.equal(people.length,2);
+  assert.equal(items[0].personId,items[1].personId);
+  assert.notEqual(items[0].personId,items[2].personId);
+  const items2=helpers.normalizeSouvenirs([{id:'d',name:'Macadamia',recipient:'母'}]);
+  assert.equal(helpers.normalizeSouvenirPeople(undefined,items2)[0].id,people[0].id);
+});
+
+test('person rename preserves linked gifts and deleting person keeps gift records',()=>{
+  for(const part of ['function addSouvenirPerson(', 'function editSouvenirPerson(', 'function removeSouvenirPerson(', 'function selectSouvenirPerson('])
+    assert.ok(app.includes(part),part);
+  assert.match(app,/state\.souvenirs=state\.souvenirs\.map\(item=>item\.personId===pid\?\{\.\.\.item,recipient:name\}:item\)/);
+  assert.match(app,/personId:'',recipient:''/);
+  assert.match(html,/id="souvenirPeopleTabs"/);
+  assert.match(html,/id="souvenirPersonSelect"/);
+  assert.match(html,/id="souvenirPersonForm"/);
+  assert.match(sync,/'souvenirPeople'/);
+  assert.match(notifications,/oldPeople=new Map/);
 });

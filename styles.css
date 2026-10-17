@@ -1390,3 +1390,49 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
  .souvenir-edit-button{background:#334e46;color:#d7eee3}
  .souvenir-form-grid input,.souvenir-form-grid select,.souvenir-form-grid textarea{background:#1e2927;border-color:#4a655a;color:#eef3ee}
 }
+
+
+/* v100 — By-person souvenirs, compact on narrow iPhones. */
+.souvenir-people-panel{max-width:860px;margin:0 auto 12px;border:1px solid #dce3df;border-radius:14px;background:#f8f9f5;padding:12px}
+.souvenir-people-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}
+.souvenir-people-heading>div:first-child{display:flex;align-items:center;gap:8px}
+.souvenir-people-heading strong{font-size:12px;color:#304a4c}
+.souvenir-people-heading small{font-size:10px;color:#7a8b85}
+.souvenir-person-manage{display:flex;align-items:center;gap:5px}
+.souvenir-person-manage[hidden]{display:none!important}
+.souvenir-person-manage button{border:1px solid #d8e2da;border-radius:8px;min-height:30px;padding:0 8px;background:#fffefa;color:#477a78;font-size:10px;cursor:pointer}
+.souvenir-person-form{display:flex;align-items:stretch;gap:6px;margin-bottom:10px}
+.souvenir-person-form input{flex:1;min-width:0;height:42px;border:1px solid #d4deda;border-radius:10px;background:#fff;color:#243e44;padding:0 11px;font-size:16px}
+.souvenir-person-form button{flex:none;min-height:42px;padding:0 11px;border:0;border-radius:10px;background:#173b61;color:#fff;font-size:11px;white-space:nowrap;cursor:pointer}
+.souvenir-person-form #souvenirPersonCancel{background:#ecf0ee;color:#43665f}
+.souvenir-person-form #souvenirPersonCancel[hidden]{display:none!important}
+.souvenir-person-tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 0 5px;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#cedbd5 transparent}
+.souvenir-person-chip{display:flex;gap:6px;align-items:center;justify-content:center;flex:none;min-height:36px;border:1px solid #d9e3df;border-radius:999px;background:#fffefa;color:#546c69;padding:0 12px;cursor:pointer;font-size:11px;white-space:nowrap}
+.souvenir-person-chip small{font-size:9px;color:#81938a}
+.souvenir-person-chip.active{background:#477a78;color:#fff;border-color:#477a78}
+.souvenir-person-chip.active small{color:#ecf3f1}
+.souvenir-person-hint{font-size:10px;color:#798580;margin:6px 2px 0;line-height:1.4}
+.souvenir-person-section{min-width:0;display:grid;gap:7px}
+.souvenir-person-section+.souvenir-person-section{margin-top:9px}
+.souvenir-person-section-head{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:4px 6px 7px;border-bottom:1px solid #dce4dd}
+.souvenir-person-section-head h2{font-size:13px;font-weight:700;color:#315a56;margin:0;overflow-wrap:anywhere}
+.souvenir-person-section-head span{flex:none;color:#7f8f87;font-size:10px}
+.souvenir-person-items{display:grid;gap:6px;min-width:0}
+.souvenir-person-blank{margin:3px 7px 10px;color:#9ba6a0;font-size:10px}
+.souvenir-form-grid .field small{font-size:10px;line-height:1.5;color:#74847d}
+@media(max-width:600px){
+ .souvenir-people-panel{padding:10px}
+ .souvenir-person-form button{padding:0 9px;font-size:10px}
+ .souvenir-person-chip{padding:0 10px}
+ .souvenir-person-section-head{padding-inline:4px}
+}
+@media(prefers-color-scheme:dark){
+ .souvenir-people-panel{background:#202d28;border-color:#43544b}
+ .souvenir-people-heading strong,.souvenir-person-section-head h2{color:#d3e9de}
+ .souvenir-people-heading small,.souvenir-person-hint,.souvenir-person-section-head span{color:#adbbb1}
+ .souvenir-person-manage button,.souvenir-person-chip{background:#28392f;border-color:#516457;color:#dae9df}
+ .souvenir-person-form input{background:#202b27;color:#e7f1e9;border-color:#51665b}
+ .souvenir-person-form #souvenirPersonCancel{background:#37433c;color:#dceadf}
+ .souvenir-person-chip.active{background:#477a78;border-color:#477a78;color:#fff}
+ .souvenir-person-section-head{border-color:#45574b}
+}
