@@ -26,5 +26,5 @@ test('all pieces remain available in expandable scroll list',()=>{
 });
 test('dist copies are identical to published sources',()=>{
   for(const path of ['app.js','styles.css','index.html','i18n.js','sw.js'])assert.equal(readFileSync(path,'utf8'),readFileSync('dist/'+path,'utf8'));
-  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v98/);
+  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v99/);
 });

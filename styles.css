@@ -1317,3 +1317,76 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
   .board-page.tray-expanded .tray-piece .piece-category{font-size:10px!important}
 }
 @media(prefers-color-scheme:dark){.tray-expand-button{background:#263536;border-color:#537975;color:#d2e3e0}}
+
+
+/* v99 — Four-tab layout and souvenir checklist. */
+.pages{width:400%}
+.page{width:25%;flex:0 0 25%}
+.bottom-nav .nav-item{min-width:0;flex:1 1 0}
+.souvenir-page{padding-top:18px}
+.souvenir-heading{margin-bottom:14px}
+.souvenir-heading .page-subtitle{color:#74858a;font-size:11px;margin-top:7px}
+.souvenir-count{font:650 12px "DM Sans",sans-serif;color:#477a78;flex:none}
+.souvenir-summary{display:grid;gap:9px;background:rgba(232,238,231,.64);border:1px solid #dce6e0;border-radius:16px;padding:15px 16px;margin:0 auto 12px;max-width:860px}
+.souvenir-summary-top,.souvenir-summary-budget{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.souvenir-summary-top span,.souvenir-summary-budget span{font-size:11px;color:#6b7977}
+.souvenir-summary-top strong,.souvenir-summary-budget strong{font-size:13px;color:#294e50;font-weight:700}
+.souvenir-progress-track{width:100%;height:5px;border-radius:8px;overflow:hidden;background:#d6e5df}
+.souvenir-progress-track span{display:block;width:0;height:100%;border-radius:8px;background:#477a78;transition:width .2s ease}
+.souvenir-summary-budget{padding-top:5px;border-top:1px solid #d3e0d9}
+.souvenir-add-button{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;max-width:860px;min-height:44px;margin:0 auto 13px;padding:0 12px;border:0;border-radius:12px;background:#173b61;color:#fff;font-size:13px;font-weight:600;cursor:pointer;touch-action:manipulation}
+.souvenir-add-button svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.souvenir-filters{display:flex;gap:7px;margin:0 auto 11px;max-width:860px}
+.souvenir-filters button{flex:1;min-height:37px;border:1px solid #d8e0df;border-radius:10px;background:#fffefa;color:#687c7a;font-size:11px;cursor:pointer}
+.souvenir-filters button.active{background:#e6f0ed;border-color:#8cafaa;color:#315a56;font-weight:700}
+.souvenir-list{display:grid;gap:8px;max-width:860px;margin:0 auto 20px;min-width:0}
+.souvenir-item{display:grid;grid-template-columns:34px minmax(0,1fr) 40px;align-items:center;gap:6px;padding:10px 9px;border:1px solid #e3e5df;border-radius:13px;background:#fffefa;min-width:0}
+.souvenir-item.is-bought{background:#f4f6f1;opacity:.77}
+.souvenir-check-label{display:grid;place-items:center;position:relative;width:34px;height:40px;cursor:pointer}
+.souvenir-check-label input{position:absolute;inset:0;opacity:0;margin:0;width:100%;height:100%;cursor:pointer}
+.souvenir-check-mark{display:grid;place-items:center;width:20px;height:20px;border:1.5px solid #aabdb5;border-radius:7px;pointer-events:none}
+.souvenir-check-label input:checked+.souvenir-check-mark{background:#477a78;border-color:#477a78}
+.souvenir-check-label input:checked+.souvenir-check-mark:after{content:'';width:8px;height:4px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:translateY(-1px) rotate(-45deg)}
+.souvenir-check-label input:focus-visible+.souvenir-check-mark{outline:2px solid #173b61;outline-offset:2px}
+.souvenir-item-body{display:flex;flex-direction:column;gap:3px;align-items:flex-start;min-width:0;text-align:left;background:none;border:0;padding:2px 0;cursor:pointer;touch-action:manipulation}
+.souvenir-item-name{font-size:13px;color:#263c42;line-height:1.4;overflow-wrap:anywhere}
+.souvenir-item.is-bought .souvenir-item-name{text-decoration:line-through;text-decoration-color:#a8b4ae;color:#73837a}
+.souvenir-item-meta{font-size:10px;color:#667a7a;line-height:1.6;overflow-wrap:anywhere}
+.souvenir-item-shop,.souvenir-item-note{font-size:10px;color:#7c8681;line-height:1.4;overflow-wrap:anywhere}
+.souvenir-edit-button{display:grid;place-items:center;width:40px;height:40px;border:0;border-radius:11px;background:#eaf1ed;color:#477a78;touch-action:manipulation;cursor:pointer}
+.souvenir-edit-button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round}
+.souvenir-empty{margin:30px auto;color:#7f8b89;font-size:12px;text-align:center}
+.souvenir-empty[hidden]{display:none!important}
+.souvenir-sheet{width:min(500px,100%);max-height:calc(var(--vh,100dvh) - 16px);overflow-y:auto;overscroll-behavior:contain}
+.souvenir-sheet .sheet-header{display:flex;justify-content:space-between;align-items:center;gap:7px;margin-bottom:15px}
+.souvenir-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px}
+.souvenir-form-grid .field{min-width:0;display:flex;flex-direction:column;gap:5px}
+.souvenir-form-grid .field.full{grid-column:1/-1}
+.souvenir-form-grid input,.souvenir-form-grid select,.souvenir-form-grid textarea{width:100%;min-width:0;min-height:43px;border:1px solid #d5dfdb;border-radius:11px;background:#fffefa;color:#253d44;padding:8px 10px;font-size:16px;resize:vertical}
+.souvenir-form-grid textarea{min-height:58px}
+.souvenir-bought-row{display:flex;gap:8px;align-items:center;padding:13px 3px;font-size:12px;color:#375c58}
+.souvenir-bought-row input{width:19px;height:19px;accent-color:#477a78}
+.souvenir-sheet .sheet-footer{margin-top:6px}
+@media(max-width:600px){
+ .bottom-nav .nav-item{flex:1 1 0;min-width:0!important;padding-inline:3px;font-size:9px}
+ .souvenir-page{padding:15px 14px 30px}
+ .souvenir-page h1{font-size:21px}
+ .souvenir-heading{margin-bottom:12px}
+ .souvenir-summary{padding:13px 14px}
+ .souvenir-sheet{padding:12px 16px max(16px,env(safe-area-inset-bottom))}
+}
+@media(prefers-color-scheme:dark){
+ .souvenir-summary{background:#273832;border-color:#456253}
+ .souvenir-summary-top span,.souvenir-summary-budget span{color:#b6c9c2}
+ .souvenir-summary-top strong,.souvenir-summary-budget strong{color:#e1f1e9}
+ .souvenir-summary-budget{border-color:#456253}
+ .souvenir-progress-track{background:#354b42}
+ .souvenir-filters button{background:#25322f;border-color:#455850;color:#d2ded8}
+ .souvenir-filters button.active{background:#325248;border-color:#71968a;color:#eef5f0}
+ .souvenir-item{background:#242e2b;border-color:#404e48}
+ .souvenir-item.is-bought{background:#26342f}
+ .souvenir-item-name{color:#e1eae4}
+ .souvenir-item-meta,.souvenir-item-shop,.souvenir-item-note{color:#afc2bb}
+ .souvenir-edit-button{background:#334e46;color:#d7eee3}
+ .souvenir-form-grid input,.souvenir-form-grid select,.souvenir-form-grid textarea{background:#1e2927;border-color:#4a655a;color:#eef3ee}
+}

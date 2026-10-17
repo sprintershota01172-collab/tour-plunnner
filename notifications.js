@@ -39,6 +39,14 @@
     const packing=new Map((before.packingItems||[]).map(p=>[p.id,p]));
     for(const p of after.packingItems||[]){const old=packing.get(p.id);if(!old)changes.push('持ち物'+named(p.name)+'を追加しました');else if(old.checked!==p.checked)changes.push('持ち物'+named(p.name)+'を'+(p.checked?'準備済み':'未準備')+'にしました');else if(!equal(old,p))changes.push('持ち物'+named(p.name)+'を編集しました');}
     const currentPacking=new Set((after.packingItems||[]).map(p=>p.id));for(const p of before.packingItems||[])if(!currentPacking.has(p.id))changes.push('持ち物'+named(p.name)+'を削除しました');
+    const oldGifts=new Map((before.souvenirs||[]).map(item=>[item.id,item])),newGifts=new Map((after.souvenirs||[]).map(item=>[item.id,item]));
+    for(const gift of after.souvenirs||[]){
+      const old=oldGifts.get(gift.id);
+      if(!old)changes.push('お土産'+named(gift.name)+'を追加しました');
+      else if(!!old.bought!==!!gift.bought)changes.push('お土産'+named(gift.name)+'を'+(gift.bought?'購入済み':'未購入')+'にしました');
+      else if(!equal(old,gift))changes.push('お土産'+named(gift.name)+'を編集しました');
+    }
+    for(const gift of before.souvenirs||[])if(!newGifts.has(gift.id))changes.push('お土産'+named(gift.name)+'を削除しました');
     if(!equal(before.groups,after.groups))changes.push('リストのグループを変更しました');
     if(!changes.length)return null;
     return ('パートナーが'+changes.slice(0,2).join('\n')+(changes.length>2?'\nほか'+(changes.length-2)+'件の更新':'')).slice(0,300);

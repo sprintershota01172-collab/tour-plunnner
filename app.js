@@ -24,10 +24,10 @@
   const DEFAULTS = {
     destination:'', travelers:2, startDate:'', endDate:'', datesConfigured:false,
     hotels:[], meals:{},
-    places:[], groups:CATEGORIES.map(c=>c.name), packingItems:PACKING_DEFAULTS
+    places:[], groups:CATEGORIES.map(c=>c.name), packingItems:PACKING_DEFAULTS, souvenirs:[]
   };
   const DB_NAME='malie-honeymoon', DB_STORE='app';
-  let state=structuredClone(DEFAULTS), trips=[], activeTripId='', selectedDay=0, pageIndex=0, selectedCategory='すべて', editingPhotos=[], candidate=null;
+  let state=structuredClone(DEFAULTS), trips=[], activeTripId='', selectedDay=0, pageIndex=0, selectedCategory='すべて', souvenirFilter='all', editingPhotos=[], candidate=null;
   let db=null, saveTimer=0, toastTimer=0, completionShown=false, undoSnapshot=null, drag=null, resizeSession=null, swipeStart=null, focusScroll=null, ignorePlaceClickUntil=0, undoMessage='直前の操作を戻しました', hotelDraft=[], selectedHotelIndex=0, selectedPieceId=null, dragAutoFrame=0, placeSwipe=null;
   const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
   const pages=$('#pages'), viewport=$('#viewport'), timelineScroll=$('#timelineScroll');
@@ -39,7 +39,7 @@
   let accountSession=null,appLoaded=false;
   const sharing=sharedApi?sharedApi.create({
     getContext:()=>({id:state.id,trip:state,metadata:state.collaboration}),
-    isBusy:()=>!!(drag||resizeSession||placeSwipe||$('#modalBackdrop.open')||$('#settingsBackdrop.open')||$('#appSettingsBackdrop.open')||$('#packingBackdrop.open')||$('#groupsBackdrop.open')||$('#tripsBackdrop.open')),
+    isBusy:()=>!!(drag||resizeSession||placeSwipe||$('#modalBackdrop.open')||$('#settingsBackdrop.open')||$('#appSettingsBackdrop.open')||$('#packingBackdrop.open')||$('#groupsBackdrop.open')||$('#tripsBackdrop.open')||$('#souvenirBackdrop.open')),
     applyTrip:trip=>{const previous=state;state=normalizeState({...state,...trip});selectedDay=Math.max(0,Math.min(selectedDay,dayCount()-1));persist(false);renderAll();notifications?.notice(previous,state);},
     setMetadata:metadata=>{state.collaboration=metadata;persist(false);},
     onStatus:updatePartnerStatus,
@@ -77,13 +77,13 @@
   function isEmptyTrip(t){
     return !t?.collaboration&&!String(t?.destination||'').trim()&&!t?.startDate&&!t?.endDate&&!t?.datesConfigured
       &&!(t?.hotels||[]).some(h=>h.name||h.start||h.end)&&!Object.values(t?.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))&&!(t?.places||[]).length
-      &&!(t?.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g))
+      &&!(t?.souvenirs||[]).length&&!(t?.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g))
       &&!(t?.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name));
   }
   // Preserve distinct journeys (even when they share the same destination).
   // Only remove generated blank placeholders and genuinely equivalent non-shared copies.
   function hasPlanDetails(t){
-    return (t.places||[]).length>0||(t.hotels||[]).some(h=>h.name||h.start||h.end)||Object.values(t.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))
+    return (t.souvenirs||[]).length>0||(t.places||[]).length>0||(t.hotels||[]).some(h=>h.name||h.start||h.end)||Object.values(t.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))
       ||(t.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name))
       ||(t.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g));
   }
@@ -101,8 +101,8 @@
         if(existing.startDate!==trip.startDate||existing.endDate!==trip.endDate||existing.travelers!==trip.travelers)return false;
         // A generated empty plan may be dropped; a user's actual edits must be preserved.
         if(!hasPlanDetails(trip)||!hasPlanDetails(existing))return true;
-        return JSON.stringify({places:existing.places,hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems,meals:existing.meals})
-          ===JSON.stringify({places:trip.places,hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems,meals:trip.meals});
+        return JSON.stringify({places:existing.places,hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems,meals:existing.meals,souvenirs:existing.souvenirs})
+          ===JSON.stringify({places:trip.places,hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems,meals:trip.meals,souvenirs:trip.souvenirs});
       });
       if(!same){unique.push(trip);continue;}
       if(!hasPlanDetails(same)&&hasPlanDetails(trip)){unique[unique.indexOf(same)]=trip;continue;}
@@ -111,7 +111,24 @@
     }
     return unique;
   }
-  function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.meals=normalizeMeals(data.meals);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,listType:isFood(p)?'food':'place',mealType:validMealType(p.mealType),reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
+  function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.meals=normalizeMeals(data.meals);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,listType:isFood(p)?'food':'place',mealType:validMealType(p.mealType),reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.souvenirs=normalizeSouvenirs(data.souvenirs);s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
+  function normalizeSouvenirs(raw){
+    if(!Array.isArray(raw))return [];
+    const seen=new Set();
+    return raw.filter(item=>item&&typeof item==='object'&&typeof item.id==='string'&&item.id&&!seen.has(item.id)&&seen.add(item.id))
+      .map(item=>({
+        id:item.id,
+        name:String(item.name||'').slice(0,100),
+        recipient:String(item.recipient||'').slice(0,60),
+        quantity:Math.min(99,Math.max(1,Math.round(Number(item.quantity)||1))),
+        unitPrice:item.unitPrice===null||item.unitPrice===''||item.unitPrice===undefined?null:
+          Number.isFinite(Number(item.unitPrice))?Math.min(1000000,Math.max(0,Number(item.unitPrice))):null,
+        currency:item.currency==='JPY'?'JPY':'USD',
+        shop:String(item.shop||'').slice(0,100),
+        note:String(item.note||'').slice(0,300),
+        bought:!!item.bought
+      })).filter(item=>item.name.trim());
+  }
   function storagePayload(){trips=trips.map(t=>t.id===state.id?state:t);activeTripId=state.id;return {version:3,activeTripId,trips,accountSession};}
   function persist(sync=true){if(sync&&sharedApi){if(undoSnapshot&&undoCheckpoint?.before!==undoSnapshot)undoCheckpoint={before:undoSnapshot,after:sharedApi.wire(state)};sharing.changed();}storagePayload();window.TabiAccountUI?.notifyTripChange?.();clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{const payload=storagePayload();if(db){try{await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(payload,'state');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}catch{showToast('保存できませんでした。端末の空き容量をご確認ください');}}else{try{localStorage.setItem(DB_NAME,JSON.stringify(payload));}catch{showToast('保存容量が不足しています');}}},100);}
   function id(){return crypto.randomUUID?crypto.randomUUID():`p-${Date.now()}-${Math.random().toString(36).slice(2,9)}`;}
@@ -220,7 +237,7 @@
   }
   function dateHotel(day){if(!hasTripDates())return null;const key=dateKey(dateAt(day));return state.hotels.find(h=>h.name&&h.start&&h.end&&key>=h.start&&key<h.end)||null;}
   function sortPlaces(a,b){return (a.start==null?1:b.start==null?-1:a.start-b.start)||a.name.localeCompare(b.name,'ja');}
-  function renderAll(){renderCategoryField();renderGroupManager();renderHeader();renderWishlist();renderDays();renderTimeline();renderItinerary();renderPacking();renderNavDot();renderTrips();}
+  function renderAll(){renderCategoryField();renderGroupManager();renderHeader();renderWishlist();renderDays();renderTimeline();renderItinerary();renderPacking();renderSouvenirs();renderNavDot();renderTrips();}
   function renderHeader(){
     const english=window.TabiLocale?.getLanguage()==='en',registered=!!state.destination.trim();
     const missing=english?'Add a destination':'行き先を登録';
@@ -323,6 +340,126 @@
   function renderPacking(){const items=state.packingItems||[];const checked=items.filter(x=>x.checked).length;$('#packingProgress').textContent=`${checked} / ${items.length} 完了`;$('#packingProgressBar').style.width=items.length?`${checked/items.length*100}%`:'0%';const groups=[...new Set(items.map(x=>x.category||'その他'))];$('#packingList').innerHTML=groups.map(group=>`<section class="packing-group"><h3>${esc(group)}</h3><div>${items.filter(x=>(x.category||'その他')===group).map(x=>`<div class="packing-item ${x.checked?'checked':''}"><label class="packing-check-row"><input type="checkbox" data-pack-toggle="${esc(x.id)}" ${x.checked?'checked':''}><span class="packing-check"></span><span class="packing-name">${esc(x.name)}</span></label><button type="button" class="packing-remove" data-pack-remove="${esc(x.id)}" aria-label="${esc(x.name)}を削除">×</button></div>`).join('')}</div></section>`).join('')||'<p class="packing-empty">持ち物はまだありません</p>'; }
   function addPackingItem(event){event.preventDefault();const input=$('#packingName'),name=input.value.trim();if(!name)return;state.packingItems.unshift({id:id(),name,category:'その他',checked:false});input.value='';persist();renderPacking();input.focus({preventScroll:true});}
   function removePackingItem(itemId){state.packingItems=state.packingItems.filter(x=>x.id!==itemId);persist();renderPacking();}
+  function souvenirMoney(value,currency){
+    return (currency==='JPY'?'¥':'$')+new Intl.NumberFormat('ja-JP',{
+      maximumFractionDigits:currency==='JPY'?0:2
+    }).format(value);
+  }
+  function renderSouvenirs(){
+    const all=state.souvenirs||[],bought=all.filter(item=>item.bought).length;
+    $('#souvenirCount').textContent=all.length+'件';
+    $('#souvenirProgress').textContent=bought+' / '+all.length+' 購入済み';
+    $('#souvenirProgressBar').style.width=all.length?(100*bought/all.length)+'%':'0%';
+    const amounts={USD:0,JPY:0},used={USD:false,JPY:false};
+    for(const item of all){
+      if(item.unitPrice==null)continue;
+      const currency=item.currency==='JPY'?'JPY':'USD';
+      amounts[currency]+=item.unitPrice*item.quantity;used[currency]=true;
+    }
+    $('#souvenirBudget').textContent=['USD','JPY'].filter(c=>used[c])
+      .map(c=>souvenirMoney(amounts[c],c)).join(' / ')||'未設定';
+    $('#souvenirFilters [data-souvenir-filter]').forEach(button=>{
+      const selected=button.dataset.souvenirFilter===souvenirFilter;
+      button.classList.toggle('active',selected);
+      button.setAttribute('aria-pressed',String(selected));
+    });
+    const items=all.filter(item=>souvenirFilter==='all'||(souvenirFilter==='bought')===item.bought)
+      .slice().sort((a,b)=>Number(a.bought)-Number(b.bought));
+    $('#souvenirList').innerHTML=items.map(item=>{
+      const details=[
+        item.recipient?'渡す相手：'+item.recipient:'渡す相手：未設定',
+        item.quantity+'個',
+        item.unitPrice!=null?souvenirMoney(item.unitPrice*item.quantity,item.currency):'予算未設定'
+      ];
+      return `<article class="souvenir-item ${item.bought?'is-bought':''}" data-souvenir-id="${esc(item.id)}">
+        <label class="souvenir-check-label" title="${esc(item.name)}の購入状態">
+          <input type="checkbox" data-souvenir-check="${esc(item.id)}" ${item.bought?'checked':''} aria-label="${esc(item.name)}を購入済みにする">
+          <span class="souvenir-check-mark" aria-hidden="true"></span>
+        </label>
+        <button class="souvenir-item-body" type="button" data-souvenir-edit="${esc(item.id)}">
+          <strong class="souvenir-item-name">${esc(item.name)}</strong>
+          <span class="souvenir-item-meta">${esc(details.join(' · '))}</span>
+          ${item.shop?`<span class="souvenir-item-shop">${esc(item.shop)}</span>`:''}
+          ${item.note?`<span class="souvenir-item-note">${esc(item.note)}</span>`:''}
+        </button>
+        <button class="souvenir-edit-button" type="button" data-souvenir-edit="${esc(item.id)}" aria-label="${esc(item.name)}を編集">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16 4l4 4L9 19l-5 1 1-5L16 4Z"/></svg>
+        </button>
+      </article>`;
+    }).join('');
+    $('#souvenirEmpty').hidden=items.length>0;
+    $('#souvenirEmpty').textContent=all.length?'この条件に合うお土産はありません':'買いたいお土産をリストアップしましょう';
+  }
+  function openSouvenir(itemId=''){
+    const item=state.souvenirs.find(x=>x.id===itemId);
+    const form=$('#souvenirForm');form.reset();
+    form.elements.id.value=item?.id||'';
+    form.elements.name.value=item?.name||'';
+    form.elements.recipient.value=item?.recipient||'';
+    form.elements.quantity.value=item?.quantity||1;
+    form.elements.unitPrice.value=item?.unitPrice??'';
+    form.elements.currency.value=item?.currency||'USD';
+    form.elements.shop.value=item?.shop||'';
+    form.elements.note.value=item?.note||'';
+    form.elements.bought.checked=!!item?.bought;
+    $('#souvenirSheetTitle').textContent=item?'お土産を編集':'お土産を追加';
+    $('#deleteSouvenir').hidden=!item;
+    openModal($('#souvenirBackdrop'));
+  }
+  function saveSouvenir(e){
+    e.preventDefault();
+    const form=e.currentTarget.elements,name=form.name.value.trim();
+    if(!name)return;
+    const old=state.souvenirs.find(x=>x.id===form.id.value);
+    const amount=form.unitPrice.value===''?null:Number(form.unitPrice.value);
+    if(amount!==null&&(!Number.isFinite(amount)||amount<0||amount>1000000)){
+      showToast('予算は0〜100万円（または100万ドル）以内で入力してください');return;
+    }
+    const item={
+      id:old?.id||id(),name:name.slice(0,100),recipient:form.recipient.value.trim().slice(0,60),
+      quantity:Math.min(99,Math.max(1,Number(form.quantity.value)||1)),
+      unitPrice:amount,currency:form.currency.value==='JPY'?'JPY':'USD',
+      shop:form.shop.value.trim().slice(0,100),note:form.note.value.trim().slice(0,300),
+      bought:form.bought.checked
+    };
+    if(old)state.souvenirs=state.souvenirs.map(x=>x.id===old.id?item:x);
+    else state.souvenirs.unshift(item);
+    persist();renderSouvenirs();closeModal($('#souvenirBackdrop'));
+    showToast(old?'お土産を更新しました':'お土産を追加しました');
+  }
+  function deleteSouvenir(){
+    const itemId=$('#souvenirForm').elements.id.value;
+    if(!itemId)return;
+    const item=state.souvenirs.find(x=>x.id===itemId);
+    if(!item||!confirm('「'+item.name+'」を削除しますか？'))return;
+    state.souvenirs=state.souvenirs.filter(x=>x.id!==itemId);
+    persist();renderSouvenirs();closeModal($('#souvenirBackdrop'));showToast('お土産を削除しました');
+  }
+  function bindSouvenirs(){
+    $('#addSouvenir').onclick=()=>openSouvenir();
+    $('#souvenirFilters').onclick=e=>{
+      const target=e.target.closest('[data-souvenir-filter]');
+      if(!target)return;
+      souvenirFilter=target.dataset.souvenirFilter;
+      renderSouvenirs();
+    };
+    $('#souvenirList').onclick=e=>{
+      const edit=e.target.closest('[data-souvenir-edit]');
+      if(edit)openSouvenir(edit.dataset.souvenirEdit);
+    };
+    $('#souvenirList').onchange=e=>{
+      const toggle=e.target.closest('[data-souvenir-check]');
+      if(!toggle)return;
+      const item=state.souvenirs.find(x=>x.id===toggle.dataset.souvenirCheck);
+      if(!item)return;
+      item.bought=toggle.checked;
+      persist();renderSouvenirs();
+    };
+    $('#souvenirForm').onsubmit=saveSouvenir;
+    $('#deleteSouvenir').onclick=deleteSouvenir;
+    $('#closeSouvenir').onclick=$('#cancelSouvenir').onclick=()=>closeModal($('#souvenirBackdrop'));
+    $('#souvenirBackdrop').addEventListener('click',e=>{if(e.target===$('#souvenirBackdrop'))closeModal($('#souvenirBackdrop'));});
+  }
   function unplanPlace(pid,direction=1){const place=state.places.find(x=>x.id===pid);if(!place||place.start==null)return;undoSnapshot=structuredClone(state);undoMessage='予定に戻しました';place.day=null;place.start=null;persist();const el=document.querySelector(`[data-pid="${CSS.escape(pid)}"]`);if(el){el.style.setProperty('--swipe-offset',direction<0?'-110%':'110%');el.classList.add('swipe-away');setTimeout(renderAll,170);}else renderAll();showUndoToast('旅程から外しました');if(navigator.vibrate)navigator.vibrate(10);}
   function deleteSpotBySwipe(pid,direction=-1){const place=state.places.find(p=>p.id===pid);if(!place)return false;if(!confirm(`「${place.name}」を本当に削除しますか？`))return false;undoSnapshot=structuredClone(state);undoMessage='場所を復元しました';state.places=state.places.filter(p=>p.id!==pid);persist();const el=document.querySelector(`.place-card[data-edit="${CSS.escape(pid)}"]`);if(el){el.style.setProperty('--swipe-offset',direction<0?'-110%':'110%');el.classList.add('swipe-away');const tripId=state.id;setTimeout(()=>{if(state.id===tripId)renderAll();},250);}else renderAll();showUndoToast('場所を削除しました');if(navigator.vibrate)navigator.vibrate(10);return true;}
   function watchPlaceSwipe(e,pid,element){
