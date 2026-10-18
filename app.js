@@ -613,8 +613,8 @@
         </div>
         <div class="souvenir-group-subline">${esc(souvenirOwnerBudget(owner.id==='unassigned'?null:owner,items))}</div>
         <div class="souvenir-group-tabs" role="group" aria-label="${esc(owner.name)}の渡す相手">${chips}${personEdit}</div>
-        <div class="souvenir-group-items">${rows||`<p class="souvenir-group-blank">${items.length?'該当するお土産はありません':'まだお土産がありません'}</p>`}</div>
         <button type="button" class="souvenir-group-add" data-owner-add="${esc(owner.id)}">＋ 渡す相手とお土産を登録</button>
+        <div class="souvenir-group-items">${rows||`<p class="souvenir-group-blank">${items.length?'該当するお土産はありません':'まだお土産がありません'}</p>`}</div>
       </section>`;
     }).join('');
   }
