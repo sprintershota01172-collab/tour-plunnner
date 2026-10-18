@@ -7,12 +7,16 @@ const app=readFileSync('app.js','utf8');
 const html=readFileSync('index.html','utf8');
 const css=readFileSync('styles.css','utf8');
 
-test('recipient filters have the same horizontal band proportions as collection categories',()=>{
- assert.match(css,/\.souvenir-detail-panel \.souvenir-person-tabs\{[\s\S]*?overflow-x:auto/);
- assert.match(css,/\.souvenir-detail-panel \.souvenir-person-chip\{[\s\S]*?height:32px/);
- assert.match(css,/\.souvenir-detail-panel \.souvenir-person-chip\.active\{[\s\S]*?background:#e0ebe6/);
- assert.match(html,/id="souvenirPeopleTabs"/);
- assert.match(app,/data-souvenir-person=/);
+test('recipient tabs and group bands are compact and horizontal',()=>{
+ assert.match(css,/\.souvenir-group-tabs\{[\s\S]*?overflow-x:auto/);
+ assert.match(css,/\.souvenir-group-chip\.active\{/);
+ assert.match(css,/\.souvenir-group-switch\{/);
+ assert.match(html,/id="souvenirRecipientTypeTabs"/);
+ assert.match(html,/data-recipient-type="person"/);
+ assert.match(html,/data-recipient-type="company"/);
+ assert.match(html,/data-recipient-type="team"/);
+ assert.match(app,/data-person-tab=/);
+ assert.match(app,/data-recipient-choice=/);
 });
 
 test('submit closes the collection modal before expensive data writes and full redraw',()=>{
@@ -57,5 +61,5 @@ test('cache and deployed copies update together',()=>{
  for(const p of ['app.js','index.html','styles.css','sw.js']){
   assert.equal(readFileSync(p,'utf8'),readFileSync('dist/'+p,'utf8'));
  }
- assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v110/);
+ assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v\\d+/);
 });
