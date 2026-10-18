@@ -2032,3 +2032,42 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
   .souvenir-detail-panel .souvenir-person-chip.active small{color:#aac7ba}
   .place-form-error:not([hidden]){background:#44312d;color:#ffc2a8;border-color:#78544a}
 }
+
+/* v111 — compact one-step souvenir entry, recipient tabs and flexible individual/organization types. */
+.souvenir-recipient-picker{display:grid;gap:9px;margin:-2px 0 13px;padding:12px;border:1px solid #dce5df;border-radius:14px;background:#f4f7f3}
+.souvenir-recipient-title{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.souvenir-recipient-title strong{font-size:13px;color:#2d5551;font-weight:750}
+.souvenir-recipient-title small{font-size:10px;color:#768981}
+.souvenir-recipient-types{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;padding:3px;background:#e6ece8;border-radius:10px}
+.souvenir-recipient-types button{min-width:0;min-height:37px;border:0;border-radius:8px;color:#62776c;background:transparent;font-size:12px;font-weight:650;cursor:pointer}
+.souvenir-recipient-types button.active{color:#224d4b;background:#fffefa;box-shadow:0 1px 4px #274b4018}
+.souvenir-recipient-choices{display:flex;align-items:center;gap:6px;min-width:0;overflow-x:auto;padding:1px 0 4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.souvenir-recipient-choices::-webkit-scrollbar{display:none}
+.souvenir-recipient-choices button{flex:none;min-height:34px;padding:0 12px;border:1px solid #d8e4dc;border-radius:18px;color:#48655d;background:#fffdfa;font-size:11px;font-weight:600;white-space:nowrap}
+.souvenir-recipient-choices button.active{color:#fff;background:#244e51;border-color:#244e51}
+.souvenir-recipient-new{display:flex;flex-direction:column;gap:5px;min-width:0}
+.souvenir-recipient-new[hidden]{display:none!important}
+.souvenir-recipient-new>span{font-size:11px;color:#627a70}
+.souvenir-recipient-new input{width:100%;height:42px;min-width:0;border:1px solid #cbded2;border-radius:9px;background:#fffefa;color:#243c39;padding:0 12px;font-size:13px}
+.souvenir-recipient-badge{display:inline-block;margin-right:5px;font-style:normal;font-size:9px;font-weight:700;color:#568780}
+.souvenir-person-chip.active .souvenir-recipient-badge{color:inherit}
+.souvenir-recipient-manage-details{margin:3px 0 9px;border-top:1px solid #e1e8e1}
+.souvenir-recipient-manage-details>summary{padding:10px 2px 5px;font-size:10px;color:#72877d;cursor:pointer;list-style-position:inside}
+.souvenir-recipient-manage-details:not([open]) .souvenir-person-form{display:none}
+.souvenir-recipient-manage-details .souvenir-person-form{margin:8px 0}
+.souvenir-person-form #souvenirPersonType{flex:none;max-width:76px;min-width:0;height:42px;border:1px solid #d4deda;border-radius:9px;background:#fffefa;color:#365752;padding:0 4px;font-size:11px}
+.souvenir-person-form #souvenirPersonName{min-width:0}
+@media(prefers-color-scheme:dark){
+  .souvenir-recipient-picker{background:#2b3b32;border-color:#4c6252}
+  .souvenir-recipient-title strong{color:#d7eadc}
+  .souvenir-recipient-title small,.souvenir-recipient-new>span{color:#b4c6b9}
+  .souvenir-recipient-types{background:#202d28}
+  .souvenir-recipient-types button{color:#bbc9c0}
+  .souvenir-recipient-types button.active{background:#43584b;color:#eef7ee}
+  .souvenir-recipient-choices button{background:#28392f;color:#d0e2d5;border-color:#52675b}
+  .souvenir-recipient-choices button.active{background:#477a78;border-color:#477a78;color:#fff}
+  .souvenir-recipient-new input,.souvenir-person-form #souvenirPersonType{background:#202c27;color:#e5f0e6;border-color:#52675b}
+  .souvenir-recipient-manage-details{border-color:#405548}
+  .souvenir-recipient-manage-details>summary{color:#afc4b4}
+  .souvenir-recipient-badge{color:#91b8ab}
+}
