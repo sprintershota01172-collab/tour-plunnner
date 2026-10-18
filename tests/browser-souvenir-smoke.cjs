@@ -30,7 +30,7 @@ const visible=async page=>await page.locator('.page.souvenir-page').evaluate(el=
   page.on('dialog',dialog=>dialog.accept());
   try{
     await page.goto('http://127.0.0.1:'+port+'/',{waitUntil:'domcontentloaded'});
-    await page.locator('#souvenirGroupSwitch [data-owner-tab]').first().waitFor();
+    await page.locator('#souvenirGroupSwitch [data-owner-tab]').first().waitFor({state:'attached'});
     await page.locator('.nav-item[data-nav="3"]').click();
     assert.equal(await visible(page),true,'Souvenir tab should be active after click');
     assert.equal(await page.locator('#souvenirGroupSwitch [data-owner-tab]').count(),2,'Group chooser should show the default two tabs');
@@ -53,7 +53,7 @@ const visible=async page=>await page.locator('.page.souvenir-page').evaluate(el=
     assert.match(await wrap.innerText(),/\$36/);
     assert.match(await wrap.innerText(),/買う場所：ABCストア/);
     await page.reload({waitUntil:'domcontentloaded'});
-    await page.locator('#souvenirGroupSwitch [data-owner-tab]').first().waitFor();
+    await page.locator('#souvenirGroupSwitch [data-owner-tab]').first().waitFor({state:'attached'});
     await page.locator('.nav-item[data-nav="3"]').click();
     const restored=page.locator('[data-souvenir-swipe]').first();
     await restored.waitFor();
