@@ -11,6 +11,7 @@
     {name:'その他',color:'#77878a',soft:'#e9efef',icon:'○'}
   ];
   const UNGROUPED='未分類';
+  const SOUVENIR_OWNER_DEFAULTS=[{id:'owner-husband',name:'夫',budgetAmount:null,currency:'USD'},{id:'owner-wife',name:'妻',budgetAmount:null,currency:'USD'}];
   const MEALS=[['breakfast','朝食','朝'],['lunch','昼食','昼'],['dinner','夕食','夜']];
   const MEAL_KINDS=['breakfast','lunch','dinner','cafe'];
   const MEAL_NAMES={breakfast:'朝食',lunch:'昼食',dinner:'夕食',cafe:'カフェ'};
@@ -24,10 +25,10 @@
   const DEFAULTS = {
     destination:'', travelers:2, startDate:'', endDate:'', datesConfigured:false,
     hotels:[], meals:{},
-    places:[], groups:CATEGORIES.map(c=>c.name), packingItems:PACKING_DEFAULTS, souvenirs:[], souvenirPeople:[]
+    places:[], groups:CATEGORIES.map(c=>c.name), packingItems:PACKING_DEFAULTS, souvenirs:[], souvenirPeople:[], souvenirOwners:SOUVENIR_OWNER_DEFAULTS
   };
   const DB_NAME='malie-honeymoon', DB_STORE='app';
-  let state=structuredClone(DEFAULTS), trips=[], activeTripId='', selectedDay=0, pageIndex=0, selectedCategory='すべて', souvenirFilter='all', souvenirPersonFilter='all', souvenirPersonEditing='', editingPhotos=[], candidate=null;
+  let state=structuredClone(DEFAULTS), trips=[], activeTripId='', selectedDay=0, pageIndex=0, selectedCategory='すべて', souvenirFilter='all', souvenirPersonFilter='all', souvenirPersonEditing='', souvenirOwnerFilter='all', souvenirOwnerEditing='', editingPhotos=[], candidate=null;
   let db=null, saveTimer=0, toastTimer=0, completionShown=false, undoSnapshot=null, drag=null, resizeSession=null, swipeStart=null, focusScroll=null, ignorePlaceClickUntil=0, undoMessage='直前の操作を戻しました', hotelDraft=[], selectedHotelIndex=0, selectedPieceId=null, dragAutoFrame=0, placeSwipe=null;
   const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
   const pages=$('#pages'), viewport=$('#viewport'), timelineScroll=$('#timelineScroll');
@@ -77,13 +78,13 @@
   function isEmptyTrip(t){
     return !t?.collaboration&&!String(t?.destination||'').trim()&&!t?.startDate&&!t?.endDate&&!t?.datesConfigured
       &&!(t?.hotels||[]).some(h=>h.name||h.start||h.end)&&!Object.values(t?.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))&&!(t?.places||[]).length
-      &&!(t?.souvenirs||[]).length&&!(t?.souvenirPeople||[]).length&&!(t?.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g))
+      &&!(t?.souvenirs||[]).length&&!(t?.souvenirPeople||[]).length&&!(t?.souvenirOwners||[]).some(o=>!SOUVENIR_OWNER_DEFAULTS.some(d=>d.id===o.id&&d.name===o.name&&o.budgetAmount==null))&&!(t?.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g))
       &&!(t?.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name));
   }
   // Preserve distinct journeys (even when they share the same destination).
   // Only remove generated blank placeholders and genuinely equivalent non-shared copies.
   function hasPlanDetails(t){
-    return (t.souvenirs||[]).length>0||(t.souvenirPeople||[]).length>0||(t.places||[]).length>0||(t.hotels||[]).some(h=>h.name||h.start||h.end)||Object.values(t.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))
+    return (t.souvenirs||[]).length>0||(t.souvenirPeople||[]).length>0||(t.souvenirOwners||[]).some(o=>!SOUVENIR_OWNER_DEFAULTS.some(d=>d.id===o.id&&d.name===o.name&&o.budgetAmount==null))||(t.places||[]).length>0||(t.hotels||[]).some(h=>h.name||h.start||h.end)||Object.values(t.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))
       ||(t.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name))
       ||(t.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g));
   }
@@ -101,8 +102,8 @@
         if(existing.startDate!==trip.startDate||existing.endDate!==trip.endDate||existing.travelers!==trip.travelers)return false;
         // A generated empty plan may be dropped; a user's actual edits must be preserved.
         if(!hasPlanDetails(trip)||!hasPlanDetails(existing))return true;
-        return JSON.stringify({places:existing.places,hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems,meals:existing.meals,souvenirs:existing.souvenirs,souvenirPeople:existing.souvenirPeople})
-          ===JSON.stringify({places:trip.places,hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems,meals:trip.meals,souvenirs:trip.souvenirs,souvenirPeople:trip.souvenirPeople});
+        return JSON.stringify({places:existing.places,hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems,meals:existing.meals,souvenirs:existing.souvenirs,souvenirPeople:existing.souvenirPeople,souvenirOwners:existing.souvenirOwners})
+          ===JSON.stringify({places:trip.places,hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems,meals:trip.meals,souvenirs:trip.souvenirs,souvenirPeople:trip.souvenirPeople,souvenirOwners:trip.souvenirOwners});
       });
       if(!same){unique.push(trip);continue;}
       if(!hasPlanDetails(same)&&hasPlanDetails(trip)){unique[unique.indexOf(same)]=trip;continue;}
@@ -111,7 +112,7 @@
     }
     return unique;
   }
-  function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.meals=normalizeMeals(data.meals);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,listType:isFood(p)?'food':'place',mealType:validMealType(p.mealType),reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.souvenirs=normalizeSouvenirs(data.souvenirs);s.souvenirPeople=normalizeSouvenirPeople(data.souvenirPeople,s.souvenirs);s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
+  function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.meals=normalizeMeals(data.meals);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,listType:isFood(p)?'food':'place',mealType:validMealType(p.mealType),reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.souvenirs=normalizeSouvenirs(data.souvenirs);s.souvenirPeople=normalizeSouvenirPeople(data.souvenirPeople,s.souvenirs);s.souvenirOwners=normalizeSouvenirOwners(data.souvenirOwners);for(const item of s.souvenirs)if(!s.souvenirOwners.some(owner=>owner.id===item.ownerId))item.ownerId='';s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
   function normalizeSouvenirs(raw){
     if(!Array.isArray(raw))return [];
     const seen=new Set();
@@ -121,6 +122,7 @@
         name:String(item.name||'').slice(0,100),
         recipient:String(item.recipient||'').trim().slice(0,60),
         personId:typeof item.personId==='string'?item.personId.slice(0,200):'',
+        ownerId:typeof item.ownerId==='string'?item.ownerId.slice(0,200):'',
         quantity:Math.min(99,Math.max(1,Math.round(Number(item.quantity)||1))),
         unitPrice:item.unitPrice===null||item.unitPrice===''||item.unitPrice===undefined?null:
           Number.isFinite(Number(item.unitPrice))?Math.min(1000000,Math.max(0,Number(item.unitPrice))):null,
@@ -154,6 +156,18 @@
       item.personId=person.id;item.recipient=person.name;
     }
     return people;
+  }
+  function normalizeSouvenirOwners(raw){
+    const owners=[],ids=new Set(),names=new Set();
+    for(const item of Array.isArray(raw)?raw:SOUVENIR_OWNER_DEFAULTS){
+      if(!item||typeof item!=='object'||typeof item.id!=='string')continue;
+      const key=item.id.slice(0,200),name=String(item.name||'').trim().slice(0,40);
+      if(!key||!name||ids.has(key)||names.has(name.toLocaleLowerCase()))continue;
+      const n=item.budgetAmount==null||item.budgetAmount===''?null:Number(item.budgetAmount);
+      owners.push({id:key,name,budgetAmount:n==null||!Number.isFinite(n)?null:Math.max(0,Math.min(n,1000000)),currency:item.currency==='JPY'?'JPY':'USD'});
+      ids.add(key);names.add(name.toLocaleLowerCase());
+    }
+    return owners;
   }
   function storagePayload(){trips=trips.map(t=>t.id===state.id?state:t);activeTripId=state.id;return {version:3,activeTripId,trips,accountSession};}
   function persist(sync=true){if(sync&&sharedApi){if(undoSnapshot&&undoCheckpoint?.before!==undoSnapshot)undoCheckpoint={before:undoSnapshot,after:sharedApi.wire(state)};sharing.changed();}storagePayload();window.TabiAccountUI?.notifyTripChange?.();clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{const payload=storagePayload();if(db){try{await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(payload,'state');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}catch{showToast('保存できませんでした。端末の空き容量をご確認ください');}}else{try{localStorage.setItem(DB_NAME,JSON.stringify(payload));}catch{showToast('保存容量が不足しています');}}},100);}
@@ -374,8 +388,66 @@
   function souvenirPersonName(item){
     return state.souvenirPeople.find(p=>p.id===item.personId)?.name||item.recipient||'人物未設定';
   }
+  function souvenirAmounts(items){
+    const totals={USD:0,JPY:0},known={USD:false,JPY:false};
+    for(const item of items){if(item.unitPrice==null)continue;const c=item.currency==='JPY'?'JPY':'USD';totals[c]+=item.unitPrice*item.quantity;known[c]=true;}
+    return {totals,known};
+  }
+  function souvenirTotal(items){
+    const {totals,known}=souvenirAmounts(items);
+    return ['USD','JPY'].filter(c=>known[c]).map(c=>souvenirMoney(totals[c],c)).join(' / ')||'未設定';
+  }
+  function souvenirOwnerBudget(owner,items){
+    const total=souvenirTotal(items);if(!owner||owner.budgetAmount==null)return '合計目安 '+total;
+    const {totals}=souvenirAmounts(items),remaining=owner.budgetAmount-totals[owner.currency];
+    return '合計 '+total+' · 予算 '+souvenirMoney(owner.budgetAmount,owner.currency)+' · '+(remaining>=0?'残り ':'超過 ')+souvenirMoney(Math.abs(remaining),owner.currency)+(items.some(item=>item.unitPrice!=null&&item.currency!==owner.currency)?'（別通貨は別集計）':'');
+  }
+  function renderSouvenirOwners(){
+    const owners=state.souvenirOwners||[];
+    if(souvenirOwnerFilter!=='all'&&souvenirOwnerFilter!=='unassigned'&&!owners.some(o=>o.id===souvenirOwnerFilter))souvenirOwnerFilter='all';
+    $('#souvenirOwnerCount').textContent=owners.length+'グループ';
+    const tabs=[{id:'all',name:'全体'},{id:'unassigned',name:'未分類'},...owners];
+    $('#souvenirOwnerTabs').innerHTML=tabs.map(o=>{
+      const items=state.souvenirs.filter(item=>o.id==='all'||(o.id==='unassigned'?!item.ownerId:item.ownerId===o.id));
+      const active=souvenirOwnerFilter===o.id;
+      return `<button type="button" class="souvenir-owner-chip ${active?'active':''}" data-souvenir-owner="${esc(o.id)}" aria-pressed="${active}"><b>${esc(o.name)}</b><small>${items.length}件</small></button>`;
+    }).join('');
+    const chosen=owners.find(o=>o.id===souvenirOwnerFilter);
+    const items=state.souvenirs.filter(item=>souvenirOwnerFilter==='all'||(souvenirOwnerFilter==='unassigned'?!item.ownerId:item.ownerId===souvenirOwnerFilter));
+    $('#souvenirOwnerSummary').textContent=souvenirOwnerBudget(chosen,items);
+    $('#souvenirOwnerManage').hidden=!chosen;
+  }
+  function cancelSouvenirOwnerEdit(){
+    souvenirOwnerEditing='';$('#souvenirOwnerForm').reset();$('#souvenirOwnerSubmit').textContent='グループ追加';$('#souvenirOwnerCancel').hidden=true;
+  }
+  function saveSouvenirOwner(event){
+    event.preventDefault();const form=event.currentTarget.elements,name=form.ownerName.value.trim();
+    if(!name)return;
+    if(state.souvenirOwners.some(o=>o.id!==souvenirOwnerEditing&&o.name.toLocaleLowerCase()===name.toLocaleLowerCase())){showToast('同じグループ名があります');return;}
+    const budget=form.budget.value===''?null:Number(form.budget.value);
+    if(budget!=null&&(!Number.isFinite(budget)||budget<0||budget>1000000)){showToast('予算は0〜100万以内で入力してください');return;}
+    const old=state.souvenirOwners.find(o=>o.id===souvenirOwnerEditing);
+    const next={id:old?.id||id(),name:name.slice(0,40),budgetAmount:budget,currency:form.currency.value==='JPY'?'JPY':'USD'};
+    if(old)Object.assign(old,next);else state.souvenirOwners.push(next);
+    souvenirOwnerFilter=next.id;souvenirPersonFilter='all';cancelSouvenirOwnerEdit();
+    persist();renderSouvenirs();showToast(old?'グループを更新しました':'グループを追加しました');
+  }
+  function editSouvenirOwner(){
+    const owner=state.souvenirOwners.find(o=>o.id===souvenirOwnerFilter);if(!owner)return;
+    souvenirOwnerEditing=owner.id;const form=$('#souvenirOwnerForm').elements;
+    form.ownerName.value=owner.name;form.budget.value=owner.budgetAmount??'';form.currency.value=owner.currency;
+    $('#souvenirOwnerSubmit').textContent='保存';$('#souvenirOwnerCancel').hidden=false;$('#souvenirOwnerName').focus({preventScroll:true});
+  }
+  function deleteSouvenirOwner(){
+    const owner=state.souvenirOwners.find(o=>o.id===souvenirOwnerFilter);
+    if(!owner||!confirm('「'+owner.name+'」を削除しますか？お土産は未分類に残ります。'))return;
+    state.souvenirOwners=state.souvenirOwners.filter(o=>o.id!==owner.id);
+    state.souvenirs=state.souvenirs.map(item=>item.ownerId===owner.id?{...item,ownerId:''}:item);
+    souvenirOwnerFilter='all';souvenirPersonFilter='all';cancelSouvenirOwnerEdit();persist();renderSouvenirs();showToast('グループを削除しました');
+  }
+  function revealSouvenirList(){const list=$('#souvenirList');list.classList.remove('souvenir-list-reveal');void list.offsetWidth;list.classList.add('souvenir-list-reveal');}
   function renderSouvenirPeople(){
-    const people=state.souvenirPeople||[],all=state.souvenirs||[];
+    const people=state.souvenirPeople||[],all=(state.souvenirs||[]).filter(item=>souvenirOwnerFilter==='all'||(souvenirOwnerFilter==='unassigned'?!item.ownerId:item.ownerId===souvenirOwnerFilter));
     if(souvenirPersonFilter!=='all'&&souvenirPersonFilter!=='unassigned'&&!people.some(p=>p.id===souvenirPersonFilter))
       souvenirPersonFilter='all';
     $('#souvenirPeopleCount').textContent=people.length+'人';
@@ -405,13 +477,13 @@
     }
     $('#souvenirBudget').textContent=['USD','JPY'].filter(c=>used[c])
       .map(c=>souvenirMoney(amounts[c],c)).join(' / ')||'未設定';
-    renderSouvenirPeople();
+    renderSouvenirOwners();renderSouvenirPeople();
     $$('#souvenirFilters [data-souvenir-filter]').forEach(button=>{
       const selected=button.dataset.souvenirFilter===souvenirFilter;
       button.classList.toggle('active',selected);
       button.setAttribute('aria-pressed',String(selected));
     });
-    const visible=all.filter(item=>(souvenirPersonFilter==='all'||
+    const visible=all.filter(item=>(souvenirOwnerFilter==='all'||(souvenirOwnerFilter==='unassigned'?!item.ownerId:item.ownerId===souvenirOwnerFilter))&&(souvenirPersonFilter==='all'||
       (souvenirPersonFilter==='unassigned'?!item.personId:item.personId===souvenirPersonFilter))&&
       (souvenirFilter==='all'||(souvenirFilter==='bought')===item.bought));
     const row=item=>{
@@ -433,9 +505,9 @@
         </button>
       </article>`;
     };
-    const group=(pid,name)=>{
-      const items=visible.filter(item=>pid==='unassigned'?!item.personId:item.personId===pid);
-      if(!items.length&&pid==='unassigned')return '';
+    const group=(pid,name,collection)=>{
+      const items=collection.filter(item=>pid==='unassigned'?!item.personId:item.personId===pid);
+      if(!items.length)return '';
       const completed=items.filter(item=>item.bought).length;
       const sorted=items.slice().sort((a,b)=>Number(a.bought)-Number(b.bought));
       return `<section class="souvenir-person-section">
@@ -444,17 +516,27 @@
         <div class="souvenir-person-items">${sorted.map(row).join('')||'<p class="souvenir-person-blank">まだお土産は登録されていません</p>'}</div>
       </section>`;
     };
-    $('#souvenirList').innerHTML=souvenirPersonFilter==='all'
-      ?people.map(p=>group(p.id,p.name)).join('')+group('unassigned','人物未設定')
-      :souvenirPersonFilter==='unassigned'?group('unassigned','人物未設定')
-        :group(souvenirPersonFilter,people.find(p=>p.id===souvenirPersonFilter)?.name||'人物未設定');
+    const ownerGroup=(ownerId,owner)=>{
+      const ownerItems=visible.filter(item=>ownerId==='unassigned'?!item.ownerId:item.ownerId===ownerId);
+      if(!ownerItems.length&&souvenirOwnerFilter==='all')return '';
+      const groups=people.map(p=>group(p.id,p.name,ownerItems)).join('')+group('unassigned','相手未設定',ownerItems);
+      return `<section class="souvenir-owner-section">
+        <div class="souvenir-owner-section-title"><h2>${esc(owner?.name||'未分類')}</h2><span>${ownerItems.filter(item=>item.bought).length}/${ownerItems.length} 購入済み</span></div>
+        <p class="souvenir-owner-section-budget">${esc(souvenirOwnerBudget(owner,ownerItems))}</p>
+        ${groups||'<p class="souvenir-person-blank">該当するお土産はありません</p>'}
+      </section>`;
+    };
+    $('#souvenirList').innerHTML=souvenirOwnerFilter==='all'
+      ?state.souvenirOwners.map(owner=>ownerGroup(owner.id,owner)).join('')+ownerGroup('unassigned',null)
+      :souvenirOwnerFilter==='unassigned'?ownerGroup('unassigned',null)
+        :ownerGroup(souvenirOwnerFilter,state.souvenirOwners.find(owner=>owner.id===souvenirOwnerFilter));
     $('#souvenirEmpty').hidden=visible.length>0||people.length>0;
     $('#souvenirEmpty').textContent=all.length?'この条件に合うお土産はありません':'まず人物を登録して、欲しいものを追加しましょう';
   }
   function selectSouvenirPerson(personId){
     souvenirPersonFilter=personId;
     cancelSouvenirPersonEdit();
-    renderSouvenirs();
+    renderSouvenirs();revealSouvenirList();
   }
   function cancelSouvenirPersonEdit(){
     souvenirPersonEditing='';
@@ -502,6 +584,10 @@
     const form=$('#souvenirForm');form.reset();
     form.elements.id.value=item?.id||'';
     form.elements.name.value=item?.name||'';
+    $('#souvenirOwnerSelect').innerHTML='<option value="">グループ未設定</option>'+
+      state.souvenirOwners.map(owner=>`<option value="${esc(owner.id)}">${esc(owner.name)}</option>`).join('');
+    const desiredOwner=item?item.ownerId:(souvenirOwnerFilter==='all'||souvenirOwnerFilter==='unassigned'?'':souvenirOwnerFilter);
+    form.elements.ownerId.value=state.souvenirOwners.some(o=>o.id===desiredOwner)?desiredOwner:'';
     $('#souvenirPersonSelect').innerHTML='<option value="">人物未設定</option>'+
       state.souvenirPeople.map(p=>`<option value="${esc(p.id)}">${esc(p.name)}</option>`).join('');
     const preferred=item?item.personId:(souvenirPersonFilter==='all'||souvenirPersonFilter==='unassigned'?'':souvenirPersonFilter);
@@ -526,8 +612,9 @@
       showToast('予算は0〜100万円（または100万ドル）以内で入力してください');return;
     }
     const person=state.souvenirPeople.find(p=>p.id===form.personId.value);
+    const owner=state.souvenirOwners.find(o=>o.id===form.ownerId.value);
     const item={
-      id:old?.id||id(),name:name.slice(0,100),personId:person?.id||'',recipient:person?.name||'',
+      id:old?.id||id(),name:name.slice(0,100),ownerId:owner?.id||'',personId:person?.id||'',recipient:person?.name||'',
       quantity:Math.min(99,Math.max(1,Math.round(Number(form.quantity.value)||1))),
       unitPrice:amount,currency:form.currency.value==='JPY'?'JPY':'USD',
       shop:form.shop.value.trim().slice(0,100),note:form.note.value.trim().slice(0,300),
@@ -548,6 +635,16 @@
   }
   function bindSouvenirs(){
     $('#addSouvenir').onclick=()=>openSouvenir();
+    $('#souvenirOwnerForm').onsubmit=saveSouvenirOwner;
+    $('#souvenirOwnerTabs').onclick=e=>{
+      const button=e.target.closest('[data-souvenir-owner]');
+      if(!button)return;
+      souvenirOwnerFilter=button.dataset.souvenirOwner;souvenirPersonFilter='all';cancelSouvenirPersonEdit();
+      renderSouvenirs();revealSouvenirList();
+    };
+    $('#souvenirOwnerEdit').onclick=editSouvenirOwner;
+    $('#souvenirOwnerDelete').onclick=deleteSouvenirOwner;
+    $('#souvenirOwnerCancel').onclick=cancelSouvenirOwnerEdit;
     $('#souvenirPersonForm').onsubmit=addSouvenirPerson;
     $('#souvenirPeopleTabs').onclick=event=>{
       const button=event.target.closest('[data-souvenir-person]');
@@ -560,7 +657,7 @@
       const target=e.target.closest('[data-souvenir-filter]');
       if(!target)return;
       souvenirFilter=target.dataset.souvenirFilter;
-      renderSouvenirs();
+      renderSouvenirs();revealSouvenirList();
     };
     $('#souvenirList').onclick=e=>{
       const edit=e.target.closest('[data-souvenir-edit]');
@@ -690,7 +787,7 @@
   function deleteTrip(tripId){if(trips.length<2)return;const trip=trips.find(t=>t.id===tripId);if(!trip)return;const title=trip.destination||'行き先未設定';if(!confirm(`「${title}」と登録したスポット・旅程を削除しますか？`))return;const wasActive=state.id===tripId;if(trip.collaboration)window.TabiAccountUI?.notifyTripDeleted?.(trip.collaboration.roomId);trips=trips.filter(t=>t.id!==tripId);if(wasActive){state=trips[0];activeTripId=state.id;selectedDay=0;selectedCategory='すべて';$('#searchPlaces').value='';undoSnapshot=null;completionShown=false;}persist();renderAll();showToast('旅行を削除しました');}
 
   function syncPageAccess(){$('#quickAdd').hidden=pageIndex!==0;$$('.page',pages).forEach((page,i)=>{page.inert=i!==pageIndex;page.setAttribute('aria-hidden',i===pageIndex?'false':'true');});if(viewport.scrollLeft)viewport.scrollLeft=0;}
-  function navigate(index){index=Math.max(0,Math.min(3,index));if(index===pageIndex)return;pageIndex=index;pages.style.transform=`translate3d(-${index*25}%,0,0)`;$$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===index));syncPageAccess();}
+  function navigate(index){index=Math.max(0,Math.min(3,index));if(index===pageIndex)return;pageIndex=index;pages.style.transform=`translate3d(-${index*25}%,0,0)`;const dest=$$('.page',pages)[index];if(dest){dest.classList.remove('page-reveal');void dest.offsetWidth;dest.classList.add('page-reveal');}$$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===index));syncPageAccess();}
   function setVisualHeight(){window.TabiViewport?.refresh();}
   function updateConnectionStatus(){const status=$('#connectionStatus');if(status)status.hidden=navigator.onLine;}
 

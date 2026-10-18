@@ -35,9 +35,9 @@ test('souvenir edits and checks are available and synchronized as individual rec
     assert.ok(html.includes('id="'+id+'"'),id);
   for(const name of ['renderSouvenirs','openSouvenir','saveSouvenir','deleteSouvenir','bindSouvenirs'])
     assert.ok(app.includes('function '+name+'('),name);
-  assert.match(sync,/'packingItems','meals','souvenirs','souvenirPeople'/);
-  assert.match(sync,/\['places','hotels','packingItems','souvenirs','souvenirPeople'\]/);
-  assert.match(sync,/\['souvenirs','souvenirPeople'\]\.includes\(field\)/);
+  assert.match(sync,/'packingItems','meals','souvenirs','souvenirPeople','souvenirOwners'/);
+  assert.match(sync,/\['places','hotels','packingItems','souvenirs','souvenirPeople','souvenirOwners'\]/);
+  assert.match(sync,/\['souvenirs','souvenirPeople','souvenirOwners'\]\.includes\(field\)/);
   assert.match(notifications,/oldGifts=new Map/);
   assert.match(notifications,/お土産.*購入済み/);
 });
@@ -46,7 +46,7 @@ test('souvenir-only trip cannot be discarded as empty or merged away',()=>{
   const first=app.indexOf('function isEmptyTrip(');
   const last=app.indexOf('function normalizeState(',first);
   const helper=runInNewContext(app.slice(first,last)+';({isEmptyTrip,hasPlanDetails})',{
-    CATEGORIES:[{name:'観光'}],PACKING_DEFAULTS:[]
+    CATEGORIES:[{name:'観光'}],PACKING_DEFAULTS:[],SOUVENIR_OWNER_DEFAULTS:[{id:'owner-husband',name:'夫',budgetAmount:null},{id:'owner-wife',name:'妻',budgetAmount:null}]
   });
   const empty={id:'a',destination:'',startDate:'',endDate:'',datesConfigured:false,
     hotels:[],meals:{},places:[],groups:['観光'],packingItems:[],souvenirs:[]};
@@ -57,7 +57,7 @@ test('souvenir-only trip cannot be discarded as empty or merged away',()=>{
 test('root and dist files match and offline cache is updated',()=>{
   for(const name of ['app.js','index.html','styles.css','sync.js','notifications.js','i18n.js','sw.js'])
     assert.equal(readFileSync(name,'utf8'),readFileSync('dist/'+name,'utf8'));
-  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v100/);
+  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v101/);
 });
 
 test('legacy recipient names become distinct stable person records',()=>{
@@ -86,4 +86,32 @@ test('person rename preserves linked gifts and deleting person keeps gift record
   assert.match(html,/id="souvenirPersonForm"/);
   assert.match(sync,/'souvenirPeople'/);
   assert.match(notifications,/oldPeople=new Map/);
+});
+
+test('husband/wife group migration and item ownership preserved',()=>{
+  const start=app.indexOf('function normalizeSouvenirs('),end=app.indexOf('function storagePayload(',start);
+  const helper=runInNewContext(app.slice(start,end)+';({normalizeSouvenirs,normalizeSouvenirOwners})',{
+    SOUVENIR_OWNER_DEFAULTS:[{id:'owner-husband',name:'夫',budgetAmount:null,currency:'USD'},{id:'owner-wife',name:'妻',budgetAmount:null,currency:'USD'}]
+  });
+  const owners=helper.normalizeSouvenirOwners(undefined);
+  assert.deepEqual(owners.map(o=>o.name),['夫','妻']);
+  const gifts=helper.normalizeSouvenirs([
+    {id:'gift1',name:'お菓子',recipient:'母',quantity:2,unitPrice:15,currency:'USD',ownerId:'owner-husband'},
+    {id:'gift2',name:'お茶',recipient:'友人',quantity:3,unitPrice:1000,currency:'JPY'}
+  ]);
+  assert.equal(gifts[0].ownerId,'owner-husband');
+  assert.equal(gifts[0].quantity,2);
+  assert.equal(gifts[1].ownerId,'');
+  assert.equal(helper.normalizeSouvenirOwners([{id:'custom',name:'祖父',budgetAmount:3000,currency:'JPY'}])[0].budgetAmount,3000);
+});
+
+test('group editing, budget calculation, filters, and gentle reveal exist',()=>{
+  for(const x of ['id="souvenirOwnerForm"','id="souvenirOwnerTabs"','id="souvenirOwnerSelect"','id="souvenirOwnerSummary"','id="souvenirOwnerBudget"'])assert.ok(html.includes(x),x);
+  for(const x of ['function saveSouvenirOwner(','function editSouvenirOwner(','function deleteSouvenirOwner(','function souvenirOwnerBudget(','function renderSouvenirOwners('])assert.ok(app.includes(x),x);
+  assert.match(app,/ownerId:owner\?\.id\|\|''/);
+  assert.match(app,/state\.souvenirs=state\.souvenirs\.map\(item=>item\.ownerId===owner\.id\?\{\.\.\.item,ownerId:''\}:item\)/);
+  assert.match(css,/@keyframes tabi-text-reveal/);
+  assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
+  assert.match(sync,/'souvenirOwners'/);
+  assert.match(notifications,/oldOwners=new Map/);
 });
