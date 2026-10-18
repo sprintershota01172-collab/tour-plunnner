@@ -177,6 +177,10 @@
     const t=(state.transfers||[]).find(x=>x.id===idValue);
     const day=Math.max(0,Math.min(dayCount()-1,Number(dayValue)||0));
     const f=$('#transferForm').elements;
+    f.day.innerHTML=Array.from({length:dayCount()},(_,index)=>{
+      const label=fmtDate(dateAt(index),{month:'long',day:'numeric',weekday:'short'});
+      return `<option value="${index}">${index+1}日目 · ${esc(label)}</option>`;
+    }).join('');
     f.id.value=t?.id||'';f.day.value=String(t?.day??day);
     f.mode.value=t?.mode||'bus';
     f.start.value=fmtTime(t?.start??(9*60));
@@ -218,6 +222,12 @@
     $('#closeTransfer').onclick=$('#cancelTransfer').onclick=()=>closeModal($('#transferBackdrop'));
     $('#transferBackdrop').addEventListener('click',e=>{if(e.target===$('#transferBackdrop'))closeModal($('#transferBackdrop'));});
     $('#addBoardTransfer').onclick=()=>openTransfer(selectedDay);
+    $('#quickAddTransfer').onclick=()=>openTransfer(selectedDay);
+    $('#transferDaySelect').onchange=e=>{
+      const day=Number(e.target.value);
+      if(Number.isInteger(day)&&day>=0&&day<dayCount())
+        $('#transferDateLabel').textContent=fmtDate(dateAt(day),{month:'long',day:'numeric',weekday:'short'});
+    };
     $('#itineraryContent').addEventListener('click',e=>{
       const add=e.target.closest('[data-add-transfer]');
       if(add){openTransfer(Number(add.dataset.addTransfer));return;}
