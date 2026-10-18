@@ -2136,3 +2136,56 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
  .souvenir-recipient-picker{background:#28392f;border-color:#486150}
  .souvenir-recipient-title select{background:#26362c;color:#dcebdc;border-color:#506554}
 }
+
+/* v113 — Souvenir: one compact management strip, one visible group, one-step gift entry. */
+.souvenir-group-switch{
+  display:flex;align-items:center;gap:5px;min-width:0;
+  width:100%;margin:0 0 9px;padding:1px 0 4px;
+  overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;scroll-snap-type:x proximity;
+}
+.souvenir-group-switch::-webkit-scrollbar{display:none}
+.souvenir-group-switch-tab{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  flex:none;max-width:68%;height:34px;min-height:34px;
+  padding:0 11px;border:1px solid transparent;border-radius:9px;
+  background:transparent;color:#6d7773;font-size:11px;font-weight:650;
+  white-space:nowrap;cursor:pointer;touch-action:manipulation;scroll-snap-align:start;
+}
+.souvenir-group-switch-tab>span{overflow:hidden;text-overflow:ellipsis}
+.souvenir-group-switch-tab small{
+  flex:none;font-family:inherit;font-size:9px;font-weight:650;
+  color:#8d9e93;line-height:1;
+}
+.souvenir-group-switch-tab.active{background:#e4ede8;color:#315e56;border-color:#d5e6dd}
+.souvenir-group-switch-tab.active small{color:#477a72}
+.souvenir-owner-panel .souvenir-owner-tabs{display:block!important}
+.souvenir-owner-panel .souvenir-group-card{padding:9px 11px 8px}
+.souvenir-group-head-main h2{font-size:13px}
+.souvenir-group-subline{margin:2px 0 5px}
+.souvenir-group-tabs{padding:1px 0 4px}
+.souvenir-group-chip{min-height:30px;font-size:10px}
+.souvenir-group-add{min-height:39px;margin-top:7px;background:#173b61;color:#fff;border-color:#173b61;font-size:11px}
+.souvenir-group-add:active{opacity:.83}
+.souvenir-recipient-types{grid-template-columns:.85fr .85fr 1.3fr;gap:3px;padding:3px}
+.souvenir-recipient-types button{min-height:34px;font-size:11px}
+.souvenir-recipient-picker{padding:9px 10px;gap:7px}
+.souvenir-recipient-choices{gap:5px;min-height:32px}
+.souvenir-recipient-choices button{min-height:30px;max-width:76%;overflow:hidden;text-overflow:ellipsis}
+.souvenir-recipient-new input{min-height:42px;height:42px}
+.souvenir-sheet .souvenir-form-grid{gap:8px 9px}
+.souvenir-sheet .souvenir-form-grid .field{gap:4px}
+.souvenir-sheet .souvenir-form-grid input,
+.souvenir-sheet .souvenir-form-grid select{min-height:41px}
+@media(max-width:600px){
+  .souvenir-group-switch{margin-bottom:7px}
+  .souvenir-page .souvenir-summary{margin-bottom:10px}
+  .souvenir-owner-panel .souvenir-owner-heading{margin-bottom:6px}
+}
+@media(prefers-color-scheme:dark){
+  .souvenir-group-switch-tab{color:#b8c9be}
+  .souvenir-group-switch-tab small{color:#9bae9d}
+  .souvenir-group-switch-tab.active{background:#405b4a;color:#e3f1e6;border-color:#4d6955}
+  .souvenir-group-switch-tab.active small{color:#c7decf}
+  .souvenir-group-add{background:#315b6b;border-color:#315b6b;color:#fff}
+}
