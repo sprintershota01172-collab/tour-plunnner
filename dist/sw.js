@@ -18,8 +18,32 @@ self.addEventListener('fetch',event=>{
   if(request.method!=='GET'||url.origin!==self.location.origin||
      url.pathname.includes('/api/')||url.pathname.endsWith('/mobile-check.html')||
      url.pathname.endsWith('/icon-preview.html')||url.pathname.endsWith('/line-config.json'))return;
+
   if(request.mode==='navigate'){
     event.respondWith((async()=>{
+      const cache=await caches.open(CACHE);
+      const page=new URL(url.pathname.endsWith('/line-share.html')?'./line-share.html':'./index.html',self.registration.scope);
+      if(typeof navigator!=='undefined'&&navigator.onLine===false){
+        return (await cache.match(page))||Response.error();
+      }
+      // Online: fetch the newest HTML first so installed iPhones do not keep old UI.
+      const controller=new AbortController();
+      const timer=setTimeout(()=>controller.abort(),1800);
+      try{
+        const response=await fetch(request,{signal:controller.signal,cache:'no-store'});
+        if(!response.ok)throw new Error('network navigation failed');
+        if(response.type==='basic')await cache.put(page,response.clone());
+        return response;
+      }catch{
+        return (await cache.match(page))||Response.error();
+      }finally{
+        clearTimeout(timer);
+      }
+    })());
+    return;
+  }
+
+  event.respondWith((async()=>{
     const cache=await caches.open(CACHE),cached=await cache.match(request);
     if(cached)return cached;
     try{
