@@ -70,6 +70,62 @@ const visible=async page=>await page.locator('.page.souvenir-page').evaluate(el=
     await restored.locator('[data-souvenir-delete]').click();
     await page.waitForTimeout(100);
     assert.equal(await page.locator('[data-souvenir-swipe]').count(),0,'Delete button should remove saved gift');
+    // Exercise the transport editor in a real mobile browser after setting up a trip.
+    await page.waitForTimeout(200);
+    await page.evaluate(async()=>{
+      const trip={
+        id:'smoke-journey',destination:'Hawaii',travelers:2,
+        startDate:'2027-02-21',endDate:'2027-02-24',datesConfigured:true,
+        hotels:[],meals:{},daySummaries:{},places:[],transfers:[],
+        groups:['観光','グルメ','ビーチ'],packingItems:[],todoItems:[],
+        souvenirs:[],souvenirPeople:[],souvenirOwners:[]
+      };
+      await new Promise((resolve,reject)=>{
+        const request=indexedDB.open('malie-honeymoon',1);
+        request.onerror=()=>reject(request.error);
+        request.onsuccess=()=>{
+          const db=request.result,tx=db.transaction('app','readwrite');
+          tx.objectStore('app').put({version:3,activeTripId:trip.id,trips:[trip]},'state');
+          tx.oncomplete=()=>{db.close();resolve();};
+          tx.onerror=()=>reject(tx.error);
+        };
+      });
+    });
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.locator('#dayTabs [data-day="0"]').waitFor({state:'attached'});
+    await page.locator('.nav-item[data-nav="2"]').click();
+    await page.locator('[data-add-transfer="0"]').click();
+    assert.equal(await page.locator('#transferBackdrop').evaluate(el=>el.classList.contains('open')),true,'Transport registration must open');
+    const transferForm=page.locator('#transferForm');
+    await transferForm.locator('[name="mode"]').selectOption('bus');
+    await transferForm.locator('[name="start"]').fill('09:15');
+    await transferForm.locator('[name="end"]').fill('09:47');
+    await transferForm.locator('[name="from"]').fill('Halepuna');
+    await transferForm.locator('[name="to"]').fill('Waikiki');
+    await transferForm.locator('[name="line"]').fill('TheBus 2');
+    await transferForm.locator('button[type="submit"]').click();
+    const leg=page.locator('.itinerary-transfer').first();
+    await leg.waitFor();
+    assert.match(await leg.innerText(),/09:15/);
+    assert.match(await leg.innerText(),/09:47/);
+    assert.match(await leg.innerText(),/Halepuna/);
+    assert.match(await leg.innerText(),/TheBus 2/);
+    await page.waitForTimeout(250);
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.locator('#dayTabs [data-day="0"]').waitFor({state:'attached'});
+    await page.locator('.nav-item[data-nav="1"]').click();
+    assert.equal(await page.locator('.timeline-transfer').count(),1,'Transport interval should appear on the time grid');
+    await page.locator('.nav-item[data-nav="2"]').click();
+    const afterReload=page.locator('.itinerary-transfer').first();
+    await afterReload.waitFor();
+    assert.match(await afterReload.innerText(),/Waikiki/,'Transport should survive a restart');
+    await afterReload.locator('[data-edit-transfer]').click();
+    await transferForm.locator('[name="end"]').fill('10:10');
+    await transferForm.locator('button[type="submit"]').click();
+    assert.match(await page.locator('.itinerary-transfer').first().innerText(),/10:10/);
+    await page.locator('.itinerary-transfer [data-edit-transfer]').click();
+    await page.locator('#deleteTransfer').click();
+    assert.equal(await page.locator('.itinerary-transfer').count(),0,'Transport should be removable');
     if(errors.length)throw Error('Browser runtime errors: '+errors.join('; '));
     console.log('PASS: iPhone viewport gift/group/button/price/shop/persistence/swipe/delete checks.');
   }catch(error){
