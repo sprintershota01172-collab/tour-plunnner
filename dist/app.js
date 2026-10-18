@@ -31,7 +31,7 @@
     places:[], groups:CATEGORIES.map(c=>c.name), packingItems:PACKING_DEFAULTS, todoItems:[], souvenirs:[], souvenirPeople:[], souvenirOwners:SOUVENIR_OWNER_DEFAULTS
   };
   const DB_NAME='malie-honeymoon', DB_STORE='app';
-  let state=structuredClone(DEFAULTS), trips=[], activeTripId='', selectedDay=0, pageIndex=0, selectedCategory='すべて', selectedPlaceSort='recent', todoFilter='open', souvenirFilter='all', souvenirPersonFilter='all', souvenirPersonEditing='', souvenirRecipientType='person', souvenirRecipientSelection='new', souvenirGroupRecipientFilters={}, souvenirOwnerFilter='all', souvenirOwnerEditing='', editingPhotos=[], candidate=null;
+  let state=structuredClone(DEFAULTS), trips=[], activeTripId='', selectedDay=0, pageIndex=0, selectedCategory='すべて', selectedPlaceSort='recent', todoFilter='open', souvenirFilter='all', souvenirPersonFilter='all', souvenirPersonEditing='', souvenirRecipientType='person', souvenirRecipientSelection='new', souvenirGroupRecipientFilters={}, souvenirOwnerFilter='all', souvenirOwnerEditing='', souvenirSwipeOpenId='', souvenirSwipeGesture=null, souvenirSwipedUntil=0, editingPhotos=[], candidate=null;
   let db=null, saveTimer=0, toastTimer=0, completionShown=false, undoSnapshot=null, drag=null, resizeSession=null, swipeStart=null, focusScroll=null, ignorePlaceClickUntil=0, undoMessage='直前の操作を戻しました', hotelDraft=[], selectedHotelIndex=0, selectedPieceId=null, dragAutoFrame=0, placeSwipe=null;
   const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
   const pages=$('#pages'), viewport=$('#viewport'), timelineScroll=$('#timelineScroll');
@@ -574,6 +574,7 @@
       const active=owner.id===souvenirOwnerFilter;
       return `<button type="button" class="souvenir-group-switch-tab ${active?'active':''}" data-owner-tab="${esc(owner.id)}" aria-pressed="${active}"><span>${esc(owner.name)}</span><small>${count}</small></button>`;
     }).join('');
+    souvenirSwipeOpenId='';
     $('#souvenirOwnerTabs').innerHTML=entries.filter(owner=>owner.id===souvenirOwnerFilter).map(owner=>{
       const items=all.filter(item=>owner.id==='unassigned'?!item.ownerId||!owners.some(o=>o.id===item.ownerId):item.ownerId===owner.id);
       const purchased=items.filter(item=>item.bought).length,quantity=items.reduce((sum,item)=>sum+item.quantity,0);
@@ -592,11 +593,16 @@
         (souvenirFilter==='all'||(souvenirFilter==='bought')===item.bought));
       const rows=shown.map(item=>{
         const recipient=people.find(p=>p.id===item.personId)?.name||item.recipient||'相手未設定';
-        const meta=[recipient,item.quantity+'個',item.unitPrice==null?'予算未設定':souvenirMoney(item.unitPrice*item.quantity,item.currency)];
-        return `<div class="souvenir-group-row ${item.bought?'is-bought':''}">
-          <label class="souvenir-check-label" title="${esc(item.name)}の購入状況"><input type="checkbox" data-souvenir-check="${esc(item.id)}" ${item.bought?'checked':''} aria-label="${esc(item.name)}を購入済みにする"><span class="souvenir-check-mark" aria-hidden="true"></span></label>
-          <button type="button" class="souvenir-group-item" data-souvenir-edit="${esc(item.id)}"><strong>${esc(item.name)}</strong><small>${esc(meta.join(' · '))}</small></button>
-          <button type="button" class="souvenir-group-edit" data-souvenir-edit="${esc(item.id)}" aria-label="${esc(item.name)}を編集">›</button>
+        const total=item.unitPrice==null?'価格未設定':souvenirMoney(item.unitPrice*item.quantity,item.currency);
+        const amount=item.unitPrice==null?'':item.quantity>1?'（単価 '+souvenirMoney(item.unitPrice,item.currency)+'）':'';
+        const details=[recipient,item.quantity+'個',total+amount];
+        return `<div class="souvenir-swipe-wrap" data-souvenir-swipe="${esc(item.id)}">
+          <button type="button" class="souvenir-swipe-delete" data-souvenir-delete="${esc(item.id)}" aria-label="${esc(item.name)}を削除">削除</button>
+          <div class="souvenir-group-row ${item.bought?'is-bought':''}" data-souvenir-surface>
+            <label class="souvenir-check-label" title="${esc(item.name)}の購入状況"><input type="checkbox" data-souvenir-check="${esc(item.id)}" ${item.bought?'checked':''} aria-label="${esc(item.name)}を購入済みにする"><span class="souvenir-check-mark" aria-hidden="true"></span></label>
+            <button type="button" class="souvenir-group-item" data-souvenir-edit="${esc(item.id)}"><strong>${esc(item.name)}</strong><small>${esc(details.join(' · '))}</small>${item.shop?`<small class="souvenir-shop-label">買う場所：${esc(item.shop)}</small>`:''}</button>
+            <button type="button" class="souvenir-group-edit" data-souvenir-edit="${esc(item.id)}" aria-label="${esc(item.name)}を編集">›</button>
+          </div>
         </div>`;
       }).join('');
       const personEdit=active!=='all'&&active!=='unassigned'?`<button type="button" class="souvenir-group-recipient-edit" data-person-manage="${esc(active)}">編集</button>`:'';
@@ -607,8 +613,8 @@
         </div>
         <div class="souvenir-group-subline">${esc(souvenirOwnerBudget(owner.id==='unassigned'?null:owner,items))}</div>
         <div class="souvenir-group-tabs" role="group" aria-label="${esc(owner.name)}の渡す相手">${chips}${personEdit}</div>
-        <div class="souvenir-group-items">${rows||`<p class="souvenir-group-blank">${items.length?'該当するお土産はありません':'まだお土産がありません'}</p>`}</div>
         <button type="button" class="souvenir-group-add" data-owner-add="${esc(owner.id)}">＋ 渡す相手とお土産を登録</button>
+        <div class="souvenir-group-items">${rows||`<p class="souvenir-group-blank">${items.length?'該当するお土産はありません':'まだお土産がありません'}</p>`}</div>
       </section>`;
     }).join('');
   }
@@ -737,7 +743,7 @@
     const old=state.souvenirs.find(x=>x.id===form.id.value);
     const amount=form.unitPrice.value===''?null:Number(form.unitPrice.value);
     if(amount!==null&&(!Number.isFinite(amount)||amount<0||amount>1000000)){
-      showToast('予算は0〜100万円（または100万ドル）以内で入力してください');return;
+      showToast('値段は0〜100万円（または100万ドル）以内で入力してください');return;
     }
     let person=state.souvenirPeople.find(p=>p.id===souvenirRecipientSelection);
     let newPerson=null;
@@ -776,7 +782,120 @@
     state.souvenirs=state.souvenirs.filter(x=>x.id!==itemId);
     persist();renderSouvenirs();closeModal($('#souvenirBackdrop'));showToast('お土産を削除しました');
   }
+  function closeSouvenirSwipe(){
+    const open=$('#souvenirOwnerTabs [data-souvenir-swipe].is-swiped');
+    if(open){
+      open.classList.remove('is-swiped');
+      const surface=open.querySelector('[data-souvenir-surface]');
+      if(surface){surface.style.transition='';surface.style.transform='';}
+    }
+    souvenirSwipeOpenId='';
+  }
+  function deleteSouvenirById(itemId){
+    const item=state.souvenirs.find(x=>x.id===itemId);
+    if(!item)return;
+    if(!confirm('「'+item.name+'」を削除しますか？')){closeSouvenirSwipe();return;}
+    undoSnapshot=structuredClone(state);
+    undoMessage='お土産の削除を戻しました';
+    state.souvenirs=state.souvenirs.filter(x=>x.id!==itemId);
+    souvenirSwipeGesture=null;souvenirSwipeOpenId='';
+    persist();renderSouvenirs();showUndoToast('お土産を削除しました');
+  }
+  function bindSouvenirSwipe(){
+    const root=$('#souvenirOwnerTabs');
+    root.addEventListener('pointerdown',event=>{
+      if(event.pointerType==='mouse'&&event.button!==0)return;
+      if(event.target.closest('[data-souvenir-delete],input'))return;
+      const wrap=event.target.closest('[data-souvenir-swipe]');
+      if(!wrap)return;
+      if(souvenirSwipeOpenId&&souvenirSwipeOpenId!==wrap.dataset.souvenirSwipe)closeSouvenirSwipe();
+      souvenirSwipeGesture={
+        id:wrap.dataset.souvenirSwipe,wrap,pointerId:event.pointerId,
+        x:event.clientX,y:event.clientY,delta:0,
+        wasOpen:souvenirSwipeOpenId===wrap.dataset.souvenirSwipe,dragging:false
+      };
+    });
+    root.addEventListener('pointermove',event=>{
+      const gesture=souvenirSwipeGesture;
+      if(!gesture||gesture.pointerId!==event.pointerId)return;
+      const dx=event.clientX-gesture.x,dy=event.clientY-gesture.y;
+      if(!gesture.dragging){
+        if(Math.abs(dy)>10&&Math.abs(dy)>Math.abs(dx)){souvenirSwipeGesture=null;return;}
+        if(Math.abs(dx)<9)return;
+        gesture.dragging=true;
+        try{gesture.wrap.setPointerCapture(event.pointerId);}catch{}
+      }
+      if(event.cancelable)event.preventDefault();
+      gesture.delta=dx;
+      const surface=gesture.wrap.querySelector('[data-souvenir-surface]');
+      if(surface){
+        surface.style.transition='none';
+        surface.style.transform='translateX('+Math.min(0,Math.max(-78,(gesture.wasOpen?-78:0)+dx))+'px)';
+      }
+    });
+    const settle=event=>{
+      const gesture=souvenirSwipeGesture;
+      if(!gesture||gesture.pointerId!==event.pointerId)return;
+      souvenirSwipeGesture=null;
+      if(!gesture.dragging)return;
+      souvenirSwipedUntil=Date.now()+450;
+      const reveal=gesture.wasOpen?gesture.delta<34:gesture.delta< -45;
+      const surface=gesture.wrap.querySelector('[data-souvenir-surface]');
+      if(surface){
+        surface.style.transition='';
+        surface.style.transform='';
+      }
+      gesture.wrap.classList.toggle('is-swiped',reveal);
+      souvenirSwipeOpenId=reveal?gesture.id:'';
+      if(navigator.vibrate&&reveal)navigator.vibrate(8);
+    };
+    root.addEventListener('pointerup',settle);
+    root.addEventListener('pointercancel',event=>{
+      const gesture=souvenirSwipeGesture;
+      if(!gesture||gesture.pointerId!==event.pointerId)return;
+      souvenirSwipeGesture=null;
+      const surface=gesture.wrap.querySelector('[data-souvenir-surface]');
+      if(surface){surface.style.transition='';surface.style.transform='';}
+      gesture.wrap.classList.toggle('is-swiped',gesture.wasOpen);
+      souvenirSwipeOpenId=gesture.wasOpen?gesture.id:'';
+    });
+    root.addEventListener('click',event=>{
+      if(Date.now()<souvenirSwipedUntil&&event.target.closest('[data-souvenir-surface]')){
+        event.preventDefault();event.stopImmediatePropagation();return;
+      }
+      if(souvenirSwipeOpenId&&event.target.closest('[data-souvenir-edit]')){
+        closeSouvenirSwipe();event.preventDefault();event.stopImmediatePropagation();
+      }
+    },true);
+  }
+  function ensureSouvenirControls(){
+    // Defend against an older cached index.html running with a newer app.js.
+    // Missing controls must not stop all tabs and buttons from being bound.
+    const list=$('#souvenirOwnerTabs');
+    if(list&&!$('#souvenirGroupSwitch')){
+      const tabs=document.createElement('div');
+      tabs.id='souvenirGroupSwitch';
+      tabs.className='souvenir-group-switch';
+      tabs.setAttribute('role','group');
+      tabs.setAttribute('aria-label','管理グループを選択');
+      list.before(tabs);
+    }
+    const choices=$('#souvenirRecipientChoices');
+    if(choices&&!$('#souvenirRecipientTypeTabs')){
+      const tabs=document.createElement('div');
+      tabs.id='souvenirRecipientTypeTabs';
+      tabs.className='souvenir-recipient-types';
+      tabs.setAttribute('role','group');
+      tabs.setAttribute('aria-label','渡す相手の種類');
+      tabs.innerHTML='<button type="button" data-recipient-type="person">個人</button><button type="button" data-recipient-type="company">会社</button><button type="button" data-recipient-type="team">部署・チーム</button>';
+      choices.before(tabs);
+      const legacy=$('#souvenirRecipientTypeSelect');
+      if(legacy)legacy.hidden=true;
+    }
+  }
   function bindSouvenirs(){
+    ensureSouvenirControls();
+    bindSouvenirSwipe();
     $('#souvenirRecipientTypeTabs').onclick=event=>{
       const button=event.target.closest('[data-recipient-type]');
       if(!button)return;
@@ -804,6 +923,7 @@
       renderSouvenirOwners();
     };
     $('#souvenirOwnerTabs').onclick=event=>{
+      const remove=event.target.closest('[data-souvenir-delete]');if(remove){deleteSouvenirById(remove.dataset.souvenirDelete);return;}
       const edit=event.target.closest('[data-souvenir-edit]');if(edit){openSouvenir(edit.dataset.souvenirEdit);return;}
       const ownerEdit=event.target.closest('[data-owner-edit]');if(ownerEdit){editSouvenirOwner(ownerEdit.dataset.ownerEdit);return;}
       const add=event.target.closest('[data-owner-add]');if(add){openSouvenir('',add.dataset.ownerAdd);return;}
@@ -1539,6 +1659,21 @@
     }
   };
 
-  async function registerSW(){if('serviceWorker' in navigator&&location.protocol.startsWith('http'))try{const registration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});registration.update().catch(()=>{});}catch(e){console.warn('PWA offline cache could not start',e);}}
+  async function registerSW(){
+    if(!('serviceWorker' in navigator)||!location.protocol.startsWith('http'))return;
+    let refreshing=false;
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      if(refreshing||!appLoaded)return;
+      const editing=!!$('.modal-backdrop.open')||!!document.activeElement?.matches('input,textarea,select');
+      if(editing){showToast('アプリの最新版が届きました。画面を開き直すと反映されます');return;}
+      refreshing=true;
+      flushPendingSave();
+      location.reload();
+    });
+    try{
+      const registration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});
+      registration.update().catch(()=>{});
+    }catch(e){console.warn('PWA offline cache could not start',e);}
+  }
   bind();bindPlacementHelpers();loadState();registerSW();
 })();
