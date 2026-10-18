@@ -66,7 +66,7 @@ test('app keeps offline edits local and reconnects after network comes back',()=
 
 test('startup font css is asynchronous and root/dist files are identical',()=>{
  assert.match(html,/rel="stylesheet" media="print" onload="this\.media='all'"/);
- assert.match(sw,/tabi-planner-v109/);
+ assert.match(sw,/tabi-planner-v110/);
  for(const name of ['app.js','index.html','styles.css','sw.js','account-ui.js','sync.js','i18n.js']){
    assert.equal(readFileSync(name,'utf8'),readFileSync('dist/'+name,'utf8'),name);
  }

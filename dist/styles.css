@@ -1954,3 +1954,81 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
   .souvenir-owner-back{background:#354c3d;border-color:#506c59;color:#e0f1e3}
   .souvenir-detail-heading{border-color:#405d4b}
 }
+
+/* v110 — Person selectors follow the compact collection category strip. */
+.souvenir-detail-panel .souvenir-people-panel{
+  background:transparent;
+  border:0;
+  box-shadow:none;
+  padding:0;
+}
+.souvenir-detail-panel .souvenir-person-tabs{
+  display:flex;
+  flex-wrap:nowrap;
+  align-items:center;
+  gap:4px;
+  width:100%;
+  min-width:0;
+  min-height:34px;
+  padding:1px 0 3px;
+  margin:0 0 8px;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  scroll-snap-type:x proximity;
+}
+.souvenir-detail-panel .souvenir-person-tabs::-webkit-scrollbar{display:none}
+.souvenir-detail-panel .souvenir-person-chip{
+  display:inline-flex;
+  flex:none;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  height:32px;
+  min-height:32px;
+  max-height:32px;
+  padding:0 10px;
+  border:1px solid transparent;
+  border-radius:var(--collection-radius,9px);
+  background:transparent;
+  color:#6e7473;
+  font-size:var(--collection-label,10px);
+  font-weight:500;
+  line-height:16px;
+  white-space:nowrap;
+  box-shadow:none;
+  scroll-snap-align:start;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.souvenir-detail-panel .souvenir-person-chip small{
+  font-size:9px;
+  font-weight:500;
+  color:#8b9690;
+}
+.souvenir-detail-panel .souvenir-person-chip.active{
+  background:#e0ebe6;
+  border-color:transparent;
+  color:#3e6e6a;
+  font-weight:700;
+  box-shadow:none;
+}
+.souvenir-detail-panel .souvenir-person-chip.active small{color:#477a73}
+.place-form-error:not([hidden]){
+  display:block;
+  margin:9px 0 0;
+  padding:8px 11px;
+  border:1px solid #e6c7ba;
+  border-radius:9px;
+  color:#a6533c;
+  background:#fff3ee;
+  font-size:11px;
+}
+@media(prefers-color-scheme:dark){
+  .souvenir-detail-panel .souvenir-person-chip{color:#b5b7b5;background:transparent;border-color:transparent}
+  .souvenir-detail-panel .souvenir-person-chip small{color:#9fa8a2}
+  .souvenir-detail-panel .souvenir-person-chip.active{background:#293b3c;color:#c5dad4;border-color:transparent}
+  .souvenir-detail-panel .souvenir-person-chip.active small{color:#aac7ba}
+  .place-form-error:not([hidden]){background:#44312d;color:#ffc2a8;border-color:#78544a}
+}
