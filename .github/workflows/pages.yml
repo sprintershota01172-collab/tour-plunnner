@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Verify JavaScript syntax
         run: |
-          for file in app.js i18n.js mobile-input.js notifications.js line-invite.js line-share.js date-range.js sync.js; do
+          for file in app.js sw.js i18n.js mobile-input.js notifications.js line-invite.js line-share.js date-range.js sync.js; do
             node --check "$file"
           done
       - name: Test password-protected sharing links
