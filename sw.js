@@ -1,5 +1,5 @@
-const CACHE='tabi-planner-v113';
-const SHELL=['./flight-mark.svg?v=20261018-113','./invite-card-art.svg?v=20261018-113','./mobile-input.js?v=20261018-113','./line-share.html','./line-share.js?v=20261018-113','./line-invite.js?v=20261018-113','./index.html','./styles.css?v=20261018-113','./i18n.js?v=20261018-113','./app.js?v=20261018-113','./notifications.js?v=20261018-113','./date-range.js?v=20261018-113','./sync.js?v=20261018-113','./accounts.js?v=20261018-113','./account-ui.js?v=20261018-113','./account.css?v=20261018-113','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
+const CACHE='tabi-planner-v114';
+const SHELL=['./flight-mark.svg?v=20261018-114','./invite-card-art.svg?v=20261018-114','./mobile-input.js?v=20261018-114','./line-share.html','./line-share.js?v=20261018-114','./line-invite.js?v=20261018-114','./index.html','./styles.css?v=20261018-114','./i18n.js?v=20261018-114','./app.js?v=20261018-114','./notifications.js?v=20261018-114','./date-range.js?v=20261018-114','./sync.js?v=20261018-114','./accounts.js?v=20261018-114','./account-ui.js?v=20261018-114','./account.css?v=20261018-114','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
 // Only the essential offline app must succeed for activation. Optional image
 // files cannot make the whole offline installation fail.
 const OPTIONAL=SHELL.filter(file=>/flight-mark\.svg|invite-card-art\.svg|line-share\.html|line-share\.js|manifest\.webmanifest|icon\.svg|icon-192\.png|icon-512\.png|apple-touch-icon\.png/.test(file));
@@ -20,6 +20,28 @@ self.addEventListener('fetch',event=>{
      url.pathname.endsWith('/icon-preview.html')||url.pathname.endsWith('/line-config.json'))return;
   if(request.mode==='navigate'){
     event.respondWith((async()=>{
+      const cache=await caches.open(CACHE);
+      const page=new URL(url.pathname.endsWith('/line-share.html')?'./line-share.html':'./index.html',self.registration.scope);
+      // An installed iPhone app used to keep opening the old cached HTML even
+      // after GitHub Pages had published a newer version. Prefer the network
+      // for navigations; fall back to the local page immediately when offline.
+      const offlinePage=()=>cache.match(page);
+      if(typeof navigator!=='undefined'&&navigator.onLine===false)
+        return (await offlinePage())||Response.error();
+      const controller=new AbortController();
+      const timer=setTimeout(()=>controller.abort(),1800);
+      try{
+        const response=await fetch(request,{signal:controller.signal,cache:'no-store'});
+        if(!response.ok)throw new Error('navigation failed');
+        if(response.type==='basic')await cache.put(page,response.clone());
+        return response;
+      }catch{
+        return (await offlinePage())||Response.error();
+      }finally{clearTimeout(timer);}
+    })());
+    return;
+  }
+  event.respondWith((async()=>{
       const cache=await caches.open(CACHE);
       const page=new URL(url.pathname.endsWith('/line-share.html')?'./line-share.html':'./index.html',self.registration.scope);
       const local=await cache.match(page);
