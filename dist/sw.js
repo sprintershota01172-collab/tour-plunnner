@@ -11,8 +11,8 @@ self.addEventListener('install',event=>event.waitUntil((async()=>{
   await self.skipWaiting();
 })()));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('tabi-planner-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
-// Prefer the locally installed app shell. Waiting for the network on each
-// navigation made an already-installed app slow and unusable without signal.
+// Refresh the document when connected, with a bounded timeout and offline fallback.
+// Keep static assets cache-first for instant repeat launches.
 self.addEventListener('fetch',event=>{
   const request=event.request,url=new URL(request.url);
   if(request.method!=='GET'||url.origin!==self.location.origin||
@@ -20,43 +20,6 @@ self.addEventListener('fetch',event=>{
      url.pathname.endsWith('/icon-preview.html')||url.pathname.endsWith('/line-config.json'))return;
   if(request.mode==='navigate'){
     event.respondWith((async()=>{
-      const cache=await caches.open(CACHE);
-      const page=new URL(url.pathname.endsWith('/line-share.html')?'./line-share.html':'./index.html',self.registration.scope);
-      // An installed iPhone app used to keep opening the old cached HTML even
-      // after GitHub Pages had published a newer version. Prefer the network
-      // for navigations; fall back to the local page immediately when offline.
-      const offlinePage=()=>cache.match(page);
-      if(typeof navigator!=='undefined'&&navigator.onLine===false)
-        return (await offlinePage())||Response.error();
-      const controller=new AbortController();
-      const timer=setTimeout(()=>controller.abort(),1800);
-      try{
-        const response=await fetch(request,{signal:controller.signal,cache:'no-store'});
-        if(!response.ok)throw new Error('navigation failed');
-        if(response.type==='basic')await cache.put(page,response.clone());
-        return response;
-      }catch{
-        return (await offlinePage())||Response.error();
-      }finally{clearTimeout(timer);}
-    })());
-    return;
-  }
-  event.respondWith((async()=>{
-      const cache=await caches.open(CACHE);
-      const page=new URL(url.pathname.endsWith('/line-share.html')?'./line-share.html':'./index.html',self.registration.scope);
-      const local=await cache.match(page);
-      if(local)return local; // Instant start, even while offline.
-      try{
-        const response=await fetch(request);
-        if(response.ok&&response.type==='basic'){
-          await cache.put(page,response.clone());
-        }
-        return response;
-      }catch{return (await cache.match('./index.html'))||Response.error();}
-    })());
-    return;
-  }
-  event.respondWith((async()=>{
     const cache=await caches.open(CACHE),cached=await cache.match(request);
     if(cached)return cached;
     try{
