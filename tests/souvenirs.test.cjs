@@ -94,7 +94,7 @@ test('husband/wife group migration and item ownership preserved',()=>{
     SOUVENIR_OWNER_DEFAULTS:[{id:'owner-husband',name:'夫',budgetAmount:null,currency:'USD'},{id:'owner-wife',name:'妻',budgetAmount:null,currency:'USD'}]
   });
   const owners=helper.normalizeSouvenirOwners(undefined);
-  assert.deepEqual(owners.map(o=>o.name),['夫','妻']);
+  assert.equal(JSON.stringify(owners.map(o=>o.name)),JSON.stringify(['夫','妻']));
   const gifts=helper.normalizeSouvenirs([
     {id:'gift1',name:'お菓子',recipient:'母',quantity:2,unitPrice:15,currency:'USD',ownerId:'owner-husband'},
     {id:'gift2',name:'お茶',recipient:'友人',quantity:3,unitPrice:1000,currency:'JPY'}
