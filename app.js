@@ -40,7 +40,7 @@
   let accountSession=null,appLoaded=false;
   const sharing=sharedApi?sharedApi.create({
     getContext:()=>({id:state.id,trip:state,metadata:state.collaboration}),
-    isBusy:()=>!!(drag||resizeSession||placeSwipe||$('#modalBackdrop.open')||$('#settingsBackdrop.open')||$('#appSettingsBackdrop.open')||$('#packingBackdrop.open')||$('#groupsBackdrop.open')||$('#tripsBackdrop.open')||$('#souvenirBackdrop.open')),
+    isBusy:()=>!!(drag||resizeSession||placeSwipe||$('#modalBackdrop.open')||$('#settingsBackdrop.open')||$('#appSettingsBackdrop.open')||$('#packingBackdrop.open')||$('#groupsBackdrop.open')||$('#tripsBackdrop.open')||$('#souvenirBackdrop.open')||$('#souvenirOwnerBackdrop.open')||$('#todoBackdrop.open')||$('#daySummaryBackdrop.open')),
     applyTrip:trip=>{const previous=state;state=normalizeState({...state,...trip});selectedDay=Math.max(0,Math.min(selectedDay,dayCount()-1));persist(false);renderAll();notifications?.notice(previous,state);},
     setMetadata:metadata=>{state.collaboration=metadata;persist(false);},
     onStatus:updatePartnerStatus,
@@ -234,7 +234,37 @@
     });
   }
   function storagePayload(){trips=trips.map(t=>t.id===state.id?state:t);activeTripId=state.id;return {version:3,activeTripId,trips,accountSession};}
-  function persist(sync=true){if(sync&&sharedApi){if(undoSnapshot&&undoCheckpoint?.before!==undoSnapshot)undoCheckpoint={before:undoSnapshot,after:sharedApi.wire(state)};sharing.changed();}storagePayload();window.TabiAccountUI?.notifyTripChange?.();clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{const payload=storagePayload();if(db){try{await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(payload,'state');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}catch{showToast('保存できませんでした。端末の空き容量をご確認ください');}}else{try{localStorage.setItem(DB_NAME,JSON.stringify(payload));}catch{showToast('保存容量が不足しています');}}},100);}
+  function writeLocalState(){
+    const payload=storagePayload();
+    if(db){
+      try{
+        const tx=db.transaction(DB_STORE,'readwrite');
+        tx.objectStore(DB_STORE).put(payload,'state');
+        tx.onerror=()=>showToast('保存できませんでした。端末の空き容量をご確認ください');
+      }catch{
+        showToast('保存できませんでした。端末の空き容量をご確認ください');
+      }
+    }else{
+      try{localStorage.setItem(DB_NAME,JSON.stringify(payload));}
+      catch{showToast('保存容量が不足しています');}
+    }
+  }
+  function flushPendingSave(){
+    if(!saveTimer)return;
+    clearTimeout(saveTimer);saveTimer=0;
+    writeLocalState();
+  }
+  function persist(sync=true){
+    if(sync&&sharedApi){
+      if(undoSnapshot&&undoCheckpoint?.before!==undoSnapshot)
+        undoCheckpoint={before:undoSnapshot,after:sharedApi.wire(state)};
+      sharing.changed();
+    }
+    storagePayload();
+    window.TabiAccountUI?.notifyTripChange?.();
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(flushPendingSave,100);
+  }
   function id(){return crypto.randomUUID?crypto.randomUUID():`p-${Date.now()}-${Math.random().toString(36).slice(2,9)}`;}
   function dateAt(index){const date=parseDate(state.startDate);date.setDate(date.getDate()+index);return date;}
   function parseDate(value){if(typeof value!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value))return new Date(NaN);const [y,m,d]=value.split('-').map(Number),date=new Date(y,m-1,d,12);return date.getFullYear()===y&&date.getMonth()===m-1&&date.getDate()===d?date:new Date(NaN);}
@@ -530,19 +560,32 @@
     return '合計 '+total+' · 予算 '+souvenirMoney(owner.budgetAmount,owner.currency)+' · '+(remaining>=0?'残り ':'超過 ')+souvenirMoney(Math.abs(remaining),owner.currency)+(items.some(item=>item.unitPrice!=null&&item.currency!==owner.currency)?'（別通貨は別集計）':'');
   }
   function renderSouvenirOwners(){
-    const owners=state.souvenirOwners||[];
-    if(souvenirOwnerFilter!=='all'&&souvenirOwnerFilter!=='unassigned'&&!owners.some(o=>o.id===souvenirOwnerFilter))souvenirOwnerFilter='all';
+    const owners=state.souvenirOwners||[],all=state.souvenirs||[];
+    if(souvenirOwnerFilter!=='all'&&souvenirOwnerFilter!=='unassigned'&&!owners.some(o=>o.id===souvenirOwnerFilter))
+      souvenirOwnerFilter='all';
     $('#souvenirOwnerCount').textContent=owners.length+'グループ';
-    const tabs=[{id:'all',name:'全体'},{id:'unassigned',name:'未分類'},...owners];
-    $('#souvenirOwnerTabs').innerHTML=tabs.map(o=>{
-      const items=state.souvenirs.filter(item=>o.id==='all'||(o.id==='unassigned'?!item.ownerId:item.ownerId===o.id));
-      const active=souvenirOwnerFilter===o.id;
-      return `<button type="button" class="souvenir-owner-chip ${active?'active':''}" data-souvenir-owner="${esc(o.id)}" aria-pressed="${active}"><b>${esc(o.name)}</b><small>${items.length}件</small></button>`;
+    const unassigned=all.filter(item=>!item.ownerId);
+    const entries=[...owners,...(unassigned.length?[{id:'unassigned',name:'未分類',budgetAmount:null,currency:'USD'}]:[])];
+    $('#souvenirOwnerTabs').innerHTML=entries.map(owner=>{
+      const items=all.filter(item=>owner.id==='unassigned'?!item.ownerId:item.ownerId===owner.id);
+      const completed=items.filter(item=>item.bought).length,qty=items.reduce((sum,item)=>sum+item.quantity,0);
+      const people=new Set(items.filter(item=>item.personId).map(item=>item.personId)).size+(items.some(item=>!item.personId)?1:0);
+      return `<button type="button" class="souvenir-owner-card" data-souvenir-owner="${esc(owner.id)}" aria-label="${esc(owner.name)}の詳細を開く">
+        <span class="souvenir-owner-card-main"><strong>${esc(owner.name)}</strong>
+          <span>${people}人 · ${qty}個 · ${completed}/${items.length}件購入済み</span></span>
+        <span class="souvenir-owner-card-budget">${esc(souvenirOwnerBudget(owner.id==='unassigned'?null:owner,items))}</span>
+        <span class="souvenir-owner-card-arrow" aria-hidden="true">›</span>
+      </button>`;
     }).join('');
-    const chosen=owners.find(o=>o.id===souvenirOwnerFilter);
-    const items=state.souvenirs.filter(item=>souvenirOwnerFilter==='all'||(souvenirOwnerFilter==='unassigned'?!item.ownerId:item.ownerId===souvenirOwnerFilter));
-    $('#souvenirOwnerSummary').textContent=souvenirOwnerBudget(chosen,items);
-    $('#souvenirOwnerManage').hidden=!chosen;
+    const detail=souvenirOwnerFilter!=='all',owner=owners.find(o=>o.id===souvenirOwnerFilter);
+    $('#souvenirOwnerDetail').hidden=!detail;
+    $('#souvenirOwnerPanel').hidden=detail;
+    if(detail){
+      const items=all.filter(item=>souvenirOwnerFilter==='unassigned'?!item.ownerId:item.ownerId===souvenirOwnerFilter);
+      $('#souvenirOwnerDetailName').textContent=owner?.name||'未分類';
+      $('#souvenirOwnerSummary').textContent=souvenirOwnerBudget(owner,items);
+    }
+    $('#souvenirOwnerManage').hidden=!owner;
   }
   function cancelSouvenirOwnerEdit(){
     souvenirOwnerEditing='';$('#souvenirOwnerForm').reset();$('#souvenirOwnerSubmit').textContent='グループ追加';$('#souvenirOwnerCancel').hidden=true;
@@ -556,14 +599,17 @@
     const old=state.souvenirOwners.find(o=>o.id===souvenirOwnerEditing);
     const next={id:old?.id||id(),name:name.slice(0,40),budgetAmount:budget,currency:form.currency.value==='JPY'?'JPY':'USD'};
     if(old)Object.assign(old,next);else state.souvenirOwners.push(next);
-    souvenirOwnerFilter=next.id;souvenirPersonFilter='all';cancelSouvenirOwnerEdit();
+    souvenirOwnerFilter=old?next.id:'all';souvenirPersonFilter='all';cancelSouvenirOwnerEdit();
+    closeModal($('#souvenirOwnerBackdrop'));
     persist();renderSouvenirs();showToast(old?'グループを更新しました':'グループを追加しました');
   }
   function editSouvenirOwner(){
     const owner=state.souvenirOwners.find(o=>o.id===souvenirOwnerFilter);if(!owner)return;
     souvenirOwnerEditing=owner.id;const form=$('#souvenirOwnerForm').elements;
     form.ownerName.value=owner.name;form.budget.value=owner.budgetAmount??'';form.currency.value=owner.currency;
-    $('#souvenirOwnerSubmit').textContent='保存';$('#souvenirOwnerCancel').hidden=false;$('#souvenirOwnerName').focus({preventScroll:true});
+    $('#souvenirOwnerSubmit').textContent='保存';$('#souvenirOwnerCancel').hidden=false;
+    $('#souvenirOwnerSheetTitle').textContent='グループを編集';openModal($('#souvenirOwnerBackdrop'));
+    $('#souvenirOwnerName').focus({preventScroll:true});
   }
   function deleteSouvenirOwner(){
     const owner=state.souvenirOwners.find(o=>o.id===souvenirOwnerFilter);
@@ -604,8 +650,16 @@
     }
     $('#souvenirBudget').textContent=['USD','JPY'].filter(c=>used[c])
       .map(c=>souvenirMoney(amounts[c],c)).join(' / ')||'未設定';
-    renderSouvenirOwners();renderSouvenirPeople();
-    $$('#souvenirFilters [data-souvenir-filter]').forEach(button=>{
+    renderSouvenirOwners();
+    // Building every recipient/item card while showing only group cards hurts
+    // startup performance, especially on mobile. Render details on demand.
+    if(souvenirOwnerFilter==='all'){
+      $('#souvenirList').replaceChildren();
+      $('#souvenirEmpty').hidden=true;
+      return;
+    }
+    renderSouvenirPeople();
+    $('#souvenirFilters [data-souvenir-filter]').forEach(button=>{
       const selected=button.dataset.souvenirFilter===souvenirFilter;
       button.classList.toggle('active',selected);
       button.setAttribute('aria-pressed',String(selected));
@@ -763,6 +817,19 @@
   function bindSouvenirs(){
     $('#addSouvenir').onclick=()=>openSouvenir();
     $('#souvenirOwnerForm').onsubmit=saveSouvenirOwner;
+    $('#souvenirOwnerAdd').onclick=()=>{
+      cancelSouvenirOwnerEdit();$('#souvenirOwnerSheetTitle').textContent='グループを追加';
+      openModal($('#souvenirOwnerBackdrop'));
+    };
+    $('#souvenirOwnerClose').onclick=$('#souvenirOwnerCancel').onclick=()=>{
+      cancelSouvenirOwnerEdit();closeModal($('#souvenirOwnerBackdrop'));
+    };
+    $('#souvenirOwnerBackdrop').addEventListener('click',e=>{
+      if(e.target===$('#souvenirOwnerBackdrop')){cancelSouvenirOwnerEdit();closeModal($('#souvenirOwnerBackdrop'));}
+    });
+    $('#souvenirOwnerBack').onclick=()=>{
+      souvenirOwnerFilter='all';souvenirPersonFilter='all';cancelSouvenirPersonEdit();renderSouvenirs();
+    };
     $('#souvenirOwnerTabs').onclick=e=>{
       const button=e.target.closest('[data-souvenir-owner]');
       if(!button)return;
@@ -771,7 +838,6 @@
     };
     $('#souvenirOwnerEdit').onclick=editSouvenirOwner;
     $('#souvenirOwnerDelete').onclick=deleteSouvenirOwner;
-    $('#souvenirOwnerCancel').onclick=cancelSouvenirOwnerEdit;
     $('#souvenirPersonForm').onsubmit=addSouvenirPerson;
     $('#souvenirPeopleTabs').onclick=event=>{
       const button=event.target.closest('[data-souvenir-person]');
@@ -1278,7 +1344,7 @@
     $('#appSettingsBackdrop').addEventListener('click',e=>{if(e.target===$('#appSettingsBackdrop'))closeModal($('#appSettingsBackdrop'));});$('#settingsBackdrop').addEventListener('click',e=>{if(e.target===$('#settingsBackdrop'))closeModal($('#settingsBackdrop'));});$('#modalBackdrop').addEventListener('click',e=>{if(e.target===$('#modalBackdrop'))closeModal($('#modalBackdrop'));});document.addEventListener('keydown',e=>{if(e.key==='Escape'){$$('.modal-backdrop.open').forEach(closeModal);$('#sharePanel').classList.remove('open');}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z')undo();});
     viewport.addEventListener('scroll',()=>{if(viewport.scrollLeft)viewport.scrollLeft=0;},{passive:true});
     viewport.addEventListener('pointerdown',e=>{if(e.target.closest('input,textarea,select,button,a,.edit-sheet,.place-row,.place-card,.timeline-piece,.tray-piece,.itinerary-stop'))return;swipeStart={x:e.clientX,y:e.clientY,time:Date.now()};});viewport.addEventListener('pointerup',e=>{if(!swipeStart)return;const dx=e.clientX-swipeStart.x,dy=e.clientY-swipeStart.y;if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.25){navigate(pageIndex+(dx<0?1:-1));}swipeStart=null;});
-    window.addEventListener('tabi-language-changed',()=>{renderAll();});window.visualViewport?.addEventListener('resize',setVisualHeight);window.addEventListener('resize',setVisualHeight);window.addEventListener('online',updateConnectionStatus);window.addEventListener('offline',updateConnectionStatus);setVisualHeight();updateConnectionStatus();window.addEventListener('beforeunload',()=>{if(db)db.close();});
+    window.addEventListener('tabi-language-changed',()=>{renderAll();});window.visualViewport?.addEventListener('resize',setVisualHeight);window.addEventListener('resize',setVisualHeight);window.addEventListener('online',updateConnectionStatus);window.addEventListener('offline',updateConnectionStatus);setVisualHeight();updateConnectionStatus();document.addEventListener('visibilitychange',()=>{if(document.hidden)flushPendingSave();});window.addEventListener('pagehide',flushPendingSave);window.addEventListener('beforeunload',()=>{flushPendingSave();if(db)db.close();});
   }
   const partnerStatusText={local:'',synced:'同期済み',syncing:'同期中…',waiting:'同期待ち',offline:'オフライン · 接続後に同期します',retry:'接続を確認しています · 変更は端末に保存済み',invalid:'共有リンクを確認してください', 'too-large':'写真の容量が大きいため同期できません'};
   function updatePartnerStatus(){

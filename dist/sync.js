@@ -189,7 +189,7 @@
     function attach(){
       const ctx=context(),next=tag(ctx);if(next===currentId)return;currentId=next;clearTimeout(timer);clearInterval(poll);rerunRequested=false;
       if(!next){emit('local');return;}emit(online()?'waiting':'offline');
-      if(options.auto!==false){poll=setInterval(()=>{if(typeof document==='undefined'||!document.hidden)sync();},2000);schedule(100);}
+      if(options.auto!==false){poll=setInterval(()=>{if(online()&&(typeof document==='undefined'||!document.hidden))sync();},2000);if(online())schedule(100);}
     }
     function changed(){attach();if(context()?.metadata){emit(online()?'waiting':'offline');if(options.auto!==false){if(running)rerunRequested=true;schedule();}}}
     async function createRoom(trip){

@@ -1890,3 +1890,67 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
   .meal-editor-custom-fields>.field>span,.meal-editor-venue-row>.meal-editor-select>span{color:#d3e8d7}
   .meal-editor-custom-fields input{background:#25352b;border-color:#486252;color:#e8f1e9}
 }
+
+/* v109 — Distinct souvenir group list, drill-down detail and modal group editor. */
+#souvenirOwnerPanel[hidden],#souvenirOwnerDetail[hidden],#souvenirOwnerManage[hidden]{display:none!important}
+.souvenir-owner-panel{padding:14px!important;background:#f5f7f3!important}
+.souvenir-owner-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+.souvenir-owner-title{display:flex;align-items:baseline;gap:8px;min-width:0}
+.souvenir-owner-title strong{font-size:13px;color:#31534c}
+.souvenir-owner-add{
+  flex:none;display:flex;align-items:center;justify-content:center;
+  min-height:40px;padding:0 13px;background:#173b61;color:white;border:0;border-radius:11px;
+  font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation;
+}
+.souvenir-owner-instruction{font-size:10px;line-height:1.5;color:#72887e;margin:0 0 11px}
+.souvenir-owner-tabs{display:grid;grid-template-columns:1fr;gap:9px;overflow:visible;padding:0;max-height:none}
+.souvenir-owner-card{
+  display:grid;grid-template-columns:minmax(0,1fr) 22px;gap:5px 10px;
+  align-items:center;width:100%;min-width:0;min-height:87px;
+  padding:13px 12px 12px 14px;border:1px solid #dae5df;border-radius:13px;
+  background:#fffefa;text-align:left;cursor:pointer;touch-action:manipulation;
+}
+.souvenir-owner-card-main{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0}
+.souvenir-owner-card-main strong{font-size:16px;font-weight:750;line-height:1.25;color:#244b47}
+.souvenir-owner-card-main>span{font-size:10px;color:#84958c}
+.souvenir-owner-card-budget{
+  grid-column:1;display:block;min-width:0;line-height:1.5;
+  font-size:10px;color:#497568;overflow-wrap:anywhere;
+}
+.souvenir-owner-card-arrow{grid-column:2;grid-row:1/3;font-size:27px;font-weight:300;color:#7e9e90;text-align:center}
+.souvenir-detail-panel{max-width:860px;margin:0 auto 24px;min-width:0}
+.souvenir-detail-heading{
+  display:flex;align-items:center;gap:9px;min-width:0;
+  padding:9px 0 10px;margin-bottom:7px;border-bottom:1px solid #dce6dd;
+}
+.souvenir-detail-heading>strong{font-size:15px;color:#2f5c51;min-width:0;overflow-wrap:anywhere}
+.souvenir-owner-back{
+  flex:none;display:flex;align-items:center;justify-content:center;
+  min-height:36px;padding:0 11px;border:1px solid #d3e3d8;
+  border-radius:9px;background:#ecf4ee;color:#386c5e;font-size:11px;cursor:pointer;
+}
+.souvenir-detail-heading .souvenir-owner-manage{margin-left:auto}
+.souvenir-detail-panel>.souvenir-owner-summary{padding:0 3px 12px;margin:0}
+.souvenir-detail-panel>.souvenir-people-panel{margin-bottom:12px}
+.souvenir-owner-sheet{max-height:calc(100dvh - 24px);overflow-y:auto;padding:15px 17px max(18px,env(safe-area-inset-bottom))}
+.souvenir-owner-sheet .sheet-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:16px}
+.souvenir-owner-sheet .souvenir-owner-form{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.souvenir-owner-sheet .souvenir-owner-form>input{height:47px}
+.souvenir-owner-sheet .souvenir-owner-form-budget{grid-template-columns:minmax(0,1fr) 86px;gap:7px}
+.souvenir-owner-sheet .souvenir-owner-form button{min-height:44px}
+.souvenir-owner-sheet .souvenir-owner-form #souvenirOwnerCancel{border:1px solid #dce5dd}
+@media(max-width:600px){
+  .souvenir-owner-panel{padding:11px!important}
+  .souvenir-owner-card{min-height:83px}
+  .souvenir-owner-add{padding:0 11px}
+  .souvenir-detail-panel{margin-bottom:18px}
+}
+@media(prefers-color-scheme:dark){
+  .souvenir-owner-panel{background:#27362d!important}
+  .souvenir-owner-title strong,.souvenir-owner-card-main strong,.souvenir-detail-heading>strong{color:#dff1e3}
+  .souvenir-owner-instruction,.souvenir-owner-card-main>span{color:#b4c6b8}
+  .souvenir-owner-card{background:#2a3a30;border-color:#45604e}
+  .souvenir-owner-card-budget{color:#c0d8c5}
+  .souvenir-owner-back{background:#354c3d;border-color:#506c59;color:#e0f1e3}
+  .souvenir-detail-heading{border-color:#405d4b}
+}

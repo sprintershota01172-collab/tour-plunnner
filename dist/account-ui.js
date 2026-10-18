@@ -41,7 +41,7 @@
     );
   }
   function notifyTripChange(){
-    if(!ready||!session||busy)return;
+    if(!ready||!session||busy||navigator.onLine===false)return;
     if(!pendingEntries().length)return;
     clearTimeout(timer);
     timer=setTimeout(()=>upload(true,false),2500);
@@ -171,7 +171,7 @@
     ready=true;session=bridge.session();
     if(session){indexed=new Set(session.knownRooms||[]);pendingDeletes=new Set(session.pendingDeletes||[]);}
     render();
-    if(session)pull(true);
+    if(session&&navigator.onLine!==false)setTimeout(()=>pull(true),900);
   }
   function init(){
     $('#accountLogin').onclick=()=>authenticate(false);
@@ -184,8 +184,9 @@
     $('#accountRefreshPassword').onclick=()=>{const fields=[$('#accountPassword'),$('#accountPasswordConfirm')];fields.forEach(el=>el.type=el.type==='password'?'text':'password');};
     if(bridge.isReady())onReady();
     else window.addEventListener('tabi-account-ready',onReady,{once:true});
-    window.addEventListener('focus',()=>{if(ready&&session&&!busy)pull(true);});
-    setInterval(()=>{if(ready&&session&&!busy&&!document.hidden)pull(true);},45000);
+    window.addEventListener('focus',()=>{if(ready&&session&&!busy&&navigator.onLine!==false)pull(true);});
+    window.addEventListener('online',()=>{if(ready&&session&&!busy)pull(true);});
+    setInterval(()=>{if(ready&&session&&!busy&&!document.hidden&&navigator.onLine!==false)pull(true);},45000);
   }
   window.TabiAccountUI={notifyTripChange,notifyTripDeleted,addInvitedRoom,render};
   init();

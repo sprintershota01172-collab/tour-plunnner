@@ -71,5 +71,5 @@ test('the fifth tab and a task editor are present',()=>{
 test('compiled files and cache version match',()=>{
   for(const p of ['app.js','index.html','styles.css','sync.js','notifications.js','i18n.js','sw.js'])
     assert.equal(readFileSync(p,'utf8'),readFileSync('dist/'+p,'utf8'));
-  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v108/);
+  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v109/);
 });

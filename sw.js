@@ -1,23 +1,47 @@
-const CACHE='tabi-planner-v108';
-const SHELL=['./flight-mark.svg?v=20261018-108','./invite-card-art.svg?v=20261018-108','./mobile-input.js?v=20261018-108','./line-share.html','./line-share.js?v=20261018-108','./line-invite.js?v=20261018-108','./index.html','./styles.css?v=20261018-108','./i18n.js?v=20261018-108','./app.js?v=20261018-108','./notifications.js?v=20261018-108','./date-range.js?v=20261018-108','./sync.js?v=20261018-108','./accounts.js?v=20261018-108','./account-ui.js?v=20261018-108','./account.css?v=20261018-108','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
-self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(SHELL)).then(()=>self.skipWaiting())));
+const CACHE='tabi-planner-v109';
+const SHELL=['./flight-mark.svg?v=20261018-109','./invite-card-art.svg?v=20261018-109','./mobile-input.js?v=20261018-109','./line-share.html','./line-share.js?v=20261018-109','./line-invite.js?v=20261018-109','./index.html','./styles.css?v=20261018-109','./i18n.js?v=20261018-109','./app.js?v=20261018-109','./notifications.js?v=20261018-109','./date-range.js?v=20261018-109','./sync.js?v=20261018-109','./accounts.js?v=20261018-109','./account-ui.js?v=20261018-109','./account.css?v=20261018-109','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
+// Only the essential offline app must succeed for activation. Optional image
+// files cannot make the whole offline installation fail.
+const OPTIONAL=SHELL.filter(file=>/flight-mark\.svg|invite-card-art\.svg|line-share\.html|line-share\.js|manifest\.webmanifest|icon\.svg|icon-192\.png|icon-512\.png|apple-touch-icon\.png/.test(file));
+const CORE=SHELL.filter(file=>!OPTIONAL.includes(file));
+self.addEventListener('install',event=>event.waitUntil((async()=>{
+  const cache=await caches.open(CACHE);
+  await cache.addAll(CORE);
+  await Promise.allSettled(OPTIONAL.map(file=>cache.add(file)));
+  await self.skipWaiting();
+})()));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('tabi-planner-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
+// Prefer the locally installed app shell. Waiting for the network on each
+// navigation made an already-installed app slow and unusable without signal.
 self.addEventListener('fetch',event=>{
   const request=event.request,url=new URL(request.url);
-  if(request.method!=='GET'||url.origin!==self.location.origin||url.pathname.includes('/api/')||url.pathname.endsWith('/mobile-check.html')||url.pathname.endsWith('/icon-preview.html')||url.pathname.endsWith('/line-config.json'))return;
+  if(request.method!=='GET'||url.origin!==self.location.origin||
+     url.pathname.includes('/api/')||url.pathname.endsWith('/mobile-check.html')||
+     url.pathname.endsWith('/icon-preview.html')||url.pathname.endsWith('/line-config.json'))return;
   if(request.mode==='navigate'){
     event.respondWith((async()=>{
-      const cache=await caches.open(CACHE),page=new URL(url.pathname.endsWith('/line-share.html')?'./line-share.html':'./index.html',self.registration.scope);
-      try{const response=await fetch(new Request(request,{cache:'reload'}));if(response.ok&&response.type==='basic')await cache.put(page,response.clone());return response;}
-      catch{return(await cache.match(page))||Response.error();}
+      const cache=await caches.open(CACHE);
+      const page=new URL(url.pathname.endsWith('/line-share.html')?'./line-share.html':'./index.html',self.registration.scope);
+      const local=await cache.match(page);
+      if(local)return local; // Instant start, even while offline.
+      try{
+        const response=await fetch(request);
+        if(response.ok&&response.type==='basic'){
+          await cache.put(page,response.clone());
+        }
+        return response;
+      }catch{return (await cache.match('./index.html'))||Response.error();}
     })());
     return;
   }
   event.respondWith((async()=>{
     const cache=await caches.open(CACHE),cached=await cache.match(request);
     if(cached)return cached;
-    try{const response=await fetch(request);if(response.ok&&response.type==='basic')await cache.put(request,response.clone());return response;}
-    catch{if(request.mode==='navigate')return (await cache.match('./index.html'))||Response.error();return Response.error();}
+    try{
+      const response=await fetch(request);
+      if(response.ok&&response.type==='basic')await cache.put(request,response.clone());
+      return response;
+    }catch{return Response.error();}
   })());
 });
 
