@@ -2189,3 +2189,39 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
   .souvenir-group-switch-tab.active small{color:#c7decf}
   .souvenir-group-add{background:#315b6b;border-color:#315b6b;color:#fff}
 }
+
+/* v114 — Compact gift details and intentional swipe-to-delete. */
+.souvenir-swipe-wrap{
+ position:relative;min-width:0;overflow:hidden;
+ border-bottom:1px solid #efeee9;border-radius:0;isolation:isolate;
+ touch-action:pan-y;
+}
+.souvenir-swipe-wrap:last-child{border-bottom:0}
+.souvenir-swipe-wrap .souvenir-group-row{
+ position:relative;z-index:1;width:100%;margin:0;border:0;
+ background:#fffefa;transform:translateX(0);
+ transition:transform .19s cubic-bezier(.22,.7,.28,1);
+ touch-action:pan-y;will-change:transform;
+}
+.souvenir-swipe-wrap.is-swiped .souvenir-group-row{transform:translateX(-78px)}
+.souvenir-swipe-delete{
+ position:absolute;z-index:0;right:0;top:0;bottom:0;
+ display:grid;place-items:center;width:78px;padding:0;
+ border:0;border-radius:0;background:#c6504b;color:#fff;
+ font-size:12px;font-weight:750;cursor:pointer;touch-action:manipulation;
+}
+.souvenir-group-item .souvenir-shop-label{
+ color:#52786c;font-weight:600;font-size:10px;
+}
+.souvenir-group-item strong{font-size:12px}
+.souvenir-group-item small{font-variant-numeric:tabular-nums}
+.souvenir-group-row:focus-within{outline-offset:-2px}
+@media(prefers-reduced-motion:reduce){
+ .souvenir-swipe-wrap .souvenir-group-row{transition:none}
+}
+@media(prefers-color-scheme:dark){
+ .souvenir-swipe-wrap{border-color:#405044}
+ .souvenir-swipe-wrap .souvenir-group-row{background:#26332b}
+ .souvenir-group-item .souvenir-shop-label{color:#a4d3bb}
+ .souvenir-swipe-delete{background:#aa4949}
+}
