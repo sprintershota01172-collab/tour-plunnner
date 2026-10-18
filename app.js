@@ -860,7 +860,7 @@
       souvenirSwipeOpenId=gesture.wasOpen?gesture.id:'';
     });
     root.addEventListener('click',event=>{
-      if(Date.now()<souvenirSwipedUntil&&event.target.closest('[data-souvenir-swipe]')){
+      if(Date.now()<souvenirSwipedUntil&&event.target.closest('[data-souvenir-surface]')){
         event.preventDefault();event.stopImmediatePropagation();return;
       }
       if(souvenirSwipeOpenId&&event.target.closest('[data-souvenir-edit]')){
@@ -868,7 +868,33 @@
       }
     },true);
   }
+  function ensureSouvenirControls(){
+    // Defend against an older cached index.html running with a newer app.js.
+    // Missing controls must not stop all tabs and buttons from being bound.
+    const list=$('#souvenirOwnerTabs');
+    if(list&&!$('#souvenirGroupSwitch')){
+      const tabs=document.createElement('div');
+      tabs.id='souvenirGroupSwitch';
+      tabs.className='souvenir-group-switch';
+      tabs.setAttribute('role','group');
+      tabs.setAttribute('aria-label','管理グループを選択');
+      list.before(tabs);
+    }
+    const choices=$('#souvenirRecipientChoices');
+    if(choices&&!$('#souvenirRecipientTypeTabs')){
+      const tabs=document.createElement('div');
+      tabs.id='souvenirRecipientTypeTabs';
+      tabs.className='souvenir-recipient-types';
+      tabs.setAttribute('role','group');
+      tabs.setAttribute('aria-label','渡す相手の種類');
+      tabs.innerHTML='<button type="button" data-recipient-type="person">個人</button><button type="button" data-recipient-type="company">会社</button><button type="button" data-recipient-type="team">部署・チーム</button>';
+      choices.before(tabs);
+      const legacy=$('#souvenirRecipientTypeSelect');
+      if(legacy)legacy.hidden=true;
+    }
+  }
   function bindSouvenirs(){
+    ensureSouvenirControls();
     bindSouvenirSwipe();
     $('#souvenirRecipientTypeTabs').onclick=event=>{
       const button=event.target.closest('[data-recipient-type]');
@@ -1633,6 +1659,21 @@
     }
   };
 
-  async function registerSW(){if('serviceWorker' in navigator&&location.protocol.startsWith('http'))try{const registration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});registration.update().catch(()=>{});}catch(e){console.warn('PWA offline cache could not start',e);}}
+  async function registerSW(){
+    if(!('serviceWorker' in navigator)||!location.protocol.startsWith('http'))return;
+    let refreshing=false;
+    navigator.serviceWorker.addEventListener('controllerchange',()=>{
+      if(refreshing||!appLoaded)return;
+      const editing=!!$('.modal-backdrop.open')||!!document.activeElement?.matches('input,textarea,select');
+      if(editing){showToast('アプリの最新版が届きました。画面を開き直すと反映されます');return;}
+      refreshing=true;
+      flushPendingSave();
+      location.reload();
+    });
+    try{
+      const registration=await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});
+      registration.update().catch(()=>{});
+    }catch(e){console.warn('PWA offline cache could not start',e);}
+  }
   bind();bindPlacementHelpers();loadState();registerSW();
 })();
