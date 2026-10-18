@@ -279,7 +279,8 @@
         if(!x||typeof x!=='object')continue;
         const name=typeof x.name==='string'?x.name.trim().slice(0,100):'';
         const placeId=typeof x.placeId==='string'?x.placeId.slice(0,120):'';
-        if(name||placeId)meals[type]={name,placeId};
+        const location=typeof x.location==='string'?x.location.trim().slice(0,120):'';
+        if(name||placeId||location)meals[type]={name,placeId,location};
       }
       if(Object.keys(meals).length)result[day]=meals;
     }
@@ -299,7 +300,14 @@
   }
   function displayMeal(day,type){
     const planned=scheduledMeal(day,type);
-    return {name:planned?.name||mealText(mealAt(day,type))||'',planned};
+    if(planned){
+      const place=planned.places[0];
+      return {name:planned.name,location:planned.name,detail:place?.address||'',planned,linked:place||null};
+    }
+    const meal=mealAt(day,type),linked=meal?.placeId&&state.places.find(p=>p.id===meal.placeId);
+    if(linked)return {name:linked.name,location:linked.name,detail:linked.address||'',planned:null,linked};
+    // Legacy custom meal names are notes, not verified physical venues.
+    return {name:meal?.name||'',location:meal?.location||'',detail:meal?.name||'',planned:null,linked:null};
   }
   function foodPlaces(){return state.places.filter(isFood);}
   function mealAt(day,type){return state.meals?.[day]?.[type]||null;}
@@ -308,17 +316,28 @@
     if(!MEALS.some(m=>m[0]===type)||!Number.isInteger(day)||day<0||day>=dayCount())return;
     state.meals=normalizeMeals(state.meals);
     const row={...(state.meals[String(day)]||{})};
-    const name=String(record?.name||'').trim().slice(0,100),placeId=String(record?.placeId||'').slice(0,120);
-    if(name||placeId)row[type]={name,placeId};else delete row[type];
+    const name=String(record?.name||'').trim().slice(0,100),
+      placeId=String(record?.placeId||'').slice(0,120),
+      location=String(record?.location||'').trim().slice(0,120);
+    if(name||placeId||location)row[type]={name,placeId,location};else delete row[type];
     if(Object.keys(row).length)state.meals[String(day)]=row;else delete state.meals[String(day)];
     persist();renderDayMeals();renderItinerary();
+  }
+  function mealVenueMarkup(detail){
+    const hasLocation=!!detail.location;
+    return '<span class="meal-venue '+(hasLocation?'':'meal-venue-empty')+'">'+
+      esc(hasLocation?detail.location:'場所未設定')+'</span>';
   }
   function renderDayMeals(){
     const panel=$('#dayMeals');if(!panel)return;
     panel.hidden=!hasTripDates();if(panel.hidden)return;
-    panel.innerHTML=MEALS.map(([type,,short])=>{
-      const detail=displayMeal(selectedDay,type),title=detail.name||'＋ 未定',clock=detail.planned?fmtTime(detail.planned.start)+' ':'';
-      return '<button type="button" data-edit-meal="'+type+'" class="day-meal-pill '+(detail.name?'is-set ':'')+(detail.planned?'is-planned':'')+'" title="'+esc(clock+title)+'"><b>'+short+'</b><span>'+esc(clock+title)+'</span></button>';
+    panel.innerHTML=MEALS.map(([type,label])=>{
+      const detail=displayMeal(selectedDay,type);
+      const time=detail.planned?fmtTime(detail.planned.start):'';
+      return '<button type="button" data-edit-meal="'+type+'" class="day-meal-pill '+(detail.location?'is-set ':'')+(detail.planned?'is-planned':'')+'" title="'+esc(label+' · 食べる場所：'+(detail.location||'未定'))+'">'+
+        '<b class="day-meal-label">'+label+'</b><span class="day-meal-content"><small>場所</small>'+mealVenueMarkup(detail)+
+        (detail.detail?'<span class="day-meal-detail">'+esc(detail.detail)+'</span>':'')+'</span>'+
+        '<span class="day-meal-action">'+(time?esc(time):'変更')+'</span></button>';
     }).join('');
   }
   function renderMealEditor(){
@@ -326,14 +345,28 @@
     const foods=foodPlaces();
     $('#mealEditorRows').innerHTML=MEALS.map(([type,label])=>{
       const planned=scheduledMeal(selectedDay,type);
-      if(planned)return '<div class="meal-editor-row meal-editor-scheduled"><div class="meal-editor-planned"><b>'+label+'</b><span>'+esc(fmtTime(planned.start)+'  '+planned.name)+'</span></div><button type="button" class="meal-jump" data-meal-jump="'+type+'">パズルで調整 →</button></div>';
-      const meal=mealAt(selectedDay,type),linked=foods.find(p=>p.id===meal?.placeId),custom=!!meal&&!linked;
+      if(planned)return '<div class="meal-editor-row meal-editor-scheduled"><div class="meal-editor-planned"><b>'+label+'・食べる場所</b><span>'+esc(fmtTime(planned.start)+'  '+planned.name)+'</span></div><button type="button" class="meal-jump" data-meal-jump="'+type+'">パズルで調整 →</button></div>';
+      const meal=mealAt(selectedDay,type),linked=foods.find(p=>p.id===meal?.placeId),
+        custom=!!meal&&!linked;
       const opts=foods.map(p=>'<option value="place:'+esc(p.id)+'" '+(linked?.id===p.id?'selected':'')+'>'+esc(p.name)+'</option>').join('');
-      return '<div class="meal-editor-row" data-meal-row="'+type+'"><label class="field"><span>'+label+'</span><select data-meal-select="'+type+'"><option value="" '+(!meal?'selected':'')+'>未定</option>'+opts+'<option value="custom" '+(custom?'selected':'')+'>直接入力する</option></select></label><input data-meal-custom="'+type+'" maxlength="100" placeholder="お店・食べたいもの" enterkeyhint="done" value="'+(custom?esc(meal.name):'')+'" '+(custom?'':'hidden')+'></div>';
+      return '<section class="meal-editor-row meal-editor-venue-row" data-meal-row="'+type+'">'+
+        '<label class="field meal-editor-select"><span>'+label+'</span><select data-meal-select="'+type+'"><option value="" '+(!meal?'selected':'')+'>未定</option>'+opts+'<option value="custom" '+(custom?'selected':'')+'>場所・メニューを直接入力</option></select></label>'+
+        '<div class="meal-editor-custom-fields" '+(custom?'':'hidden')+'>'+
+          '<label class="field"><span>食べる場所</span><input data-meal-location="'+type+'" maxlength="120" placeholder="例：ハレクラニ、機内、ABCストア" enterkeyhint="next" value="'+(custom?esc(meal.location||''):'')+'"></label>'+
+          '<label class="field"><span>食べるもの・メモ（任意）</span><input data-meal-menu="'+type+'" maxlength="100" placeholder="例：朝食ビュッフェ、機内食" enterkeyhint="done" value="'+(custom?esc(meal.name||''):'')+'"></label>'+
+        '</div></section>';
     }).join('');
   }
   function openMealEditor(){if(!hasTripDates()){requestTripDates();return;}renderMealEditor();openModal($('#mealsBackdrop'));}
-  function mealsSummary(day){return '<div class="itinerary-meals">'+MEALS.map(([kind,,short])=>{const detail=displayMeal(day,kind),clock=detail.planned?fmtTime(detail.planned.start)+' ':'';return '<button type="button" class="'+(detail.planned?'is-planned':'')+'" data-open-day-meal="'+day+'" aria-label="'+(day+1)+'日目の'+short+'食を確認"><b>'+short+'</b> '+esc(clock+(detail.name||'未定'))+'</button>';}).join('')+'</div>';}
+  function mealsSummary(day){
+    return '<div class="itinerary-meals">'+MEALS.map(([type,label])=>{
+      const detail=displayMeal(day,type),time=detail.planned?fmtTime(detail.planned.start):'';
+      return '<button type="button" class="itinerary-meal-card '+(detail.location?'has-venue ':'')+(detail.planned?'is-planned':'')+'" data-open-day-meal="'+day+'" aria-label="'+(day+1)+'日目の'+label+'・食べる場所を編集">'+
+        '<span class="itinerary-meal-label">'+label+'</span><span class="itinerary-meal-body"><small>食べる場所</small>'+mealVenueMarkup(detail)+
+        (detail.detail?'<em>'+esc(detail.detail)+'</em>':'')+'</span>'+
+        '<span class="itinerary-meal-action">'+(time?esc(time):'変更')+'</span></button>';
+    }).join('')+'</div>';
+  }
   function staySummary(){
     const stays=state.hotels.filter(h=>h.name);
     if(!stays.length)return '';
@@ -1221,15 +1254,20 @@
     });
     $('#mealEditorRows').addEventListener('change',e=>{
       const select=e.target.closest('[data-meal-select]');if(!select)return;
-      const row=select.closest('[data-meal-row]'),field=row.querySelector('[data-meal-custom]'),kind=select.dataset.mealSelect;
-      field.hidden=select.value!=='custom';
+      const row=select.closest('[data-meal-row]'),fields=row.querySelector('.meal-editor-custom-fields'),kind=select.dataset.mealSelect;
+      fields.hidden=select.value!=='custom';
       if(select.value.startsWith('place:')){
-        const place=foodPlaces().find(p=>p.id===select.value.slice(6));if(place)updateMeal(selectedDay,kind,{placeId:place.id,name:place.name});
-      }else if(select.value==='custom'){updateMeal(selectedDay,kind,{name:field.value});field.focus({preventScroll:true});}
-      else updateMeal(selectedDay,kind,null);
+        const place=foodPlaces().find(p=>p.id===select.value.slice(6));
+        if(place)updateMeal(selectedDay,kind,{placeId:place.id,name:place.name});
+      }else if(select.value==='custom'){
+        updateMeal(selectedDay,kind,{location:row.querySelector('[data-meal-location]').value,name:row.querySelector('[data-meal-menu]').value});
+        row.querySelector('[data-meal-location]').focus({preventScroll:true});
+      }else updateMeal(selectedDay,kind,null);
     });
     $('#mealEditorRows').addEventListener('input',e=>{
-      const field=e.target.closest('[data-meal-custom]');if(field)updateMeal(selectedDay,field.dataset.mealCustom,{name:field.value});
+      const field=e.target.closest('[data-meal-location],[data-meal-menu]');if(!field)return;
+      const row=field.closest('[data-meal-row]'),kind=row.dataset.mealRow;
+      updateMeal(selectedDay,kind,{location:row.querySelector('[data-meal-location]').value,name:row.querySelector('[data-meal-menu]').value});
     });
     $('#mealFoodList').onclick=()=>{closeModal($('#mealsBackdrop'));navigate(0);openPlace(undefined,'food');};
     $('#dayTabs').onclick=e=>{const b=e.target.closest('[data-day]');if(b){selectedPieceId=null;selectedDay=Number(b.dataset.day);renderTimeline();}};$('#timelineInner').addEventListener('pointerdown',e=>{const piece=e.target.closest('.timeline-piece');if(piece)handleTimelinePointerDown(e,piece);else if(!drag&&!resizeSession)selectTimelinePiece(null);});$('#itineraryContent').addEventListener('click',e=>{const overview=e.target.closest('[data-edit-day-summary]');if(overview){openDaySummary(overview.dataset.editDaySummary);return;}const edit=e.target.closest('[data-open-day-meal]');if(edit){selectedDay=Number(edit.dataset.openDayMeal);renderDays();openMealEditor();return;}const remove=e.target.closest('[data-unplan]');if(remove){e.stopPropagation();unplanPlace(remove.dataset.unplan,-1);}});$('#itineraryContent').addEventListener('pointerdown',e=>{const stop=e.target.closest('.itinerary-stop[data-pid]');if(stop)watchScheduleSwipe(e,stop.dataset.pid);});// Only desktop mouse drag is supported in the waiting list. Mobile touch is reserved for reliable native scrolling.

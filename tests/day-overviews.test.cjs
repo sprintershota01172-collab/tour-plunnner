@@ -89,5 +89,5 @@ test('deploy root and dist are consistent and offline version increases',()=>{
   for(const p of ['app.js','index.html','styles.css','sync.js','notifications.js','i18n.js','sw.js']){
     assert.equal(readFileSync(p,'utf8'),readFileSync('dist/'+p,'utf8'));
   }
-  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v107/);
+  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v108/);
 });

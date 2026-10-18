@@ -59,6 +59,6 @@ test('app and dist share the same implementation and cache versions',()=>{
   for(const path of ['sync.js','notifications.js','sw.js','index.html']){
     assert.equal(readFileSync(path,'utf8'),readFileSync('dist/'+path,'utf8'));
   }
-  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v107/);
+  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v108/);
   assert.match(readFileSync('sw.js','utf8'),/Promise\.all\(\[/);
 });

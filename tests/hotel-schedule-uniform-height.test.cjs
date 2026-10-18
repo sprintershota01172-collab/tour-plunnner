@@ -22,5 +22,5 @@ test('hotel names keep their full title and date remains data-driven',()=>{
 test('root and deploy copies match and offline cache is refreshed',()=>{
   for(const p of ['app.js','styles.css','index.html','sw.js'])
     assert.equal(readFileSync(p,'utf8'),readFileSync('dist/'+p,'utf8'));
-  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v107/);
+  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v108/);
 });
