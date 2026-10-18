@@ -53,7 +53,7 @@ test('phone planner uses a 2-column, 3-row tray showing up to six pieces',()=>{
 });
 test('collaboration includes the meals field',()=>{
  assert.match(sync,/'packingItems','todoItems','meals'/);
- assert.match(sync,/field==='meals'/);
+ assert.match(sync,/\['meals','daySummaries'\]\.includes\(field\)/);
 });
 
 test('daily meal tiles open the matching day editor, without changing the hour timeline',()=>{
