@@ -2373,3 +2373,20 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
  .transfer-edit{background:#385447;color:#dbece1}
  .transfer-sheet :is(input,select){background:#25332d;color:#e1ece5;border-color:#506358}
 }
+
+/* v116 — Do not stretch a compact editor to full-screen on first text focus. */
+@media(pointer:coarse){
+  .editing-input .modal-backdrop.open > .edit-sheet:not(.app-settings-sheet){
+    height:auto!important;
+    min-height:0!important;
+    max-height:calc(var(--sheet-visual-height,100svh) - 8px)!important;
+  }
+  .modal-backdrop.open > .edit-sheet{
+    scroll-behavior:auto!important;
+    overflow-anchor:none!important;
+    transition:none!important;
+  }
+  .editing-input .modal-backdrop.open{
+    transition:none!important;
+  }
+}
