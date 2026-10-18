@@ -36,6 +36,7 @@ test('offline navigation gets app HTML from local cache without fetching the int
  let networkCalls=0;
  const cache={match:async url=>String(url).endsWith('/index.html')?cached:undefined,put:async()=>{}};
  const context={
+   navigator:{onLine:false},
    self:{location:{origin:'https://example.github.io'},registration:{scope:'https://example.github.io/tabi/'},
      addEventListener:(name,listener)=>{listeners[name]=listener;}},
    caches:{open:async()=>cache,keys:async()=>[]},URL,Promise,Response,
