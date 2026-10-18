@@ -61,5 +61,5 @@ test('cache and deployed copies update together',()=>{
  for(const p of ['app.js','index.html','styles.css','sw.js']){
   assert.equal(readFileSync(p,'utf8'),readFileSync('dist/'+p,'utf8'));
  }
- assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v\\d+/);
+ assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v\d+/);
 });
