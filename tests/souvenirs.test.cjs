@@ -38,7 +38,7 @@ test('souvenir edits and checks are available and synchronized as individual rec
     assert.ok(app.includes('function '+name+'('),name);
   assert.match(sync,/'packingItems','todoItems','meals','souvenirs','souvenirPeople','souvenirOwners'/);
   assert.match(sync,/\['places','hotels','transfers','packingItems','todoItems','souvenirs','souvenirPeople','souvenirOwners'\]/);
-  assert.match(sync,/\['todoItems','souvenirs','souvenirPeople','souvenirOwners'\]\.includes\(field\)/);
+  assert.match(sync,/\['todoItems','souvenirs','souvenirPeople','souvenirOwners','transfers'\]\.includes\(field\)/);
   assert.match(notifications,/oldGifts=new Map/);
   assert.match(notifications,/お土産.*購入済み/);
 });
