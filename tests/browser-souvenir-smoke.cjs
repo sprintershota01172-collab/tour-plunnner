@@ -94,8 +94,12 @@ const visible=async page=>await page.locator('.page.souvenir-page').evaluate(el=
     await page.reload({waitUntil:'domcontentloaded'});
     await page.locator('#dayTabs [data-day="0"]').waitFor({state:'attached'});
     await page.locator('.nav-item[data-nav="2"]').click();
-    await page.locator('[data-add-transfer="0"]').click();
-    assert.equal(await page.locator('#transferBackdrop').evaluate(el=>el.classList.contains('open')),true,'Transport registration must open');
+    const quickAdd=page.locator('#quickAddTransfer');
+    await quickAdd.click();
+    assert.equal(await page.locator('#transferBackdrop').evaluate(el=>el.classList.contains('open')),true,'Top transport button must open');
+    const dayOptions=await page.locator('#transferDaySelect option').count();
+    assert.equal(dayOptions,4,'Transport editor should list every travel day');
+    await page.locator('#transferDaySelect').selectOption('0');
     const transferForm=page.locator('#transferForm');
     await transferForm.locator('[name="mode"]').selectOption('bus');
     await transferForm.locator('[name="start"]').fill('09:15');
