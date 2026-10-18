@@ -27,7 +27,7 @@
   ].map(([id,name,category])=>({id,name,category,checked:false}));
   const DEFAULTS = {
     destination:'', travelers:2, startDate:'', endDate:'', datesConfigured:false,
-    hotels:[], meals:{}, daySummaries:{},
+    hotels:[], meals:{}, daySummaries:{}, transfers:[],
     places:[], groups:CATEGORIES.map(c=>c.name), packingItems:PACKING_DEFAULTS, todoItems:[], souvenirs:[], souvenirPeople:[], souvenirOwners:SOUVENIR_OWNER_DEFAULTS
   };
   const DB_NAME='malie-honeymoon', DB_STORE='app';
@@ -80,14 +80,14 @@
   }
   function isEmptyTrip(t){
     return !t?.collaboration&&!String(t?.destination||'').trim()&&!t?.startDate&&!t?.endDate&&!t?.datesConfigured
-      &&!(t?.hotels||[]).some(h=>h.name||h.start||h.end)&&!Object.values(t?.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))&&!(t?.places||[]).length
+      &&!(t?.hotels||[]).some(h=>h.name||h.start||h.end)&&!Object.values(t?.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))&&!(t?.places||[]).length&&!(t?.transfers||[]).length
       &&!Object.values(t?.daySummaries||{}).some(v=>typeof v==='string'&&v.trim())&&!(t?.todoItems||[]).length&&!(t?.souvenirs||[]).length&&!(t?.souvenirPeople||[]).length&&!(t?.souvenirOwners||[]).some(o=>!SOUVENIR_OWNER_DEFAULTS.some(d=>d.id===o.id&&d.name===o.name&&o.budgetAmount==null))&&!(t?.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g))
       &&!(t?.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name));
   }
   // Preserve distinct journeys (even when they share the same destination).
   // Only remove generated blank placeholders and genuinely equivalent non-shared copies.
   function hasPlanDetails(t){
-    return Object.values(t.daySummaries||{}).some(v=>typeof v==='string'&&v.trim())||(t.todoItems||[]).length>0||(t.souvenirs||[]).length>0||(t.souvenirPeople||[]).length>0||(t.souvenirOwners||[]).some(o=>!SOUVENIR_OWNER_DEFAULTS.some(d=>d.id===o.id&&d.name===o.name&&o.budgetAmount==null))||(t.places||[]).length>0||(t.hotels||[]).some(h=>h.name||h.start||h.end)||Object.values(t.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))
+    return Object.values(t.daySummaries||{}).some(v=>typeof v==='string'&&v.trim())||(t.todoItems||[]).length>0||(t.souvenirs||[]).length>0||(t.souvenirPeople||[]).length>0||(t.souvenirOwners||[]).some(o=>!SOUVENIR_OWNER_DEFAULTS.some(d=>d.id===o.id&&d.name===o.name&&o.budgetAmount==null))||(t.places||[]).length>0||(t.transfers||[]).length>0||(t.hotels||[]).some(h=>h.name||h.start||h.end)||Object.values(t.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))
       ||(t.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name))
       ||(t.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g));
   }
@@ -105,8 +105,8 @@
         if(existing.startDate!==trip.startDate||existing.endDate!==trip.endDate||existing.travelers!==trip.travelers)return false;
         // A generated empty plan may be dropped; a user's actual edits must be preserved.
         if(!hasPlanDetails(trip)||!hasPlanDetails(existing))return true;
-        return JSON.stringify({places:existing.places,hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems,todoItems:existing.todoItems,meals:existing.meals,daySummaries:existing.daySummaries,souvenirs:existing.souvenirs,souvenirPeople:existing.souvenirPeople,souvenirOwners:existing.souvenirOwners})
-          ===JSON.stringify({places:trip.places,hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems,todoItems:trip.todoItems,meals:trip.meals,daySummaries:trip.daySummaries,souvenirs:trip.souvenirs,souvenirPeople:trip.souvenirPeople,souvenirOwners:trip.souvenirOwners});
+        return JSON.stringify({places:existing.places,transfers:existing.transfers||[],hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems,todoItems:existing.todoItems,meals:existing.meals,daySummaries:existing.daySummaries,souvenirs:existing.souvenirs,souvenirPeople:existing.souvenirPeople,souvenirOwners:existing.souvenirOwners})
+          ===JSON.stringify({places:trip.places,transfers:trip.transfers||[],hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems,todoItems:trip.todoItems,meals:trip.meals,daySummaries:trip.daySummaries,souvenirs:trip.souvenirs,souvenirPeople:trip.souvenirPeople,souvenirOwners:trip.souvenirOwners});
       });
       if(!same){unique.push(trip);continue;}
       if(!hasPlanDetails(same)&&hasPlanDetails(trip)){unique[unique.indexOf(same)]=trip;continue;}
@@ -115,7 +115,123 @@
     }
     return unique;
   }
-  function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.meals=normalizeMeals(data.meals);s.daySummaries=normalizeDaySummaries(data.daySummaries);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,listType:isFood(p)?'food':'place',mealType:validMealType(p.mealType),reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.todoItems=normalizeTodoItems(data.todoItems);s.souvenirs=normalizeSouvenirs(data.souvenirs);s.souvenirPeople=normalizeSouvenirPeople(data.souvenirPeople,s.souvenirs);s.souvenirOwners=normalizeSouvenirOwners(data.souvenirOwners);for(const item of s.souvenirs)if(!s.souvenirOwners.some(owner=>owner.id===item.ownerId))item.ownerId='';s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
+  function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.meals=normalizeMeals(data.meals);s.daySummaries=normalizeDaySummaries(data.daySummaries);s.transfers=normalizeTransfers(data.transfers);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,listType:isFood(p)?'food':'place',mealType:validMealType(p.mealType),reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.todoItems=normalizeTodoItems(data.todoItems);s.souvenirs=normalizeSouvenirs(data.souvenirs);s.souvenirPeople=normalizeSouvenirPeople(data.souvenirPeople,s.souvenirs);s.souvenirOwners=normalizeSouvenirOwners(data.souvenirOwners);for(const item of s.souvenirs)if(!s.souvenirOwners.some(owner=>owner.id===item.ownerId))item.ownerId='';s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
+  const TRANSFER_MODES={bus:'バス',walk:'徒歩',train:'電車',subway:'地下鉄',taxi:'タクシー',car:'車',shuttle:'シャトル',ferry:'船',other:'その他'};
+  function transferMinutes(value){
+    if(!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(String(value||'')))return null;
+    const [hour,minute]=value.split(':').map(Number);return hour*60+minute;
+  }
+  function normalizeTransfers(raw){
+    if(!Array.isArray(raw))return [];
+    const ids=new Set();
+    return raw.filter(item=>item&&typeof item==='object'&&typeof item.id==='string'&&item.id&&!ids.has(item.id)&&ids.add(item.id)).map(item=>({
+      id:item.id.slice(0,120),day:Number(item.day),mode:TRANSFER_MODES[item.mode]?item.mode:'other',
+      start:Number(item.start),end:Number(item.end),
+      from:String(item.from||'').slice(0,100),to:String(item.to||'').slice(0,100),
+      line:String(item.line||'').slice(0,100),note:String(item.note||'').slice(0,240)
+    })).filter(item=>Number.isInteger(item.day)&&item.day>=0&&item.day<21&&Number.isInteger(item.start)&&Number.isInteger(item.end)&&item.start>=0&&item.end<=1440&&item.end>item.start);
+  }
+  function transferLabel(item){return TRANSFER_MODES[item.mode]||'移動';}
+  function transfersOn(day){return (state.transfers||[]).filter(t=>t.day===day).sort((a,b)=>a.start-b.start);}
+  function transferConflict(day,start,end,idValue=''){
+    return (state.transfers||[]).some(t=>t.id!==idValue&&t.day===day&&start<t.end&&end>t.start)
+      ||state.places.some(p=>p.day===day&&p.start!=null&&start<p.start+(p.duration||60)&&end>p.start);
+  }
+  function renderTransferRow(t){
+    const conflict=transferConflictForDisplay(t);
+    const route=[t.from,t.to].filter(Boolean).join(' → ');
+    const subtitle=[t.line,route].filter(Boolean).join(' · ');
+    return `<div class="itinerary-transfer ${conflict?'has-conflict':''}">
+      <time class="transfer-times">${fmtTime(t.start)}<span>↓</span>${fmtTime(t.end)}</time>
+      <div class="transfer-copy">
+        <strong>${esc(transferLabel(t))}${t.line?' · '+esc(t.line):''}</strong>
+        <span>${esc(route||'移動区間未設定')}</span>
+        ${t.note?`<small>${esc(t.note)}</small>`:''}
+        ${conflict?'<em>ほかの予定と時間が重複</em>':''}
+      </div>
+      <button type="button" class="transfer-edit" data-edit-transfer="${esc(t.id)}" aria-label="移動の予定を編集">編集</button>
+    </div>`;
+  }
+  function transferConflictForDisplay(t){
+    return (state.transfers||[]).some(other=>other.id!==t.id&&other.day===t.day&&t.start<other.end&&t.end>other.start)
+      ||state.places.some(p=>p.day===t.day&&p.start!=null&&t.start<p.start+(p.duration||60)&&t.end>p.start);
+  }
+  function renderBoardTransfers(){
+    const inner=$('#timelineInner');
+    for(const transfer of transfersOn(selectedDay)){
+      const start=Math.max(START_MIN,transfer.start),end=Math.min(END_MIN,transfer.end);
+      if(end<=start)continue;
+      const marker=document.createElement('button');
+      marker.type='button';marker.className='timeline-transfer';
+      if(transferConflictForDisplay(transfer))marker.classList.add('has-conflict');
+      marker.dataset.editTransfer=transfer.id;
+      marker.title=transferLabel(transfer)+' '+fmtTime(transfer.start)+'〜'+fmtTime(transfer.end);
+      marker.style.top=((start-START_MIN)*PX_PER_MIN)+'px';
+      marker.style.height=Math.max(23,(end-start)*PX_PER_MIN-2)+'px';
+      marker.textContent=fmtTime(transfer.start)+' '+transferLabel(transfer)+(transfer.line?' · '+transfer.line:'');
+      inner.appendChild(marker);
+    }
+  }
+  function openTransfer(dayValue=selectedDay,idValue=''){
+    if(!hasTripDates()){requestTripDates();return;}
+    const t=(state.transfers||[]).find(x=>x.id===idValue);
+    const day=Math.max(0,Math.min(dayCount()-1,Number(dayValue)||0));
+    const f=$('#transferForm').elements;
+    f.id.value=t?.id||'';f.day.value=String(t?.day??day);
+    f.mode.value=t?.mode||'bus';
+    f.start.value=fmtTime(t?.start??(9*60));
+    f.end.value=fmtTime(t?.end??(9*60+30));
+    f.from.value=t?.from||'';f.to.value=t?.to||'';f.line.value=t?.line||'';f.note.value=t?.note||'';
+    $('#transferTitle').textContent=t?'移動を編集':'移動を登録';
+    $('#deleteTransfer').hidden=!t;
+    $('#transferDateLabel').textContent=fmtDate(dateAt(t?.day??day),{month:'long',day:'numeric',weekday:'short'});
+    $('#transferError').hidden=true;
+    openModal($('#transferBackdrop'));
+  }
+  function saveTransfer(event){
+    event.preventDefault();
+    const f=event.currentTarget.elements;
+    const start=transferMinutes(f.start.value),end=transferMinutes(f.end.value),day=Number(f.day.value);
+    const error=$('#transferError');
+    const fail=message=>{error.textContent=message;error.hidden=false;};
+    if(!Number.isInteger(day)||day<0||day>=dayCount())return fail('日付を選び直してください');
+    if(start==null||end==null||end<=start)return fail('到着時刻は出発時刻より後にしてください');
+    if(transferConflict(day,start,end,f.id.value))return fail('同じ時間帯に別の予定があります。時刻を調整してください');
+    const record={id:f.id.value||id(),day,mode:TRANSFER_MODES[f.mode.value]?f.mode.value:'other',start,end,
+      from:f.from.value.trim().slice(0,100),to:f.to.value.trim().slice(0,100),line:f.line.value.trim().slice(0,100),note:f.note.value.trim().slice(0,240)};
+    undoSnapshot=structuredClone(state);undoMessage='移動の登録を戻しました';
+    state.transfers=(state.transfers||[]).filter(t=>t.id!==record.id).concat(record);
+    selectedDay=record.day;
+    closeModal($('#transferBackdrop'));persist();renderTimeline();renderItinerary();
+    showToast('移動を保存しました');
+  }
+  function deleteTransfer(){
+    const idValue=$('#transferForm').elements.id.value;
+    if(!idValue)return;
+    undoSnapshot=structuredClone(state);undoMessage='移動の削除を戻しました';
+    state.transfers=state.transfers.filter(t=>t.id!==idValue);
+    closeModal($('#transferBackdrop'));persist();renderTimeline();renderItinerary();showUndoToast('移動を削除しました');
+  }
+  function bindTransfers(){
+    $('#transferForm').onsubmit=saveTransfer;
+    $('#deleteTransfer').onclick=deleteTransfer;
+    $('#closeTransfer').onclick=$('#cancelTransfer').onclick=()=>closeModal($('#transferBackdrop'));
+    $('#transferBackdrop').addEventListener('click',e=>{if(e.target===$('#transferBackdrop'))closeModal($('#transferBackdrop'));});
+    $('#addBoardTransfer').onclick=()=>openTransfer(selectedDay);
+    $('#itineraryContent').addEventListener('click',e=>{
+      const add=e.target.closest('[data-add-transfer]');
+      if(add){openTransfer(Number(add.dataset.addTransfer));return;}
+      const edit=e.target.closest('[data-edit-transfer]');
+      if(edit){const t=state.transfers.find(item=>item.id===edit.dataset.editTransfer);if(t)openTransfer(t.day,t.id);}
+    });
+    $('#timelineInner').addEventListener('click',e=>{
+      const edit=e.target.closest('[data-edit-transfer]');
+      if(!edit)return;
+      const t=state.transfers.find(item=>item.id===edit.dataset.editTransfer);
+      if(t)openTransfer(t.day,t.id);
+    });
+  }
+
   function normalizeSouvenirs(raw){
     if(!Array.isArray(raw))return [];
     const seen=new Set();
@@ -489,16 +605,17 @@
   function renderDays(){const count=dayCount();$('#autoArrange').disabled=!count;$('#dayClear').disabled=!count;if(!count){selectedDay=0;$('#dayTabs').innerHTML='';$('#dayContext').innerHTML=tripDatesButton();$('#selectedDateLabel').textContent='日程未設定';$('#placedCount').textContent='';renderDayMeals();return;}if(selectedDay>=count)selectedDay=count-1;$('#dayTabs').innerHTML=Array.from({length:count},(_,i)=>{const date=dateAt(i);return `<button class="day-tab ${i===selectedDay?'selected':''} ${state.places.some(p=>p.day===i&&p.start!=null)?'has-place':''}" data-day="${i}" role="tab" aria-selected="${i===selectedDay}"><span class="day-week">${i===0?'DAY 1':`DAY ${i+1}`}</span><b class="day-number">${date.getMonth()+1}/${date.getDate()}</b></button>`;}).join('');
     const stay=dateHotel(selectedDay),overview=daySummary(selectedDay);$('#dayContext').innerHTML=`<span class="hotel-symbol">${icon('bed')}</span><span class="day-context-hotel">${stay?`宿泊：${esc(stay.name)}`:'宿泊先未設定'}</span><span class="day-context-date">${fmtDate(dateAt(selectedDay),{month:'long',day:'numeric',weekday:'short'})}</span><button type="button" class="day-context-overview" data-edit-day-summary="${selectedDay}" title="${esc(overview||'その日の概要を書く')}">${overview?esc(overview):'＋ 概要'}</button>`;
     $('#selectedDateLabel').textContent=fmtDate(dateAt(selectedDay),{month:'long',day:'numeric',weekday:'short'});
-    $('#placedCount').textContent=`${state.places.filter(p=>p.day===selectedDay&&p.start!=null).length}件 · タップで調整 / 長押しで移動`;renderDayMeals();
+    $('#placedCount').textContent=`${state.places.filter(p=>p.day===selectedDay&&p.start!=null).length}件 · 移動${transfersOn(selectedDay).length}件`;renderDayMeals();
   }
   const START_MIN=6*60, END_MIN=23*60, PX_PER_HOUR=44, PX_PER_MIN=PX_PER_HOUR/60;
   function renderTimeline(){renderDays();const inner=$('#timelineInner');if(!hasTripDates()){selectedPieceId=null;inner.style.height='100%';inner.innerHTML=emptyTripMarkup();renderTimelineAdjuster();renderTray();return;}inner.innerHTML='';inner.style.height=`${(END_MIN-START_MIN)*PX_PER_MIN}px`;
     for(let t=START_MIN;t<=END_MIN;t+=60){const y=(t-START_MIN)*PX_PER_MIN;const line=document.createElement('div');line.className='timeline-hour-line';line.style.top=`${y}px`;inner.appendChild(line);if(t<END_MIN){const label=document.createElement('span');label.className='time-label';label.style.top=`${y}px`;label.textContent=`${String(Math.floor(t/60)).padStart(2,'0')}:00`;inner.appendChild(label);const half=document.createElement('div');half.className='timeline-half-line';half.style.top=`${y+PX_PER_HOUR/2}px`;inner.appendChild(half);}}
     // The stay duration is presented in the accommodation summary, not as a fabricated 7 AM time event.
     const dayPlaces=state.places.filter(p=>p.day===selectedDay&&p.start!=null).sort(sortPlaces);
-    if(dayPlaces.length===0){const hint=document.createElement('div');hint.className='drop-zone-hint';hint.style.top=`${(9*60-START_MIN)*PX_PER_MIN}px`;hint.textContent='空いている時間にピースを置いてください';inner.appendChild(hint);}
+    if(dayPlaces.length===0&&transfersOn(selectedDay).length===0){const hint=document.createElement('div');hint.className='drop-zone-hint';hint.style.top=`${(9*60-START_MIN)*PX_PER_MIN}px`;hint.textContent='空いている時間にピースを置いてください';inner.appendChild(hint);}
     for(const p of dayPlaces){const c=cat(p.category);const el=document.createElement('article');el.className=`timeline-piece${p.id===selectedPieceId?' selected':''}`;el.dataset.pid=p.id;el.style.setProperty('--piece-color',c.color);el.style.background=c.soft;el.style.top=`${(p.start-START_MIN)*PX_PER_MIN}px`;el.style.height=`${Math.max(28,(p.duration||60)*PX_PER_MIN-3)}px`;el.innerHTML=`${p.photos?.[0]?`<img class="piece-photo" src="${esc(p.photos[0])}" alt="">`:`<span class="piece-photo" style="display:grid;place-items:center;color:${c.color};font-size:13px">${c.icon}</span>`}<span class="piece-info"><span class="piece-time">${fmtTime(p.start)} — ${fmtTime(p.start+(p.duration||60))}</span><span class="piece-title">${esc(p.name)}</span></span><span class="piece-duration">${p.duration||60}分</span>`;inner.appendChild(el);}
     for(const el of inner.querySelectorAll('.timeline-piece')){const place=state.places.find(p=>p.id===el.dataset.pid);for(const edge of ['start','end']){const handle=document.createElement('button');handle.type='button';handle.className=`resize-handle resize-handle--${edge}`;handle.dataset.resizeEdge=edge;handle.hidden=place?.id!==selectedPieceId;handle.title=edge==='start'?'開始時刻を上下にドラッグ':'終了時刻を上下にドラッグ';handle.setAttribute('aria-label',`${place?.name||'予定'}の${edge==='start'?'開始':'終了'}時刻を調整`);handle.innerHTML=`<span class="resize-grip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16m-4-12 4-4 4 4m-8 8 4 4 4-4"/></svg><span>${edge==='start'?'開始':'終了'}</span></span>`;el.appendChild(handle);}}
+    renderBoardTransfers();
     renderTimelineAdjuster();
     renderTray();
   }
@@ -532,8 +649,9 @@
     const count=dayCount();if(!count){$('#itineraryContent').innerHTML=emptyTripMarkup();return;}
     $('#itineraryContent').innerHTML=staySummary()+Array.from({length:count},(_,day)=>{
       const date=dateAt(day),stay=dateHotel(day),places=state.places.filter(p=>p.day===day&&p.start!=null).sort(sortPlaces);
+      const journeyItems=[...places.map(p=>({start:p.start,html:itineraryStop(p)})),...transfersOn(day).map(t=>({start:t.start,html:renderTransferRow(t)}))].sort((a,b)=>a.start-b.start);
       const heading='<header class="itinerary-day-head"><span class="date-badge"><b>'+date.getDate()+'</b><small>'+new Intl.DateTimeFormat('ja-JP',{weekday:'short'}).format(date)+'</small></span><div class="itinerary-day-title"><h2>'+(day+1)+'日目</h2><p>'+fmtDate(date,{year:'numeric',month:'long',day:'numeric'})+'</p></div>'+(stay?'<span class="day-stay" title="この日の宿泊先">'+icon('bed')+esc(stay.name)+'</span>':'')+'</header>';
-      return '<article class="itinerary-day">'+heading+'<button type="button" class="itinerary-day-overview '+(daySummary(day)?'has-overview':'')+'" data-edit-day-summary="'+day+'" aria-label="'+(day+1)+'日目の概要を編集"><span class="day-overview-label">今日のテーマ</span><span class="day-overview-text">'+(daySummary(day)?esc(daySummary(day)):'＋ その日の概要を書く')+'</span><span class="day-overview-edit">'+(daySummary(day)?'編集':'追加')+'</span></button>'+mealsSummary(day)+(places.length?'<div class="itinerary-stops">'+places.map(p=>itineraryStop(p)).join('')+'</div>':'<div class="itinerary-empty">観光・アクティビティは未定</div>')+'</article>';
+      return '<article class="itinerary-day">'+heading+'<button type="button" class="itinerary-day-overview '+(daySummary(day)?'has-overview':'')+'" data-edit-day-summary="'+day+'" aria-label="'+(day+1)+'日目の概要を編集"><span class="day-overview-label">今日のテーマ</span><span class="day-overview-text">'+(daySummary(day)?esc(daySummary(day)):'＋ その日の概要を書く')+'</span><span class="day-overview-edit">'+(daySummary(day)?'編集':'追加')+'</span></button>'+mealsSummary(day)+'<button type="button" class="itinerary-transfer-add" data-add-transfer="'+day+'">＋ 移動・バスの時間</button>'+(journeyItems.length?'<div class="itinerary-stops">'+journeyItems.map(entry=>entry.html).join('')+'</div>':'<div class="itinerary-empty">まだ予定がありません</div>')+'</article>';
     }).join('');
   }
   function itineraryStop(p){const c=cat(p.category);const query=p.latitude!=null&&p.longitude!=null?`${p.latitude},${p.longitude}`:[p.name,p.address].filter(Boolean).join(' ');const url=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;return `<div class="itinerary-stop" data-pid="${esc(p.id)}"><time class="stop-time">${fmtTime(p.start)}</time><i class="stop-dot" style="--stop-color:${c.color}"></i><div class="stop-details"><h3><span>${esc(p.name)}</span><button type="button" class="stop-remove" data-unplan="${esc(p.id)}" aria-label="${esc(p.name)}を旅程から外す"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h3><p>${esc(p.category)}${validMealType(p.mealType)?' · '+MEAL_NAMES[p.mealType]:''} · ${p.duration||60}分${p.booked?' · 予約済み':p.reservationRequired?' · 要予約':''}${p.notes?`<br>${esc(p.notes)}`:''}</p><a class="map-link" href="${esc(url)}" target="_blank" rel="noopener">${icon('map')}${p.address?'場所を確認':'Googleマップで見る'}</a></div>${p.photos?.[0]?`<img class="stop-photo" src="${esc(p.photos[0])}" alt="">`:''}</div>`;}
@@ -1314,7 +1432,7 @@
     cleanupDrag();if(next){undoSnapshot=structuredClone(state);undoMessage='予定の移動を戻しました';Object.assign(place,next);if(next.day!=null)selectedDay=next.day;selectedPieceId=next.start==null?null:place.id;persist();renderAll();const el=$(`.timeline-piece[data-pid="${CSS.escape(place.id)}"]`);el?.classList.add('snap');if(navigator.vibrate)navigator.vibrate(12);checkMustGo();}
   }
   function dragError(el){el.classList.add('invalid');setTimeout(()=>el.classList.remove('invalid'),360);if(navigator.vibrate)navigator.vibrate([25,35,25]);showToast('その時間はほかの予定と重なります');}
-  function overlaps(day,start,duration,exclude){const end=start+duration;return state.places.some(p=>p.id!==exclude&&p.day===day&&p.start!=null&&start<p.start+(p.duration||60)&&end>p.start);}
+  function overlaps(day,start,duration,exclude){const end=start+duration;return state.places.some(p=>p.id!==exclude&&p.day===day&&p.start!=null&&start<p.start+(p.duration||60)&&end>p.start)||(state.transfers||[]).some(t=>t.day===day&&start<t.end&&end>t.start);}
   function mealPreferredTime(place){
     if(!isFood(place))return null;
     return {breakfast:8*60,lunch:12*60,dinner:18*60,cafe:15*60}[validMealType(place.mealType)]??(place.category==='カフェ'?15*60:12*60);
@@ -1356,7 +1474,7 @@
     canvas.toBlob(blob=>{if(blob)download(blob,`trip-plan-${state.startDate}.png`);else showToast('画像を書き出せませんでした');},'image/png');}
   function importJSON(file){const reader=new FileReader();reader.onload=()=>{try{const raw=JSON.parse(reader.result);if(!raw||typeof raw!=='object'||!Array.isArray(raw.places))throw new Error();const incoming=normalizeState({...raw,collaboration:state.collaboration});incoming.id=state.id;state=incoming;selectedDay=0;persist();renderAll();showToast('旅程データを読み込みました');}catch{showToast('JSONデータを読み込めませんでした');}};reader.readAsText(file);}
 
-  function bind(){document.body.append($('#sharePanel'));bindDaySummaries();try{const sort=localStorage.getItem('tabi-wishlist-sort-v1');if(WISHLIST_SORTS.includes(sort))selectedPlaceSort=sort;}catch{}initFields();bindPartner();bindSouvenirs();bindTodos();$('#tripDateRange').onclick=openTripDateRange;document.addEventListener('click',e=>{if(e.target.closest('[data-open-trip-settings]')){e.preventDefault();openSettings();}});$('#editGroups').onclick=openGroups;$('#closeGroups').onclick=()=>closeModal($('#groupsBackdrop'));$('#groupForm').onsubmit=addGroup;$('#groupEditList').onclick=e=>{const b=e.target.closest('[data-delete-group]');if(b)deleteGroup(b.dataset.deleteGroup);};$('#groupsBackdrop').addEventListener('click',e=>{if(e.target===$('#groupsBackdrop'))closeModal($('#groupsBackdrop'));});$('#registerPlace').onclick=()=>openPlace();$('#quickAdd').onclick=()=>openPlace();$('#emptyAdd').onclick=()=>openPlace();$('#closeSheet').onclick=()=>closeModal($('#modalBackdrop'));$('#cancelSheet').onclick=()=>closeModal($('#modalBackdrop'));$('#placeForm').onsubmit=savePlace;
+  function bind(){document.body.append($('#sharePanel'));bindDaySummaries();bindTransfers();try{const sort=localStorage.getItem('tabi-wishlist-sort-v1');if(WISHLIST_SORTS.includes(sort))selectedPlaceSort=sort;}catch{}initFields();bindPartner();bindSouvenirs();bindTodos();$('#tripDateRange').onclick=openTripDateRange;document.addEventListener('click',e=>{if(e.target.closest('[data-open-trip-settings]')){e.preventDefault();openSettings();}});$('#editGroups').onclick=openGroups;$('#closeGroups').onclick=()=>closeModal($('#groupsBackdrop'));$('#groupForm').onsubmit=addGroup;$('#groupEditList').onclick=e=>{const b=e.target.closest('[data-delete-group]');if(b)deleteGroup(b.dataset.deleteGroup);};$('#groupsBackdrop').addEventListener('click',e=>{if(e.target===$('#groupsBackdrop'))closeModal($('#groupsBackdrop'));});$('#registerPlace').onclick=()=>openPlace();$('#quickAdd').onclick=()=>openPlace();$('#emptyAdd').onclick=()=>openPlace();$('#closeSheet').onclick=()=>closeModal($('#modalBackdrop'));$('#cancelSheet').onclick=()=>closeModal($('#modalBackdrop'));$('#placeForm').onsubmit=savePlace;
     $('#placeForm').addEventListener('invalid',e=>{
       const field=e.target,error=$('#placeFormError');
       if(field.name==='url')$('#optionalDetails').open=true;
