@@ -1477,3 +1477,39 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
 @media(max-width:600px){.souvenir-owner-panel{padding:10px}.souvenir-owner-chip{min-width:67px}.souvenir-owner-form button{min-height:40px}}
 @media(prefers-color-scheme:dark){.souvenir-owner-panel{background:#25322d;border-color:#455d4f}.souvenir-owner-heading strong,.souvenir-owner-section-title h2{color:#dcf0e4}.souvenir-owner-form>input,.souvenir-owner-form-budget input,.souvenir-owner-form-budget select,.souvenir-owner-manage button{background:#293831;color:#e4f1e9;border-color:#54675b}.souvenir-owner-chip{background:#293831;border-color:#53675b;color:#e4f1e9}.souvenir-owner-chip.active{background:#477a78}.souvenir-owner-summary,.souvenir-owner-section-budget{color:#adc9be}}
 @media(prefers-reduced-motion:reduce){.page.page-reveal :is(h1,h2,.eyebrow,.page-subtitle,.souvenir-owner-section-title,.souvenir-item-name),.souvenir-list.souvenir-list-reveal .souvenir-owner-section{animation:none!important}}
+
+
+/* v102 — All tabs share the same position: opacity crossfade, no horizontal sliding. */
+#pages.pages{
+  position:relative;
+  display:block;
+  width:100%;
+  height:100%;
+  transform:none!important;
+  transition:none!important;
+  will-change:auto;
+  backface-visibility:visible;
+}
+#pages.pages>.page{
+  position:absolute;
+  inset:0;
+  width:100%;
+  min-width:0;
+  height:100%;
+  flex:none;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  z-index:0;
+  transition:opacity 360ms ease,visibility 360ms step-end;
+}
+#pages.pages>.page.is-active{
+  visibility:visible;
+  opacity:1;
+  pointer-events:auto;
+  z-index:1;
+  transition:opacity 380ms ease,visibility 0s;
+}
+@media(prefers-reduced-motion:reduce){
+  #pages.pages>.page,#pages.pages>.page.is-active{transition:none!important}
+}

@@ -763,7 +763,7 @@
   function renderNavDot(){const remaining=state.places.some(p=>p.mustGo&&p.start==null);$('#navDot').classList.toggle('visible',remaining);}
 
   function openTripPicker(){renderTrips();openModal($('#tripsBackdrop'));}
-  function selectTrip(tripId){const trip=trips.find(t=>t.id===tripId);if(!trip||trip.id===state.id){closeModal($('#tripsBackdrop'));return;}state=trip;activeTripId=trip.id;selectedDay=0;selectedCategory='すべて';undoSnapshot=null;$('#searchPlaces').value='';completionShown=false;pageIndex=0;pages.style.transform='translate3d(0,0,0)';$$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===0));closeModal($('#tripsBackdrop'));persist();renderAll();showToast('旅行を切り替えました');}
+  function selectTrip(tripId){const trip=trips.find(t=>t.id===tripId);if(!trip||trip.id===state.id){closeModal($('#tripsBackdrop'));return;}state=trip;activeTripId=trip.id;selectedDay=0;selectedCategory='すべて';undoSnapshot=null;$('#searchPlaces').value='';completionShown=false;pageIndex=0;$$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===0));closeModal($('#tripsBackdrop'));persist();renderAll();showToast('旅行を切り替えました');}
   function localDateString(date){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
   function createTrip(){
     if(creatingTrip)return;
@@ -774,7 +774,7 @@
     const previous=state.id,trip=normalizeState({id:id(),destination:'',travelers:2,startDate:'',endDate:'',datesConfigured:false,hotels:[],places:[],packingItems:structuredClone(PACKING_DEFAULTS)});
     creatingTrip=true;draftPreviousTripId=previous;
     state=trip;activeTripId=trip.id;selectedDay=0;selectedCategory='すべて';undoSnapshot=null;
-    $('#searchPlaces').value='';pageIndex=0;pages.style.transform='translate3d(0,0,0)';
+    $('#searchPlaces').value='';pageIndex=0;
     $('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===0));
     closeModal($('#tripsBackdrop'));renderAll();openSettings();
   }
@@ -786,8 +786,8 @@
   }
   function deleteTrip(tripId){if(trips.length<2)return;const trip=trips.find(t=>t.id===tripId);if(!trip)return;const title=trip.destination||'行き先未設定';if(!confirm(`「${title}」と登録したスポット・旅程を削除しますか？`))return;const wasActive=state.id===tripId;if(trip.collaboration)window.TabiAccountUI?.notifyTripDeleted?.(trip.collaboration.roomId);trips=trips.filter(t=>t.id!==tripId);if(wasActive){state=trips[0];activeTripId=state.id;selectedDay=0;selectedCategory='すべて';$('#searchPlaces').value='';undoSnapshot=null;completionShown=false;}persist();renderAll();showToast('旅行を削除しました');}
 
-  function syncPageAccess(){$('#quickAdd').hidden=pageIndex!==0;$$('.page',pages).forEach((page,i)=>{page.inert=i!==pageIndex;page.setAttribute('aria-hidden',i===pageIndex?'false':'true');});if(viewport.scrollLeft)viewport.scrollLeft=0;}
-  function navigate(index){index=Math.max(0,Math.min(3,index));if(index===pageIndex)return;pageIndex=index;pages.style.transform=`translate3d(-${index*25}%,0,0)`;const dest=$$('.page',pages)[index];if(dest){dest.classList.remove('page-reveal');void dest.offsetWidth;dest.classList.add('page-reveal');}$$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===index));syncPageAccess();}
+  function syncPageAccess(){$('#quickAdd').hidden=pageIndex!==0;$$('.page',pages).forEach((page,i)=>{const active=i===pageIndex;page.classList.toggle('is-active',active);page.inert=!active;page.setAttribute('aria-hidden',active?'false':'true');});if(viewport.scrollLeft)viewport.scrollLeft=0;}
+  function navigate(index){index=Math.max(0,Math.min(3,index));if(index===pageIndex)return;pageIndex=index;$$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===index));syncPageAccess();const dest=$$('.page',pages)[index];if(dest){dest.classList.remove('page-reveal');void dest.offsetWidth;dest.classList.add('page-reveal');}}
   function setVisualHeight(){window.TabiViewport?.refresh();}
   function updateConnectionStatus(){const status=$('#connectionStatus');if(status)status.hidden=navigator.onLine;}
 
@@ -1145,7 +1145,7 @@
       if(existing){selectTrip(existing.id);pendingInvite=null;closeModal($('#partnerBackdrop'));notifications?.restore();sharing.sync();window.TabiAccountUI?.addInvitedRoom?.(invite.roomId);return;}
       const result=await sharing.join(invite),trip=normalizeState({...result.trip,id:id(),collaboration:result.metadata});
       trips.push(trip);state=trip;activeTripId=trip.id;selectedDay=0;selectedCategory='すべて';selectedPieceId=null;undoSnapshot=null;undoCheckpoint=null;pendingInvite=null;
-      $('#searchPlaces').value='';pageIndex=0;pages.style.transform='translate3d(0,0,0)';$$('.nav-item').forEach((button,i)=>button.classList.toggle('active',i===0));persist(false);renderAll();closeModal($('#partnerBackdrop'));closeModal($('#settingsBackdrop'));notifications?.restore();window.TabiAccountUI?.addInvitedRoom?.(invite.roomId);showToast('共有の旅行に参加しました');
+      $('#searchPlaces').value='';pageIndex=0;$$('.nav-item').forEach((button,i)=>button.classList.toggle('active',i===0));persist(false);renderAll();closeModal($('#partnerBackdrop'));closeModal($('#settingsBackdrop'));notifications?.restore();window.TabiAccountUI?.addInvitedRoom?.(invite.roomId);showToast('共有の旅行に参加しました');
     }catch(error){partnerError(error);}finally{partnerBusy=false;renderPartner();}
   }
   function clearInviteSecrets(){

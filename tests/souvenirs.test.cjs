@@ -15,7 +15,8 @@ test('souvenir tab is a fourth page with equal-width navigation',()=>{
   assert.match(css,/\.pages\{width:400%\}/);
   assert.match(css,/\.page\{width:25%;flex:0 0 25%\}/);
   assert.match(app,/Math\.min\(3,index\)/);
-  assert.match(app,/translate3d\(-\$\{index\*25\}%,0,0\)/);
+  assert.doesNotMatch(app,/pages\.style\.transform|index\*25/);
+  assert.match(app,/page\.classList\.toggle\('is-active',active\)/);
 });
 
 test('legacy trip souvenir lists are normalized without phantom gifts',()=>{
@@ -57,7 +58,7 @@ test('souvenir-only trip cannot be discarded as empty or merged away',()=>{
 test('root and dist files match and offline cache is updated',()=>{
   for(const name of ['app.js','index.html','styles.css','sync.js','notifications.js','i18n.js','sw.js'])
     assert.equal(readFileSync(name,'utf8'),readFileSync('dist/'+name,'utf8'));
-  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v101/);
+  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v102/);
 });
 
 test('legacy recipient names become distinct stable person records',()=>{
