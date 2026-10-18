@@ -118,7 +118,7 @@
   function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.meals=normalizeMeals(data.meals);s.daySummaries=normalizeDaySummaries(data.daySummaries);s.transfers=normalizeTransfers(data.transfers);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,listType:isFood(p)?'food':'place',mealType:validMealType(p.mealType),reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.todoItems=normalizeTodoItems(data.todoItems);s.souvenirs=normalizeSouvenirs(data.souvenirs);s.souvenirPeople=normalizeSouvenirPeople(data.souvenirPeople,s.souvenirs);s.souvenirOwners=normalizeSouvenirOwners(data.souvenirOwners);for(const item of s.souvenirs)if(!s.souvenirOwners.some(owner=>owner.id===item.ownerId))item.ownerId='';s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
   const TRANSFER_MODES={bus:'バス',walk:'徒歩',train:'電車',subway:'地下鉄',taxi:'タクシー',car:'車',shuttle:'シャトル',ferry:'船',other:'その他'};
   function transferMinutes(value){
-    if(!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(String(value||'')))return null;
+    if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(value||'')))return null;
     const [hour,minute]=value.split(':').map(Number);return hour*60+minute;
   }
   function normalizeTransfers(raw){
@@ -1465,7 +1465,22 @@
   }
   async function pasteUrl(){try{const text=await navigator.clipboard.readText();if(/^https?:\/\//i.test(text.trim())){$('#placeForm').elements.url.value=text.trim();showToast('URLを貼り付けました');}else showToast('クリップボードにURLがありません');}catch{showToast('貼り付け欄を長押しして貼り付けてください');}}
 
-  function getShareText(){if(!hasTripDates())return `${state.destination||'旅行'} · 日程未設定`;const lines=[`✈ ${state.destination} · ${fmtDate(parseDate(state.startDate),{month:'short',day:'numeric'})}–${fmtDate(parseDate(state.endDate),{month:'short',day:'numeric'})}`,`${state.travelers}人の旅程`,''];for(let d=0;d<dayCount();d++){const places=state.places.filter(p=>p.day===d&&p.start!=null).sort(sortPlaces);lines.push(`${d+1}日目 · ${fmtDate(dateAt(d),{month:'numeric',day:'numeric',weekday:'short'})}${dateHotel(d)?` · ${dateHotel(d).name}`:''}`);if(places.length)places.forEach(p=>lines.push(`  ${fmtTime(p.start)}  ${p.name} (${p.duration}分)`));else lines.push('  予定なし');lines.push('');}return lines.join('\n');}
+  function getShareText(){
+    if(!hasTripDates())return `${state.destination||'旅行'} · 日程未設定`;
+    const lines=[`✈ ${state.destination} · ${fmtDate(parseDate(state.startDate),{month:'short',day:'numeric'})}–${fmtDate(parseDate(state.endDate),{month:'short',day:'numeric'})}`,`${state.travelers}人の旅程`,''];
+    for(let d=0;d<dayCount();d++){
+      const places=state.places.filter(p=>p.day===d&&p.start!=null);
+      lines.push(`${d+1}日目 · ${fmtDate(dateAt(d),{month:'numeric',day:'numeric',weekday:'short'})}${dateHotel(d)?` · ${dateHotel(d).name}`:''}`);
+      const entries=[
+        ...places.map(p=>({start:p.start,label:`${fmtTime(p.start)}  ${p.name} (${p.duration}分)`})),
+        ...transfersOn(d).map(t=>({start:t.start,label:`${fmtTime(t.start)}–${fmtTime(t.end)} ${transferLabel(t)} ${[t.from,t.to].filter(Boolean).join(' → ')}${t.line?' · '+t.line:''}`}))
+      ].sort((x,y)=>x.start-y.start);
+      if(entries.length)for(const entry of entries)lines.push('  '+entry.label);
+      else lines.push('  予定なし');
+      lines.push('');
+    }
+    return lines.join('\n');
+  }
   function exportJSON(){const blob=new Blob([JSON.stringify({...state,collaboration:undefined,exportedAt:new Date().toISOString(),appVersion:1},null,2)],{type:'application/json'});download(blob,`trip-plan-${state.startDate||'undated'}.json`);}
   function download(blob,name){const a=document.createElement('a');const url=URL.createObjectURL(blob);a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
   async function shareText(){try{if(navigator.share)await navigator.share({title:`${state.destination||'旅行'}の旅程`,text:getShareText()});else{await navigator.clipboard.writeText(getShareText());showToast('旅程テキストをコピーしました');}}catch(e){if(e.name!=='AbortError')showToast('共有できませんでした');}}
