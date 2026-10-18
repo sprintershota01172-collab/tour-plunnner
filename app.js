@@ -653,7 +653,7 @@
     const selected=state.souvenirPeople.find(p=>p.id===souvenirRecipientSelection);
     if(souvenirRecipientSelection!=='new'&&souvenirRecipientSelection!=='none'&&(!selected||souvenirRecipientTypeOf(selected.type)!==souvenirRecipientType))souvenirRecipientSelection='new';
     $('#souvenirRecipientTypeSelect').value=souvenirRecipientType;
-    $('#souvenirRecipientTypeTabs [data-recipient-type]').forEach(button=>{
+    $$('#souvenirRecipientTypeTabs [data-recipient-type]').forEach(button=>{
       const active=button.dataset.recipientType===souvenirRecipientType;
       button.classList.toggle('active',active);
       button.setAttribute('aria-pressed',String(active));
