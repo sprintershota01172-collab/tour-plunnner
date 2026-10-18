@@ -273,7 +273,7 @@
   function staySummary(){
     const stays=state.hotels.filter(h=>h.name);
     if(!stays.length)return '';
-    return '<section class="itinerary-stays" aria-label="宿泊スケジュール"><h2>宿泊スケジュール</h2><div>'+stays.map(h=>'<div class="itinerary-stay-row"><span class="stay-mini-icon">'+icon('bed')+'</span><b>'+esc(h.name)+'</b><small>'+(h.start&&h.end?esc(h.start.slice(5).replace('-','/'))+'–'+esc(h.end.slice(5).replace('-','/')):'日程未設定')+'</small></div>').join('')+'</div></section>';
+    return '<section class="itinerary-stays" aria-label="宿泊スケジュール"><h2>宿泊スケジュール</h2><div>'+stays.map(h=>'<div class="itinerary-stay-row"><span class="stay-mini-icon">'+icon('bed')+'</span><b title="'+esc(h.name)+'">'+esc(h.name)+'</b><small>'+(h.start&&h.end?esc(h.start.slice(5).replace('-','/'))+'–'+esc(h.end.slice(5).replace('-','/')):'日程未設定')+'</small></div>').join('')+'</div></section>';
   }
   function dateHotel(day){if(!hasTripDates())return null;const key=dateKey(dateAt(day));return state.hotels.find(h=>h.name&&h.start&&h.end&&key>=h.start&&key<h.end)||null;}
   function sortPlaces(a,b){return (a.start==null?1:b.start==null?-1:a.start-b.start)||a.name.localeCompare(b.name,'ja');}

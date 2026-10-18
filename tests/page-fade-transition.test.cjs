@@ -23,5 +23,5 @@ test('whole-page fade honors reduced-motion preference',()=>{
 test('deployed root and dist keep the same transition and cache version',()=>{
   for(const path of ['app.js','styles.css','index.html','sw.js'])
     assert.equal(readFileSync(path,'utf8'),readFileSync('dist/'+path,'utf8'));
-  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v104/);
+  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v105/);
 });
