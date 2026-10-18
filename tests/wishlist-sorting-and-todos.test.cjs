@@ -56,7 +56,7 @@ test('manual todos retain due dates, survive sync and notify partners',()=>{
   assert.equal(tasks.length,1);assert.equal(tasks[0].completed,true);
   assert.match(app,/s\.todoItems=normalizeTodoItems\(data\.todoItems\)/);
   assert.match(sync,/'packingItems','todoItems','meals'/);
-  assert.match(sync,/\['places','hotels','packingItems','todoItems'/);
+  assert.match(sync,/\['places','hotels','transfers','packingItems','todoItems'/);
   assert.match(notifications,/olderTasks=new Map/);
   assert.match(notifications,/やること.*追加しました/);
 });
