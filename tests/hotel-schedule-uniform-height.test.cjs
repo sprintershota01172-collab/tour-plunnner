@@ -5,7 +5,7 @@ const {readFileSync}=require('node:fs');
 const css=readFileSync('styles.css','utf8'),app=readFileSync('app.js','utf8');
 test('hotel schedule rows have uniform heights and fixed date alignment',()=>{
   assert.match(css,/\.itinerary-stays>div\s*\{[\s\S]*?grid-auto-rows:42px/);
-  const layout=css.slice(css.lastIndexOf('.itinerary-stay-row{'));
+  const layout=css.slice(css.indexOf('/* v105:'),css.lastIndexOf('@media(max-width:360px)'));
   assert.match(layout,/grid-template-columns:20px minmax\(0,1fr\) 102px/);
   assert.match(layout,/height:42px;/);
   assert.match(layout,/min-height:42px;/);
