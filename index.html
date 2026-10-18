@@ -76,7 +76,8 @@
               <button type="button" data-souvenir-filter="pending" aria-pressed="false">未購入</button>
               <button type="button" data-souvenir-filter="bought" aria-pressed="false">購入済み</button>
             </div>
-            <div id="souvenirOwnerTabs" class="souvenir-owner-tabs" role="group" aria-label="グループ別のお土産一覧"></div>
+            <div id="souvenirGroupSwitch" class="souvenir-group-switch" role="group" aria-label="管理グループを選択"></div>
+            <div id="souvenirOwnerTabs" class="souvenir-owner-tabs" aria-label="選択したグループのお土産一覧"></div>
           </section>
         </section>
 
@@ -143,9 +144,12 @@
     <form id="souvenirForm"><input type="hidden" name="id">
       <section class="souvenir-recipient-picker" aria-label="渡す相手を選ぶ">
         <div class="souvenir-recipient-title"><strong>渡す相手 <b class="required">*</b></strong>
-          <select id="souvenirRecipientTypeSelect" aria-label="渡す相手の種類">
-            <option value="person">個人</option><option value="company">会社</option><option value="team">チーム</option>
-          </select>
+          <input id="souvenirRecipientTypeSelect" type="hidden" value="person">
+        </div>
+        <div class="souvenir-recipient-types" id="souvenirRecipientTypeTabs" role="group" aria-label="渡す相手の種類">
+          <button type="button" class="active" data-recipient-type="person" aria-pressed="true">個人</button>
+          <button type="button" data-recipient-type="company" aria-pressed="false">会社</button>
+          <button type="button" data-recipient-type="team" aria-pressed="false">部署・チーム</button>
         </div>
         <div class="souvenir-recipient-choices" id="souvenirRecipientChoices" role="group" aria-label="登録済みの相手"></div>
         <div class="souvenir-recipient-new" id="souvenirRecipientNewWrap">
