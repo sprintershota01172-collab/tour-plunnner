@@ -1479,7 +1479,7 @@
       else lines.push('  予定なし');
       lines.push('');
     }
-    return lines.join('\\n');
+    return lines.join('\n');
   }
   function exportJSON(){const blob=new Blob([JSON.stringify({...state,collaboration:undefined,exportedAt:new Date().toISOString(),appVersion:1},null,2)],{type:'application/json'});download(blob,`trip-plan-${state.startDate||'undated'}.json`);}
   function download(blob,name){const a=document.createElement('a');const url=URL.createObjectURL(blob);a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
