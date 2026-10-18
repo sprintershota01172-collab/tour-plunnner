@@ -748,7 +748,8 @@
     if(newPerson)state.souvenirPeople.push(newPerson);
     if(old)state.souvenirs=state.souvenirs.map(x=>x.id===old.id?item:x);
     else state.souvenirs.unshift(item);
-    
+    // Always reveal the new/edited gift even when a different recipient tab was active.
+    souvenirGroupRecipientFilters[item.ownerId||'unassigned']='all';
     persist();renderSouvenirs();closeModal($('#souvenirBackdrop'));
     showToast(old?'お土産を更新しました':'渡す相手とお土産を登録しました');
   }
