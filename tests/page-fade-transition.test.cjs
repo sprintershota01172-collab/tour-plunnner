@@ -11,7 +11,10 @@ test('page navigation crossfades in place instead of sliding horizontally',()=>{
   assert.match(app,/page\.inert=!active/);
   assert.match(css,/#pages\.pages\{[\s\S]*?transform:none!important/);
   assert.match(css,/#pages\.pages>\.page\{[\s\S]*?position:absolute/);
-  assert.match(css,/#pages\.pages>\.page\.is-active\{[\s\S]*?opacity:1/);
+  assert.match(css,/#pages\\.pages>\\.page\\.is-active\\{[\\s\\S]*?opacity:1/);
+  assert.match(css,/transition:opacity 900ms cubic-bezier/);
+  assert.match(css,/animation:tabi-text-reveal 1100ms/);
+  assert.match(css,/animation:tabi-text-reveal 1050ms/);
   assert.match(html,/class="page wishlist-page is-active" data-page="0"/);
 });
 test('text reveal honors reduced-motion preference',()=>{
@@ -22,5 +25,5 @@ test('text reveal honors reduced-motion preference',()=>{
 test('deployed root and dist keep the same transition and cache version',()=>{
   for(const path of ['app.js','styles.css','index.html','sw.js'])
     assert.equal(readFileSync(path,'utf8'),readFileSync('dist/'+path,'utf8'));
-  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v102/);
+  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v103/);
 });

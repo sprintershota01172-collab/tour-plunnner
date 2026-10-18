@@ -1469,11 +1469,11 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
 .souvenir-owner-section-budget{font-size:11px;color:#567873;line-height:1.5;margin:0 4px 5px}
 .souvenir-owner-section .souvenir-person-section{margin-bottom:5px}
 @keyframes tabi-text-reveal{from{opacity:.12;transform:translate3d(0,7px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
-.page.page-reveal :is(h1,h2,.eyebrow,.page-subtitle,.souvenir-owner-section-title,.souvenir-item-name){animation:tabi-text-reveal 480ms cubic-bezier(.22,.85,.33,1) both}
-.page.page-reveal :is(h1,.page-subtitle){animation-delay:45ms}
-.page.page-reveal :is(.souvenir-owner-section-title,.souvenir-item-name){animation-delay:95ms}
-.souvenir-list.souvenir-list-reveal .souvenir-owner-section{animation:tabi-text-reveal 470ms cubic-bezier(.22,.85,.33,1) both}
-.souvenir-list.souvenir-list-reveal .souvenir-owner-section:nth-child(2){animation-delay:70ms}
+.page.page-reveal :is(h1,h2,.eyebrow,.page-subtitle,.souvenir-owner-section-title,.souvenir-item-name){animation:tabi-text-reveal 1100ms cubic-bezier(.22,.85,.33,1) both}
+.page.page-reveal :is(h1,.page-subtitle){animation-delay:110ms}
+.page.page-reveal :is(.souvenir-owner-section-title,.souvenir-item-name){animation-delay:180ms}
+.souvenir-list.souvenir-list-reveal .souvenir-owner-section{animation:tabi-text-reveal 1050ms cubic-bezier(.22,.85,.33,1) both}
+.souvenir-list.souvenir-list-reveal .souvenir-owner-section:nth-child(2){animation-delay:150ms}
 @media(max-width:600px){.souvenir-owner-panel{padding:10px}.souvenir-owner-chip{min-width:67px}.souvenir-owner-form button{min-height:40px}}
 @media(prefers-color-scheme:dark){.souvenir-owner-panel{background:#25322d;border-color:#455d4f}.souvenir-owner-heading strong,.souvenir-owner-section-title h2{color:#dcf0e4}.souvenir-owner-form>input,.souvenir-owner-form-budget input,.souvenir-owner-form-budget select,.souvenir-owner-manage button{background:#293831;color:#e4f1e9;border-color:#54675b}.souvenir-owner-chip{background:#293831;border-color:#53675b;color:#e4f1e9}.souvenir-owner-chip.active{background:#477a78}.souvenir-owner-summary,.souvenir-owner-section-budget{color:#adc9be}}
 @media(prefers-reduced-motion:reduce){.page.page-reveal :is(h1,h2,.eyebrow,.page-subtitle,.souvenir-owner-section-title,.souvenir-item-name),.souvenir-list.souvenir-list-reveal .souvenir-owner-section{animation:none!important}}
@@ -1501,14 +1501,14 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
   visibility:hidden;
   pointer-events:none;
   z-index:0;
-  transition:opacity 360ms ease,visibility 360ms step-end;
+  transition:opacity 900ms cubic-bezier(.22,.85,.33,1),visibility 900ms step-end;
 }
 #pages.pages>.page.is-active{
   visibility:visible;
   opacity:1;
   pointer-events:auto;
   z-index:1;
-  transition:opacity 380ms ease,visibility 0s;
+  transition:opacity 900ms cubic-bezier(.22,.85,.33,1),visibility 0s;
 }
 @media(prefers-reduced-motion:reduce){
   #pages.pages>.page,#pages.pages>.page.is-active{transition:none!important}
