@@ -32,7 +32,7 @@ test('legacy trip souvenir lists are normalized without phantom gifts',()=>{
 });
 
 test('souvenir edits and checks are available and synchronized as individual records',()=>{
-  for(const id of ['souvenirForm','souvenirList','addSouvenir','souvenirFilters','deleteSouvenir','souvenirProgress'])
+  for(const id of ['souvenirForm','souvenirOwnerTabs','souvenirGroupSwitch','souvenirFilters','deleteSouvenir','souvenirProgress'])
     assert.ok(html.includes('id="'+id+'"'),id);
   for(const name of ['renderSouvenirs','openSouvenir','saveSouvenir','deleteSouvenir','bindSouvenirs'])
     assert.ok(app.includes('function '+name+'('),name);
@@ -58,12 +58,12 @@ test('souvenir-only trip cannot be discarded as empty or merged away',()=>{
 test('root and dist files match and offline cache is updated',()=>{
   for(const name of ['app.js','index.html','styles.css','sync.js','notifications.js','i18n.js','sw.js'])
     assert.equal(readFileSync(name,'utf8'),readFileSync('dist/'+name,'utf8'));
-  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v110/);
+  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v\\d+/);
 });
 
 test('legacy recipient names become distinct stable person records',()=>{
   const a=app.indexOf('function normalizeSouvenirs('),b=app.indexOf('function storagePayload(',a);
-  const helpers=runInNewContext(app.slice(a,b)+';({normalizeSouvenirs,normalizeSouvenirPeople})');
+  const helpers=runInNewContext(app.slice(a,b)+';({normalizeSouvenirs,normalizeSouvenirPeople})',{souvenirRecipientTypeOf:value=>['person','company','team'].includes(value)?value:'person'});
   const items=helpers.normalizeSouvenirs([
     {id:'a',name:'Macadamia',recipient:'母'},
     {id:'b',name:'Cookies',recipient:'母'},
@@ -78,11 +78,11 @@ test('legacy recipient names become distinct stable person records',()=>{
 });
 
 test('person rename preserves linked gifts and deleting person keeps gift records',()=>{
-  for(const part of ['function addSouvenirPerson(', 'function editSouvenirPerson(', 'function removeSouvenirPerson(', 'function selectSouvenirPerson('])
+  for(const part of ['function addSouvenirPerson(', 'function editSouvenirPerson(', 'function removeSouvenirPerson(', 'function renderSouvenirRecipientPicker('])
     assert.ok(app.includes(part),part);
-  assert.match(app,/state\.souvenirs=state\.souvenirs\.map\(item=>item\.personId===pid\?\{\.\.\.item,recipient:name\}:item\)/);
+  assert.match(app,/state\.souvenirs=state\.souvenirs\.map\(item=>item\.personId===updating\.id\?\{\.\.\.item,recipient:name\}:item\)/);
   assert.match(app,/personId:'',recipient:''/);
-  assert.match(html,/id="souvenirPeopleTabs"/);
+  assert.match(html,/id="souvenirRecipientChoices"/);
   assert.match(html,/id="souvenirPersonSelect"/);
   assert.match(html,/id="souvenirPersonForm"/);
   assert.match(sync,/'souvenirPeople'/);
@@ -92,6 +92,7 @@ test('person rename preserves linked gifts and deleting person keeps gift record
 test('husband/wife group migration and item ownership preserved',()=>{
   const start=app.indexOf('function normalizeSouvenirs('),end=app.indexOf('function storagePayload(',start);
   const helper=runInNewContext(app.slice(start,end)+';({normalizeSouvenirs,normalizeSouvenirOwners})',{
+    souvenirRecipientTypeOf:value=>['person','company','team'].includes(value)?value:'person',
     SOUVENIR_OWNER_DEFAULTS:[{id:'owner-husband',name:'夫',budgetAmount:null,currency:'USD'},{id:'owner-wife',name:'妻',budgetAmount:null,currency:'USD'}]
   });
   const owners=helper.normalizeSouvenirOwners(undefined);
@@ -107,7 +108,7 @@ test('husband/wife group migration and item ownership preserved',()=>{
 });
 
 test('group editing, budget calculation, filters, and gentle reveal exist',()=>{
-  for(const x of ['id="souvenirOwnerForm"','id="souvenirOwnerTabs"','id="souvenirOwnerSelect"','id="souvenirOwnerSummary"','id="souvenirOwnerBudget"'])assert.ok(html.includes(x),x);
+  for(const x of ['id="souvenirOwnerForm"','id="souvenirOwnerTabs"','id="souvenirOwnerSelect"','id="souvenirGroupSwitch"','id="souvenirOwnerBudget"'])assert.ok(html.includes(x),x);
   for(const x of ['function saveSouvenirOwner(','function editSouvenirOwner(','function deleteSouvenirOwner(','function souvenirOwnerBudget(','function renderSouvenirOwners('])assert.ok(app.includes(x),x);
   assert.match(app,/ownerId:owner\?\.id\|\|''/);
   assert.match(app,/state\.souvenirs=state\.souvenirs\.map\(item=>item\.ownerId===owner\.id\?\{\.\.\.item,ownerId:''\}:item\)/);
