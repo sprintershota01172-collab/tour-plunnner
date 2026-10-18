@@ -14,7 +14,7 @@ test('souvenir tab is a fourth page with equal-width navigation',()=>{
   assert.match(html,/data-nav="3"/);
   assert.match(css,/\.pages\{width:400%\}/);
   assert.match(css,/\.page\{width:25%;flex:0 0 25%\}/);
-  assert.match(app,/Math\.min\(3,index\)/);
+  assert.match(app,/Math\.min\(4,index\)/);
   assert.doesNotMatch(app,/pages\.style\.transform|index\*25/);
   assert.match(app,/page\.classList\.toggle\('is-active',active\)/);
 });
@@ -36,9 +36,9 @@ test('souvenir edits and checks are available and synchronized as individual rec
     assert.ok(html.includes('id="'+id+'"'),id);
   for(const name of ['renderSouvenirs','openSouvenir','saveSouvenir','deleteSouvenir','bindSouvenirs'])
     assert.ok(app.includes('function '+name+'('),name);
-  assert.match(sync,/'packingItems','meals','souvenirs','souvenirPeople','souvenirOwners'/);
-  assert.match(sync,/\['places','hotels','packingItems','souvenirs','souvenirPeople','souvenirOwners'\]/);
-  assert.match(sync,/\['souvenirs','souvenirPeople','souvenirOwners'\]\.includes\(field\)/);
+  assert.match(sync,/'packingItems','todoItems','meals','souvenirs','souvenirPeople','souvenirOwners'/);
+  assert.match(sync,/\['places','hotels','packingItems','todoItems','souvenirs','souvenirPeople','souvenirOwners'\]/);
+  assert.match(sync,/\['todoItems','souvenirs','souvenirPeople','souvenirOwners'\]\.includes\(field\)/);
   assert.match(notifications,/oldGifts=new Map/);
   assert.match(notifications,/お土産.*購入済み/);
 });
@@ -58,7 +58,7 @@ test('souvenir-only trip cannot be discarded as empty or merged away',()=>{
 test('root and dist files match and offline cache is updated',()=>{
   for(const name of ['app.js','index.html','styles.css','sync.js','notifications.js','i18n.js','sw.js'])
     assert.equal(readFileSync(name,'utf8'),readFileSync('dist/'+name,'utf8'));
-  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v105/);
+  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v106/);
 });
 
 test('legacy recipient names become distinct stable person records',()=>{

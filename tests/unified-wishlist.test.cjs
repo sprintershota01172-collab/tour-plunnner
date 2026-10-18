@@ -23,7 +23,8 @@ test('category determines meal fields while old food groups remain editable',()=
 });
 test('data model preserves meal types and all spots are rendered in same list',()=>{
   assert.match(app,/listType:isFood\(p\)\?'food':'place'/);
-  assert.match(app,/const items=source\.filter\(p=>/);
+  assert.match(app,/const visible=source\.filter\(p=>/);
+  assert.match(app,/const items=sortWishlistPlaces\(visible\)/);
   assert.match(app,/function foodPlaces\(\)\{return state\.places\.filter\(isFood\);\}/);
   assert.equal(app,distApp);
   assert.equal(html,distHtml);

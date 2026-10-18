@@ -52,7 +52,7 @@ test('phone planner uses a 2-column, 3-row tray showing up to six pieces',()=>{
  for(const id of ['dayMeals','mealsBackdrop','mealEditorRows','foodFilterEmpty'])assert.match(html,new RegExp('id="'+id+'"'));
 });
 test('collaboration includes the meals field',()=>{
- assert.match(sync,/'packingItems','meals'/);
+ assert.match(sync,/'packingItems','todoItems','meals'/);
  assert.match(sync,/field==='meals'/);
 });
 

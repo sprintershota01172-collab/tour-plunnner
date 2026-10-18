@@ -19,7 +19,7 @@ function harness(){
   return {window,timers,interval:()=>interval};
 }
 function trip(){return {destination:'Hawaii',travelers:2,startDate:'',endDate:'',
-  datesConfigured:false,hotels:[],groups:['観光'],places:[],packingItems:[],meals:{},souvenirs:[],souvenirPeople:[],souvenirOwners:[{id:'owner-husband',name:'夫',budgetAmount:null,currency:'USD'},{id:'owner-wife',name:'妻',budgetAmount:null,currency:'USD'}]};}
+  datesConfigured:false,hotels:[],groups:['観光'],places:[],packingItems:[],todoItems:[],meals:{},souvenirs:[],souvenirPeople:[],souvenirOwners:[{id:'owner-husband',name:'夫',budgetAmount:null,currency:'USD'},{id:'owner-wife',name:'妻',budgetAmount:null,currency:'USD'}]};}
 test('foreground poll checks every 2 seconds and local edits are sent promptly',()=>{
   const h=harness(),data=trip(),metadata={roomId:'room-1',key:'secret',revision:1,baseline:data};
   const sharing=h.window.TabiSharing.create({getContext:()=>({id:'trip-1',metadata,trip:data})});
@@ -59,6 +59,6 @@ test('app and dist share the same implementation and cache versions',()=>{
   for(const path of ['sync.js','notifications.js','sw.js','index.html']){
     assert.equal(readFileSync(path,'utf8'),readFileSync('dist/'+path,'utf8'));
   }
-  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v105/);
+  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v106/);
   assert.match(readFileSync('sw.js','utf8'),/Promise\.all\(\[/);
 });

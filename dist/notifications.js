@@ -39,6 +39,15 @@
     const packing=new Map((before.packingItems||[]).map(p=>[p.id,p]));
     for(const p of after.packingItems||[]){const old=packing.get(p.id);if(!old)changes.push('持ち物'+named(p.name)+'を追加しました');else if(old.checked!==p.checked)changes.push('持ち物'+named(p.name)+'を'+(p.checked?'準備済み':'未準備')+'にしました');else if(!equal(old,p))changes.push('持ち物'+named(p.name)+'を編集しました');}
     const currentPacking=new Set((after.packingItems||[]).map(p=>p.id));for(const p of before.packingItems||[])if(!currentPacking.has(p.id))changes.push('持ち物'+named(p.name)+'を削除しました');
+    const olderTasks=new Map((before.todoItems||[]).map(t=>[t.id,t])),
+      latestTasks=new Map((after.todoItems||[]).map(t=>[t.id,t]));
+    for(const task of after.todoItems||[]){
+      const old=olderTasks.get(task.id);
+      if(!old)changes.push('やること'+named(task.title)+'を追加しました');
+      else if(old.completed!==task.completed)changes.push('やること'+named(task.title)+'を'+(task.completed?'完了':'未完了')+'にしました');
+      else if(!equal(old,task))changes.push('やること'+named(task.title)+'を編集しました');
+    }
+    for(const task of before.todoItems||[])if(!latestTasks.has(task.id))changes.push('やること'+named(task.title)+'を削除しました');
     const oldGifts=new Map((before.souvenirs||[]).map(item=>[item.id,item])),newGifts=new Map((after.souvenirs||[]).map(item=>[item.id,item]));
     for(const gift of after.souvenirs||[]){
       const old=oldGifts.get(gift.id);
