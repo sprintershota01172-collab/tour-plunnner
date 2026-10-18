@@ -60,7 +60,7 @@
         </section>
 
         <section class="page souvenir-page" data-page="3" aria-label="お土産リスト">
-          <div class="page-heading souvenir-heading"><div><p class="eyebrow">SOUVENIR CHECKLIST</p><h1>お土産リスト</h1><p class="page-subtitle">個人・会社・チームへのお土産をまとめて管理</p></div><span id="souvenirCount" class="souvenir-count">0件</span></div>
+          <div class="page-heading souvenir-heading"><div><p class="eyebrow">SOUVENIR CHECKLIST</p><h1>お土産リスト</h1><p class="page-subtitle">個人・会社・チーム別に整理。左スワイプで削除</p></div><span id="souvenirCount" class="souvenir-count">0件</span></div>
           <div class="souvenir-summary">
             <div class="souvenir-summary-top"><span>購入状況</span><strong id="souvenirProgress">0 / 0 購入済み</strong></div>
             <div class="souvenir-progress-track"><span id="souvenirProgressBar"></span></div>
@@ -165,8 +165,8 @@
 
         <label class="field"><span>数量</span><input name="quantity" type="number" inputmode="numeric" min="1" max="99" value="1" required></label>
         <label class="field"><span>通貨</span><select name="currency"><option value="USD">USD（ドル）</option><option value="JPY">JPY（円）</option></select></label>
-        <label class="field full"><span>予算・単価（未定なら空欄）</span><input name="unitPrice" type="number" inputmode="decimal" min="0" max="1000000" step="0.01" placeholder="例：15"></label>
-        <label class="field full"><span>購入予定のお店</span><input name="shop" maxlength="100" placeholder="例：ABCストア"></label>
+        <label class="field full"><span>値段（1個あたり・未定なら空欄）</span><input name="unitPrice" type="number" inputmode="decimal" min="0" max="1000000" step="0.01" placeholder="例：15"></label>
+        <label class="field full"><span>買う場所</span><input name="shop" maxlength="100" placeholder="例：ABCストア・空港・ショッピングモール" autocomplete="off"></label>
         <label class="field full"><span>メモ</span><textarea name="note" maxlength="300" rows="2" placeholder="ブランド、サイズ、渡す時期など"></textarea></label>
       </div>
       <label class="souvenir-bought-row"><input type="checkbox" name="bought"><span>購入済み</span></label>
