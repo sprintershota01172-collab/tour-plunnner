@@ -2225,3 +2225,7 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
  .souvenir-group-item .souvenir-shop-label{color:#a4d3bb}
  .souvenir-swipe-delete{background:#aa4949}
 }
+
+/* v114: Put the single primary add action above the list. */
+.souvenir-group-add{margin:3px 0 7px}
+.souvenir-group-items{margin-top:0}
