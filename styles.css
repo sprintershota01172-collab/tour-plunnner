@@ -2308,3 +2308,68 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
   .souvenir-page{padding-inline:12px!important}
   .souvenir-owner-panel .souvenir-owner-tabs{grid-template-columns:1fr}
 }
+
+/* v116 — Transport time slots on the travel timeline and itinerary. */
+.timeline-toolbar-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;min-width:0}
+.board-transfer-add,.itinerary-transfer-add{
+  appearance:none;border:1px solid #bed6cd;background:#e7f2ee;color:#295e53;
+  border-radius:9px;padding:0 11px;min-height:34px;font-size:11px;
+  font-weight:700;cursor:pointer;white-space:nowrap;touch-action:manipulation;
+}
+.board-transfer-add{min-height:31px;flex:none}
+.timeline-toolbar-actions #dayClear{padding:0 3px;min-height:31px}
+.timeline-transfer{
+  position:absolute;left:12px;right:12px;z-index:3;
+  display:flex;align-items:center;justify-content:flex-start;
+  min-width:0;padding:0 8px;overflow:hidden;
+  border:1px dashed #91baaa;border-radius:9px;
+  background:#dcece6;color:#285c4d;font-size:10px;font-weight:700;
+  white-space:nowrap;text-overflow:ellipsis;cursor:pointer;
+  touch-action:manipulation;box-shadow:0 1px 3px rgba(35,76,60,.09);
+}
+.timeline-transfer.has-conflict{background:#fff0db;border-color:#d99b55;color:#8e5f28}
+.itinerary-transfer-add{margin:8px 0 8px 55px;min-height:32px}
+.itinerary-transfer{
+  display:grid;grid-template-columns:43px minmax(0,1fr) 44px;
+  align-items:center;gap:9px;min-height:52px;
+  padding:9px 7px;margin:2px 0;
+  background:#eef5f1;border-left:3px solid #6fa58d;border-radius:9px;
+}
+.transfer-times{display:flex;flex-direction:column;gap:2px;align-items:center;
+ font-size:10px;line-height:1.2;font-variant-numeric:tabular-nums;color:#456957;font-weight:700}
+.transfer-times span{font-size:9px;line-height:8px}
+.transfer-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
+.transfer-copy strong{font-size:11px;color:#315746;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.transfer-copy>span,.transfer-copy small{font-size:10px;color:#627b6c;overflow-wrap:anywhere}
+.transfer-copy em{color:#b26b28;font-size:10px;font-style:normal}
+.transfer-edit{border:0;border-radius:7px;background:#d8e8df;color:#406858;font-size:10px;min-height:34px;cursor:pointer}
+.itinerary-transfer.has-conflict{background:#fff0df;border-color:#d6a064}
+.transfer-sheet{width:min(500px,100%)}
+.transfer-sheet .sheet-header{margin-bottom:10px}
+.transfer-sheet form{display:grid;gap:9px}
+.transfer-sheet .field{gap:4px}
+.transfer-sheet :is(input,select){
+  width:100%;min-width:0;min-height:42px;padding:8px 9px;border:1px solid #d5dfdb;
+  background:#fffefa;color:#253d44;border-radius:9px;font-size:16px;
+}
+.transfer-time-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.transfer-error{margin:0;padding:8px 10px;color:#a34237;background:#ffede8;border-radius:8px;font-size:11px}
+.transfer-error[hidden]{display:none}
+.transfer-footer{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:3px}
+.transfer-footer .delete-button{margin-right:auto}
+.transfer-footer button{min-height:40px;padding-inline:10px;font-size:11px}
+@media(max-width:600px){
+ .board-transfer-add{font-size:10px;min-height:31px;padding:0 9px}
+ .timeline-toolbar-actions{gap:3px}
+ .timeline-toolbar-actions #dayClear{font-size:9px}
+ .transfer-sheet{padding:12px 15px max(12px,env(safe-area-inset-bottom))}
+}
+@media(prefers-color-scheme:dark){
+ .board-transfer-add,.itinerary-transfer-add{background:#324b42;border-color:#537568;color:#dcefe6}
+ .timeline-transfer{background:#334e43;color:#d7ece1;border-color:#648a76}
+ .itinerary-transfer{background:#293b31;border-color:#5e9477}
+ .transfer-times,.transfer-copy strong{color:#cae1d2}
+ .transfer-copy>span,.transfer-copy small{color:#a9c6b3}
+ .transfer-edit{background:#385447;color:#dbece1}
+ .transfer-sheet :is(input,select){background:#25332d;color:#e1ece5;border-color:#506358}
+}
