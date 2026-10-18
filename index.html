@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f3f0e9">
   <meta name="description" content="旅行先の候補や日ごとの予定、持ち物、お土産を管理するアプリ。">
-  <link rel="manifest" href="manifest.webmanifest?v=20261018-110">
+  <link rel="manifest" href="manifest.webmanifest?v=20261018-111">
   <link rel="icon" href="icon.svg?v=20261012-41" type="image/svg+xml">
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=20261012-41">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,7 +13,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Serif+JP:wght@400;500;600;700&family=Yomogi&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <noscript><link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Serif+JP:wght@400;500;600;700&family=Yomogi&display=swap" rel="stylesheet"></noscript>
   <title>tabi — 旅程プランナー</title>
-  <link rel="stylesheet" href="styles.css?v=20261018-110"><link rel="stylesheet" href="account.css?v=20261018-110">
+  <link rel="stylesheet" href="styles.css?v=20261018-111"><link rel="stylesheet" href="account.css?v=20261018-111">
 </head>
 <body>
   <div class="app-shell">
@@ -42,7 +42,7 @@
           </div>
           <div class="category-row"><div class="category-chips" id="categoryChips"></div><button class="group-manage-button" id="editGroups" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h8m4 0h4M4 17h3m4 0h9"/><circle cx="14" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>グループ編集</span></button></div>
           <div class="place-grid" id="placeGrid"></div><div class="food-filter-empty" id="foodFilterEmpty" hidden>この条件に合う登録はありません。</div>
-          <div class="empty-state" id="emptyWishlist"><div class="empty-flight-art" aria-hidden="true"><img src="flight-mark.svg?v=20261018-110" alt="" width="340" height="153"></div><button class="empty-add" id="emptyAdd" aria-label="リストに追加"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>ADD ITEM</span></button></div>
+          <div class="empty-state" id="emptyWishlist"><div class="empty-flight-art" aria-hidden="true"><img src="flight-mark.svg?v=20261018-111" alt="" width="340" height="153"></div><button class="empty-add" id="emptyAdd" aria-label="リストに追加"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>ADD ITEM</span></button></div>
         </section>
         <section class="page board-page" data-page="1" aria-label="パズルボード">
           <div class="page-heading board-heading"><div><p class="eyebrow">THE COMPOSITION</p><h1>旅を仕立てる</h1></div><div class="board-actions"><button class="quiet-button" id="undoMove" title="元に戻す"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h9a7 7 0 0 1 0 14h-2"/></svg></button><button class="quiet-button" id="autoArrange" title="空き時間に並べる"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h6"/><path d="m17 15 3 3 3-3"/></svg></button></div></div>
@@ -60,7 +60,7 @@
         </section>
 
         <section class="page souvenir-page" data-page="3" aria-label="お土産リスト">
-          <div class="page-heading souvenir-heading"><div><p class="eyebrow">SOUVENIR CHECKLIST</p><h1>お土産リスト</h1><p class="page-subtitle">グループを選んで、渡す相手・品物・数量・予算を確認</p></div><span id="souvenirCount" class="souvenir-count">0件</span></div>
+          <div class="page-heading souvenir-heading"><div><p class="eyebrow">SOUVENIR CHECKLIST</p><h1>お土産リスト</h1><p class="page-subtitle">個人・会社・チームへのお土産をまとめて管理</p></div><span id="souvenirCount" class="souvenir-count">0件</span></div>
           <div class="souvenir-summary">
             <div class="souvenir-summary-top"><span>購入状況</span><strong id="souvenirProgress">0 / 0 購入済み</strong></div>
             <div class="souvenir-progress-track"><span id="souvenirProgressBar"></span></div>
@@ -85,19 +85,26 @@
             </div>
             <p id="souvenirOwnerSummary" class="souvenir-owner-summary">合計目安 未設定</p>
           <section class="souvenir-people-panel" aria-label="人物別リスト">
-            <div class="souvenir-people-heading"><div><strong>渡す相手</strong><small id="souvenirPeopleCount">0人</small></div>
+            <div class="souvenir-people-heading"><div><strong>渡す相手</strong><small id="souvenirPeopleCount">0件</small></div>
               <div class="souvenir-person-manage" id="souvenirPersonManage" hidden>
                 <button type="button" id="souvenirPersonEdit">名前変更</button>
-                <button type="button" id="souvenirPersonDelete">人物を削除</button>
+                <button type="button" id="souvenirPersonDelete">相手を削除</button>
               </div>
             </div>
-            <form id="souvenirPersonForm" class="souvenir-person-form">
-              <input id="souvenirPersonName" name="personName" maxlength="60" required placeholder="例：母、友人A、自分" aria-label="人物の名前">
-              <button type="submit" id="souvenirPersonSubmit">人物を登録</button>
-              <button type="button" id="souvenirPersonCancel" hidden>取消</button>
-            </form>
+
             <div class="souvenir-person-tabs" id="souvenirPeopleTabs" role="group" aria-label="人物を選ぶ"></div>
             <p id="souvenirPersonAddHint" class="souvenir-person-hint"></p>
+            <details class="souvenir-recipient-manage-details" id="souvenirPersonManageDetails">
+              <summary>相手を個別に追加・管理</summary>
+              <form id="souvenirPersonForm" class="souvenir-person-form">
+                <select id="souvenirPersonType" aria-label="相手の種類">
+                  <option value="person">個人</option><option value="company">会社</option><option value="team">チーム</option>
+                </select>
+                <input id="souvenirPersonName" name="personName" maxlength="60" required placeholder="例：母、〇〇株式会社、開発チーム" aria-label="相手の名前">
+                <button type="submit" id="souvenirPersonSubmit">相手を登録</button>
+                <button type="button" id="souvenirPersonCancel" hidden>取消</button>
+              </form>
+            </details>
           </section>
           <button id="addSouvenir" class="souvenir-add-button" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>お土産を追加</button>
           <div class="souvenir-filters" id="souvenirFilters" role="group" aria-label="購入状況で絞り込む">
@@ -156,15 +163,25 @@
     <div class="sheet-grabber"></div>
     <header class="sheet-header"><div><p class="eyebrow">SOUVENIR</p><h2 id="souvenirSheetTitle">お土産を追加</h2></div><button class="icon-button" id="closeSouvenir" type="button" aria-label="閉じる">×</button></header>
     <form id="souvenirForm"><input type="hidden" name="id">
+      <section class="souvenir-recipient-picker" aria-label="渡す相手を選ぶ">
+        <div class="souvenir-recipient-title"><strong>渡す相手 <b class="required">*</b></strong><small>相手も同時に登録できます</small></div>
+        <div class="souvenir-recipient-types" id="souvenirRecipientTypes" role="group" aria-label="相手の種類">
+          <button type="button" class="active" data-recipient-type="person" aria-pressed="true">個人</button>
+          <button type="button" data-recipient-type="company" aria-pressed="false">会社</button>
+          <button type="button" data-recipient-type="team" aria-pressed="false">チーム</button>
+        </div>
+        <div class="souvenir-recipient-choices" id="souvenirRecipientChoices" role="group" aria-label="登録済みの相手"></div>
+        <label class="field souvenir-recipient-new" id="souvenirRecipientNewWrap"><span>相手の名前</span>
+          <input name="recipientName" id="souvenirRecipientName" maxlength="60" autocomplete="off" placeholder="例：母・友人A">
+        </label>
+        <input type="hidden" id="souvenirPersonSelect" name="personId">
+      </section>
       <div class="souvenir-form-grid">
         <label class="field full"><span>お土産の名前 <b class="required">*</b></span><input name="name" required maxlength="100" placeholder="例：マカダミアナッツ"></label>
         <label class="field full"><span>管理グループ</span>
           <select name="ownerId" id="souvenirOwnerSelect"><option value="">グループ未設定</option></select>
         </label>
-        <label class="field full"><span>誰にあげる？（渡す相手）</span>
-          <select name="personId" id="souvenirPersonSelect"><option value="">人物未設定</option></select>
-          <small>先にお土産タブで人物を登録すると選べます。</small>
-        </label>
+
         <label class="field"><span>数量</span><input name="quantity" type="number" inputmode="numeric" min="1" max="99" value="1" required></label>
         <label class="field"><span>通貨</span><select name="currency"><option value="USD">USD（ドル）</option><option value="JPY">JPY（円）</option></select></label>
         <label class="field full"><span>予算・単価（未定なら空欄）</span><input name="unitPrice" type="number" inputmode="decimal" min="0" max="1000000" step="0.01" placeholder="例：15"></label>
@@ -256,14 +273,14 @@
   <div class="modal-backdrop trips-backdrop" id="tripsBackdrop" aria-hidden="true"><section class="edit-sheet trips-sheet" role="dialog" aria-modal="true" aria-labelledby="tripsTitle"><div class="sheet-grabber"></div><header class="sheet-header"><div><p class="eyebrow">YOUR JOURNEYS</p><h2 id="tripsTitle">旅行を選ぶ</h2></div><button class="icon-button" id="closeTrips" aria-label="閉じる">×</button></header><div class="trip-list" id="tripList"></div><button class="new-trip-button" id="newTripButton" type="button"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>新しい旅を登録</span></button></section></div>
   <div class="modal-backdrop groups-backdrop" id="groupsBackdrop" aria-hidden="true"><section class="edit-sheet groups-sheet" role="dialog" aria-modal="true" aria-labelledby="groupsTitle"><div class="sheet-grabber"></div><header class="sheet-header"><div><p class="eyebrow">GROUPS</p><h2 id="groupsTitle">グループ</h2></div><button class="icon-button" id="closeGroups" type="button" aria-label="グループ編集を閉じる">×</button></header><form id="groupForm" class="group-add-form"><input id="groupName" name="groupName" maxlength="32" autocomplete="off" placeholder="グループ名" aria-label="新しいグループ名" required><button type="submit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>追加</span></button></form><p class="group-note">削除したグループの場所は「未分類」に移動します。</p><div id="groupEditList" class="group-edit-list"></div></section></div>
   <div class="toast" id="appToast" role="status"></div>
-  <div class="modal-backdrop partner-backdrop" id="partnerBackdrop" aria-hidden="true"><section class="edit-sheet partner-sheet" role="dialog" aria-modal="true" aria-labelledby="partnerTitle"><div class="sheet-grabber"></div><header class="sheet-header"><div><p class="eyebrow">TOGETHER</p><h2 id="partnerTitle">パートナーと共同編集</h2></div><button class="icon-button" id="closePartner" aria-label="閉じる">×</button></header><div class="partner-body"><p id="partnerDescription">招待URLを送って、旅程や持ち物を一緒に編集できます。</p><p class="partner-status" id="partnerStatus" role="status"></p><p class="partner-error" id="partnerError" role="alert" hidden></p><section id="partnerInviteIdentity" class="partner-invite-identity"><label class="field"><span>招待するあなたの名前</span><input id="partnerSenderName" maxlength="30" autocomplete="given-name" placeholder="例：翔太"></label><label class="field invite-password-field"><span>招待リンクのパスワード（任意）</span><input id="partnerInvitePassword" type="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="設定する場合は12文字以上"><small id="invitePasswordHint">パスワードを設定するとURLだけでは参加できません。別途パスワードを伝えてください。※過去に送った招待リンクは無効になりません。</small></label></section><div class="partner-actions"><button class="primary-button" id="partnerCreate">招待URLを作成する</button><label id="partnerJoinPasswordWrap" class="field" hidden><span>招待パスワード</span><input id="partnerJoinPassword" type="password" autocomplete="off" placeholder="招待者から聞いたパスワード"></label><button class="primary-button" id="partnerJoin" hidden>この旅行に参加する</button><button class="primary-button" id="partnerSend" hidden>招待URLを送る</button><button class="secondary-button" id="partnerCopy" hidden>招待URLをコピー</button></div><p class="field-hint" id="partnerSendHint" hidden>LINEなど、送りたいアプリを選べます。</p><div class="invite-preview" id="partnerInvitePreview"><div class="invite-card-visual"><img class="invite-card-art" src="invite-card-art.svg?v=20261018-110" alt="tabiの旅行招待カード" width="1000" height="600"><div class="invite-card-copy"><span class="invite-card-kicker">OUR NEXT ADVENTURE</span><strong id="partnerInviteTitle">一緒に旅しよう</strong><span id="partnerInviteDestination">TRAVEL TOGETHER</span></div></div><p id="partnerMessagePreview" class="partner-message-preview" aria-live="polite"></p></div><details id="partnerSendOptions" class="partner-more" hidden><summary>その他の送り方</summary><button class="secondary-button" id="partnerNative" hidden>LINEでカード形式の招待を送る</button><p class="field-hint">カード形式ではLINEへのログインが必要です。</p></details><details id="partnerJoinDetails" class="partner-more"><summary>招待リンクで参加する</summary><p class="field-hint">ホーム画面から旅行が見えない場合は、Safariで開いた招待URLをコピーしてここから参加してください。元の旅行データは削除されません。</p><form id="partnerInviteForm" class="partner-invite-form"><label class="field"><span>受け取った招待リンクから参加</span><input id="partnerInviteInput" type="url" placeholder="招待リンクを貼り付け" required autocomplete="off"></label><button class="secondary-button" id="partnerInvitePaste" type="button">コピーした招待リンクを貼り付ける</button><button class="secondary-button" type="submit">このリンクで参加</button></form></details><details id="partnerMore" class="partner-more" hidden><summary>共有の詳細</summary><div id="partnerLinkRow" hidden><label class="field"><span>招待リンク</span><textarea id="partnerLink" readonly rows="2" aria-label="共同編集の招待リンク"></textarea></label><p class="field-hint">パスワードなしではURLを知る人が閲覧・編集できます。以前送ったリンクは失効しません。</p></div><button class="secondary-button" id="partnerSync" hidden>今すぐ同期</button><button class="partner-leave" id="partnerLeave" hidden>この端末で共有を終了</button></details></div></section></div>
-  <script src="sync.js?v=20261018-110" defer></script><script src="accounts.js?v=20261018-110" defer></script>
+  <div class="modal-backdrop partner-backdrop" id="partnerBackdrop" aria-hidden="true"><section class="edit-sheet partner-sheet" role="dialog" aria-modal="true" aria-labelledby="partnerTitle"><div class="sheet-grabber"></div><header class="sheet-header"><div><p class="eyebrow">TOGETHER</p><h2 id="partnerTitle">パートナーと共同編集</h2></div><button class="icon-button" id="closePartner" aria-label="閉じる">×</button></header><div class="partner-body"><p id="partnerDescription">招待URLを送って、旅程や持ち物を一緒に編集できます。</p><p class="partner-status" id="partnerStatus" role="status"></p><p class="partner-error" id="partnerError" role="alert" hidden></p><section id="partnerInviteIdentity" class="partner-invite-identity"><label class="field"><span>招待するあなたの名前</span><input id="partnerSenderName" maxlength="30" autocomplete="given-name" placeholder="例：翔太"></label><label class="field invite-password-field"><span>招待リンクのパスワード（任意）</span><input id="partnerInvitePassword" type="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="設定する場合は12文字以上"><small id="invitePasswordHint">パスワードを設定するとURLだけでは参加できません。別途パスワードを伝えてください。※過去に送った招待リンクは無効になりません。</small></label></section><div class="partner-actions"><button class="primary-button" id="partnerCreate">招待URLを作成する</button><label id="partnerJoinPasswordWrap" class="field" hidden><span>招待パスワード</span><input id="partnerJoinPassword" type="password" autocomplete="off" placeholder="招待者から聞いたパスワード"></label><button class="primary-button" id="partnerJoin" hidden>この旅行に参加する</button><button class="primary-button" id="partnerSend" hidden>招待URLを送る</button><button class="secondary-button" id="partnerCopy" hidden>招待URLをコピー</button></div><p class="field-hint" id="partnerSendHint" hidden>LINEなど、送りたいアプリを選べます。</p><div class="invite-preview" id="partnerInvitePreview"><div class="invite-card-visual"><img class="invite-card-art" src="invite-card-art.svg?v=20261018-111" alt="tabiの旅行招待カード" width="1000" height="600"><div class="invite-card-copy"><span class="invite-card-kicker">OUR NEXT ADVENTURE</span><strong id="partnerInviteTitle">一緒に旅しよう</strong><span id="partnerInviteDestination">TRAVEL TOGETHER</span></div></div><p id="partnerMessagePreview" class="partner-message-preview" aria-live="polite"></p></div><details id="partnerSendOptions" class="partner-more" hidden><summary>その他の送り方</summary><button class="secondary-button" id="partnerNative" hidden>LINEでカード形式の招待を送る</button><p class="field-hint">カード形式ではLINEへのログインが必要です。</p></details><details id="partnerJoinDetails" class="partner-more"><summary>招待リンクで参加する</summary><p class="field-hint">ホーム画面から旅行が見えない場合は、Safariで開いた招待URLをコピーしてここから参加してください。元の旅行データは削除されません。</p><form id="partnerInviteForm" class="partner-invite-form"><label class="field"><span>受け取った招待リンクから参加</span><input id="partnerInviteInput" type="url" placeholder="招待リンクを貼り付け" required autocomplete="off"></label><button class="secondary-button" id="partnerInvitePaste" type="button">コピーした招待リンクを貼り付ける</button><button class="secondary-button" type="submit">このリンクで参加</button></form></details><details id="partnerMore" class="partner-more" hidden><summary>共有の詳細</summary><div id="partnerLinkRow" hidden><label class="field"><span>招待リンク</span><textarea id="partnerLink" readonly rows="2" aria-label="共同編集の招待リンク"></textarea></label><p class="field-hint">パスワードなしではURLを知る人が閲覧・編集できます。以前送ったリンクは失効しません。</p></div><button class="secondary-button" id="partnerSync" hidden>今すぐ同期</button><button class="partner-leave" id="partnerLeave" hidden>この端末で共有を終了</button></details></div></section></div>
+  <script src="sync.js?v=20261018-111" defer></script><script src="accounts.js?v=20261018-111" defer></script>
   <div class="modal-backdrop range-backdrop" id="rangeBackdrop" aria-hidden="true"><section class="edit-sheet range-sheet" role="dialog" aria-modal="true" aria-labelledby="rangeTitle"><div class="sheet-grabber"></div><header class="range-header"><h2 id="rangeTitle">期間を選ぶ</h2><button class="icon-button" id="rangeClose" type="button" aria-label="カレンダーを閉じる"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header><div class="range-selected"><button id="rangeStart" type="button"><small id="rangeStartLabel">開始日</small><span id="rangeStartValue"></span></button><button id="rangeEnd" type="button"><small id="rangeEndLabel">終了日</small><span id="rangeEndValue"></span></button></div><p class="range-hint" id="rangeHint" aria-live="polite"></p><div class="range-month-nav"><button type="button" data-range-month="-1" aria-label="前の月"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button><select id="rangeMonth" aria-label="カレンダーの年月"></select><button type="button" data-range-month="1" aria-label="次の月"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button></div><div class="range-calendar"><div class="range-weekdays" aria-hidden="true"><span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span></div><div class="range-days" id="rangeDays"></div></div><footer class="range-footer"><button class="secondary-button" id="rangeCancel" type="button">キャンセル</button><button class="primary-button" id="rangeApply" type="button" disabled>この期間にする</button></footer></section></div>
   <div id="partnerUpdateNotice" class="partner-update-notice" role="status" aria-live="polite" aria-atomic="true"></div>
-  <script src="notifications.js?v=20261018-110" defer></script>
-  <script src="date-range.js?v=20261018-110" defer></script>
-  <script src="line-invite.js?v=20261018-110" defer></script>
-  <script src="mobile-input.js?v=20261018-110" defer></script>
-  <script src="i18n.js?v=20261018-110" defer></script><script src="app.js?v=20261018-110" defer></script><script src="account-ui.js?v=20261018-110" defer></script>
+  <script src="notifications.js?v=20261018-111" defer></script>
+  <script src="date-range.js?v=20261018-111" defer></script>
+  <script src="line-invite.js?v=20261018-111" defer></script>
+  <script src="mobile-input.js?v=20261018-111" defer></script>
+  <script src="i18n.js?v=20261018-111" defer></script><script src="app.js?v=20261018-111" defer></script><script src="account-ui.js?v=20261018-111" defer></script>
 </body>
 </html>
