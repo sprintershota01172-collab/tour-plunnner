@@ -111,7 +111,7 @@ test('group editing, budget calculation, filters, and gentle reveal exist',()=>{
   for(const x of ['function saveSouvenirOwner(','function editSouvenirOwner(','function deleteSouvenirOwner(','function souvenirOwnerBudget(','function renderSouvenirOwners('])assert.ok(app.includes(x),x);
   assert.match(app,/ownerId:owner\?\.id\|\|''/);
   assert.match(app,/state\.souvenirs=state\.souvenirs\.map\(item=>item\.ownerId===owner\.id\?\{\.\.\.item,ownerId:''\}:item\)/);
-  assert.match(css,/@keyframes tabi-text-reveal/);
+  assert.match(css,/transition:opacity 1000ms cubic-bezier/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
   assert.match(sync,/'souvenirOwners'/);
   assert.match(notifications,/oldOwners=new Map/);
