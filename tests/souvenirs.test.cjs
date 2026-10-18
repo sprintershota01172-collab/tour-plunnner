@@ -58,7 +58,7 @@ test('souvenir-only trip cannot be discarded as empty or merged away',()=>{
 test('root and dist files match and offline cache is updated',()=>{
   for(const name of ['app.js','index.html','styles.css','sync.js','notifications.js','i18n.js','sw.js'])
     assert.equal(readFileSync(name,'utf8'),readFileSync('dist/'+name,'utf8'));
-  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v106/);
+  assert.match(readFileSync('sw.js','utf8'),/tabi-planner-v107/);
 });
 
 test('legacy recipient names become distinct stable person records',()=>{

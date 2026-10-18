@@ -1,11 +1,11 @@
 (() => {
   'use strict';
   const API='https://tabi-planner-sync.prettybell7.chatgpt.site/api/rooms/';
-  const FIELDS=['destination','travelers','startDate','endDate','datesConfigured','hotels','groups','places','packingItems','todoItems','meals','souvenirs','souvenirPeople','souvenirOwners'];
+  const FIELDS=['destination','travelers','startDate','endDate','datesConfigured','daySummaries','hotels','groups','places','packingItems','todoItems','meals','souvenirs','souvenirPeople','souvenirOwners'];
   const encoder=new TextEncoder(), decoder=new TextDecoder();
   const copy=value=>structuredClone(value);
   const same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
-  const wire=trip=>Object.fromEntries(FIELDS.map(field=>[field,copy(field==='meals'?(trip[field]||{}):['todoItems','souvenirs','souvenirPeople','souvenirOwners'].includes(field)?(Array.isArray(trip[field])?trip[field]:[]):trip[field])]));
+  const wire=trip=>Object.fromEntries(FIELDS.map(field=>[field,copy(['meals','daySummaries'].includes(field)?(trip[field]||{}):['todoItems','souvenirs','souvenirPeople','souvenirOwners'].includes(field)?(Array.isArray(trip[field])?trip[field]:[]):trip[field])]));
   const encode64=bytes=>btoa(Array.from(bytes,b=>String.fromCharCode(b)).join('')).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   const decode64=value=>Uint8Array.from(atob(value.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-value.length%4)%4)),c=>c.charCodeAt(0));
   async function auth(key){return encode64(new Uint8Array(await crypto.subtle.digest('SHA-256',encoder.encode(`tabi-auth-v1:${key}`))));}

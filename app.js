@@ -24,7 +24,7 @@
   ].map(([id,name,category])=>({id,name,category,checked:false}));
   const DEFAULTS = {
     destination:'', travelers:2, startDate:'', endDate:'', datesConfigured:false,
-    hotels:[], meals:{},
+    hotels:[], meals:{}, daySummaries:{},
     places:[], groups:CATEGORIES.map(c=>c.name), packingItems:PACKING_DEFAULTS, todoItems:[], souvenirs:[], souvenirPeople:[], souvenirOwners:SOUVENIR_OWNER_DEFAULTS
   };
   const DB_NAME='malie-honeymoon', DB_STORE='app';
@@ -78,13 +78,13 @@
   function isEmptyTrip(t){
     return !t?.collaboration&&!String(t?.destination||'').trim()&&!t?.startDate&&!t?.endDate&&!t?.datesConfigured
       &&!(t?.hotels||[]).some(h=>h.name||h.start||h.end)&&!Object.values(t?.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))&&!(t?.places||[]).length
-      &&!(t?.todoItems||[]).length&&!(t?.souvenirs||[]).length&&!(t?.souvenirPeople||[]).length&&!(t?.souvenirOwners||[]).some(o=>!SOUVENIR_OWNER_DEFAULTS.some(d=>d.id===o.id&&d.name===o.name&&o.budgetAmount==null))&&!(t?.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g))
+      &&!Object.values(t?.daySummaries||{}).some(v=>typeof v==='string'&&v.trim())&&!(t?.todoItems||[]).length&&!(t?.souvenirs||[]).length&&!(t?.souvenirPeople||[]).length&&!(t?.souvenirOwners||[]).some(o=>!SOUVENIR_OWNER_DEFAULTS.some(d=>d.id===o.id&&d.name===o.name&&o.budgetAmount==null))&&!(t?.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g))
       &&!(t?.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name));
   }
   // Preserve distinct journeys (even when they share the same destination).
   // Only remove generated blank placeholders and genuinely equivalent non-shared copies.
   function hasPlanDetails(t){
-    return (t.todoItems||[]).length>0||(t.souvenirs||[]).length>0||(t.souvenirPeople||[]).length>0||(t.souvenirOwners||[]).some(o=>!SOUVENIR_OWNER_DEFAULTS.some(d=>d.id===o.id&&d.name===o.name&&o.budgetAmount==null))||(t.places||[]).length>0||(t.hotels||[]).some(h=>h.name||h.start||h.end)||Object.values(t.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))
+    return Object.values(t.daySummaries||{}).some(v=>typeof v==='string'&&v.trim())||(t.todoItems||[]).length>0||(t.souvenirs||[]).length>0||(t.souvenirPeople||[]).length>0||(t.souvenirOwners||[]).some(o=>!SOUVENIR_OWNER_DEFAULTS.some(d=>d.id===o.id&&d.name===o.name&&o.budgetAmount==null))||(t.places||[]).length>0||(t.hotels||[]).some(h=>h.name||h.start||h.end)||Object.values(t.meals||{}).some(d=>d&&Object.values(d).some(m=>m?.name||m?.placeId))
       ||(t.packingItems||[]).some(p=>p.checked||!PACKING_DEFAULTS.some(d=>d.id===p.id&&d.name===p.name))
       ||(t.groups||[]).some(g=>!CATEGORIES.some(c=>c.name===g));
   }
@@ -102,8 +102,8 @@
         if(existing.startDate!==trip.startDate||existing.endDate!==trip.endDate||existing.travelers!==trip.travelers)return false;
         // A generated empty plan may be dropped; a user's actual edits must be preserved.
         if(!hasPlanDetails(trip)||!hasPlanDetails(existing))return true;
-        return JSON.stringify({places:existing.places,hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems,todoItems:existing.todoItems,meals:existing.meals,souvenirs:existing.souvenirs,souvenirPeople:existing.souvenirPeople,souvenirOwners:existing.souvenirOwners})
-          ===JSON.stringify({places:trip.places,hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems,todoItems:trip.todoItems,meals:trip.meals,souvenirs:trip.souvenirs,souvenirPeople:trip.souvenirPeople,souvenirOwners:trip.souvenirOwners});
+        return JSON.stringify({places:existing.places,hotels:existing.hotels,groups:existing.groups,packingItems:existing.packingItems,todoItems:existing.todoItems,meals:existing.meals,daySummaries:existing.daySummaries,souvenirs:existing.souvenirs,souvenirPeople:existing.souvenirPeople,souvenirOwners:existing.souvenirOwners})
+          ===JSON.stringify({places:trip.places,hotels:trip.hotels,groups:trip.groups,packingItems:trip.packingItems,todoItems:trip.todoItems,meals:trip.meals,daySummaries:trip.daySummaries,souvenirs:trip.souvenirs,souvenirPeople:trip.souvenirPeople,souvenirOwners:trip.souvenirOwners});
       });
       if(!same){unique.push(trip);continue;}
       if(!hasPlanDetails(same)&&hasPlanDetails(trip)){unique[unique.indexOf(same)]=trip;continue;}
@@ -112,7 +112,7 @@
     }
     return unique;
   }
-  function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.meals=normalizeMeals(data.meals);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,listType:isFood(p)?'food':'place',mealType:validMealType(p.mealType),reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.todoItems=normalizeTodoItems(data.todoItems);s.souvenirs=normalizeSouvenirs(data.souvenirs);s.souvenirPeople=normalizeSouvenirPeople(data.souvenirPeople,s.souvenirs);s.souvenirOwners=normalizeSouvenirOwners(data.souvenirOwners);for(const item of s.souvenirs)if(!s.souvenirOwners.some(owner=>owner.id===item.ownerId))item.ownerId='';s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
+  function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.meals=normalizeMeals(data.meals);s.daySummaries=normalizeDaySummaries(data.daySummaries);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,listType:isFood(p)?'food':'place',mealType:validMealType(p.mealType),reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.todoItems=normalizeTodoItems(data.todoItems);s.souvenirs=normalizeSouvenirs(data.souvenirs);s.souvenirPeople=normalizeSouvenirPeople(data.souvenirPeople,s.souvenirs);s.souvenirOwners=normalizeSouvenirOwners(data.souvenirOwners);for(const item of s.souvenirs)if(!s.souvenirOwners.some(owner=>owner.id===item.ownerId))item.ownerId='';s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
   function normalizeSouvenirs(raw){
     if(!Array.isArray(raw))return [];
     const seen=new Set();
@@ -180,6 +180,58 @@
         dueDate:typeof t.dueDate==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(t.dueDate)?t.dueDate:'',
         completed:!!t.completed
       })).filter(t=>t.title);
+  }
+  function normalizeDaySummaries(raw){
+    if(!raw||typeof raw!=='object'||Array.isArray(raw))return {};
+    const summaries={};
+    for(const [key,value] of Object.entries(raw)){
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(key)||typeof value!=='string')continue;
+      const note=value.trim().slice(0,240);
+      if(note)summaries[key]=note;
+    }
+    return summaries;
+  }
+  function daySummaryKey(day){
+    if(!hasTripDates()||day<0||day>=dayCount())return '';
+    const date=dateAt(day);
+    return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  }
+  function daySummary(day){return state.daySummaries?.[daySummaryKey(day)]||'';}
+  function openDaySummary(day){
+    const index=Number(day);
+    if(!Number.isInteger(index)||index<0||index>=dayCount())return;
+    const key=daySummaryKey(index),form=$('#daySummaryForm');
+    if(!key)return;
+    form.elements.dayKey.value=key;
+    form.elements.summary.value=daySummary(index);
+    $('#daySummaryDate').textContent=fmtDate(dateAt(index),{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+    $('#daySummaryCount').textContent=String(form.elements.summary.value.length)+' / 240';
+    openModal($('#daySummaryBackdrop'));
+  }
+  function saveDaySummary(event){
+    event.preventDefault();
+    const form=event.currentTarget.elements,key=form.dayKey.value;
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(key))return;
+    const next=form.summary.value.trim().slice(0,240);
+    state.daySummaries={...state.daySummaries};
+    if(next)state.daySummaries[key]=next;
+    else delete state.daySummaries[key];
+    persist();
+    renderItinerary();renderDays();
+    closeModal($('#daySummaryBackdrop'));
+    showToast(next?'その日の概要を保存しました':'その日の概要を消去しました');
+  }
+  function bindDaySummaries(){
+    $('#daySummaryForm').onsubmit=saveDaySummary;
+    $('#daySummaryForm').elements.summary.addEventListener('input',e=>{
+      $('#daySummaryCount').textContent=String(e.target.value.length)+' / 240';
+    });
+    $('#closeDaySummary').onclick=$('#cancelDaySummary').onclick=()=>closeModal($('#daySummaryBackdrop'));
+    $('#daySummaryBackdrop').addEventListener('click',e=>{if(e.target===$('#daySummaryBackdrop'))closeModal($('#daySummaryBackdrop'));});
+    $('#dayContext').addEventListener('click',e=>{
+      const button=e.target.closest('[data-edit-day-summary]');
+      if(button)openDaySummary(button.dataset.editDaySummary);
+    });
   }
   function storagePayload(){trips=trips.map(t=>t.id===state.id?state:t);activeTripId=state.id;return {version:3,activeTripId,trips,accountSession};}
   function persist(sync=true){if(sync&&sharedApi){if(undoSnapshot&&undoCheckpoint?.before!==undoSnapshot)undoCheckpoint={before:undoSnapshot,after:sharedApi.wire(state)};sharing.changed();}storagePayload();window.TabiAccountUI?.notifyTripChange?.();clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{const payload=storagePayload();if(db){try{await new Promise((resolve,reject)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put(payload,'state');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}catch{showToast('保存できませんでした。端末の空き容量をご確認ください');}}else{try{localStorage.setItem(DB_NAME,JSON.stringify(payload));}catch{showToast('保存容量が不足しています');}}},100);}
@@ -369,7 +421,7 @@
   function placeCard(p){const c=cat(p.category),remove='<span><svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6m4-6v6M5 7l1 14h12l1-14M9 7V4h6v3"/></svg>削除</span>';return `<div class="place-row"><div class="place-swipe-background" aria-hidden="true">${remove}${remove}</div><article class="place-card" data-edit="${esc(p.id)}" style="--card-color:${c.color};--card-soft:${c.soft}"><div class="place-thumb">${p.photos?.[0]?`<img src="${esc(p.photos[0])}" alt="" draggable="false">`:`<svg viewBox="0 0 40 40"><path d="M6 25c4-8 8.7-12 14-12s10 4 14 12M8 30c3.6-4 7.6-6 12-6s8.4 2 12 6"/><circle cx="20" cy="8" r="2"/></svg>`}</div><div class="place-body"><div class="place-topline"><span class="category-tag"><i class="tag-dot"></i>${esc(p.category||'その他')}</span>${validMealType(p.mealType)?`<span class="meal-type-badge">${MEAL_NAMES[p.mealType]}</span>`:''}${p.mustGo?'<span class="must-badge">絶対行きたい</span>':''}${p.booked?'<span class="reservation-badge booked">予約済み</span>':p.reservationRequired?'<span class="reservation-badge">要予約</span>':''}</div><h2 class="place-name">${esc(p.name)}</h2><p class="place-address">${esc(p.address||'住所未設定')}</p><div class="place-meta"><span>${icon('clock')}${p.duration||60}分</span>${p.start!=null?`<span>${esc(dayLabel(p.day))}</span>`:''}</div></div></article></div>`;}
   function dayLabel(day){if(!hasTripDates())return '日程未設定';return `${dateAt(day).getMonth()+1}/${dateAt(day).getDate()}`;}
   function renderDays(){const count=dayCount();$('#autoArrange').disabled=!count;$('#dayClear').disabled=!count;if(!count){selectedDay=0;$('#dayTabs').innerHTML='';$('#dayContext').innerHTML=tripDatesButton();$('#selectedDateLabel').textContent='日程未設定';$('#placedCount').textContent='';renderDayMeals();return;}if(selectedDay>=count)selectedDay=count-1;$('#dayTabs').innerHTML=Array.from({length:count},(_,i)=>{const date=dateAt(i);return `<button class="day-tab ${i===selectedDay?'selected':''} ${state.places.some(p=>p.day===i&&p.start!=null)?'has-place':''}" data-day="${i}" role="tab" aria-selected="${i===selectedDay}"><span class="day-week">${i===0?'DAY 1':`DAY ${i+1}`}</span><b class="day-number">${date.getMonth()+1}/${date.getDate()}</b></button>`;}).join('');
-    const stay=dateHotel(selectedDay);$('#dayContext').innerHTML=`<span class="hotel-symbol">${icon('bed')}</span><span>${stay?`宿泊：${esc(stay.name)}`:'宿泊先未設定 · '}</span><span>${fmtDate(dateAt(selectedDay),{month:'long',day:'numeric',weekday:'short'})}</span>`;
+    const stay=dateHotel(selectedDay),overview=daySummary(selectedDay);$('#dayContext').innerHTML=`<span class="hotel-symbol">${icon('bed')}</span><span class="day-context-hotel">${stay?`宿泊：${esc(stay.name)}`:'宿泊先未設定'}</span><span class="day-context-date">${fmtDate(dateAt(selectedDay),{month:'long',day:'numeric',weekday:'short'})}</span><button type="button" class="day-context-overview" data-edit-day-summary="${selectedDay}" title="${esc(overview||'その日の概要を書く')}">${overview?esc(overview):'＋ 概要'}</button>`;
     $('#selectedDateLabel').textContent=fmtDate(dateAt(selectedDay),{month:'long',day:'numeric',weekday:'short'});
     $('#placedCount').textContent=`${state.places.filter(p=>p.day===selectedDay&&p.start!=null).length}件 · タップで調整 / 長押しで移動`;renderDayMeals();
   }
@@ -415,7 +467,7 @@
     $('#itineraryContent').innerHTML=staySummary()+Array.from({length:count},(_,day)=>{
       const date=dateAt(day),stay=dateHotel(day),places=state.places.filter(p=>p.day===day&&p.start!=null).sort(sortPlaces);
       const heading='<header class="itinerary-day-head"><span class="date-badge"><b>'+date.getDate()+'</b><small>'+new Intl.DateTimeFormat('ja-JP',{weekday:'short'}).format(date)+'</small></span><div class="itinerary-day-title"><h2>'+(day+1)+'日目</h2><p>'+fmtDate(date,{year:'numeric',month:'long',day:'numeric'})+'</p></div>'+(stay?'<span class="day-stay" title="この日の宿泊先">'+icon('bed')+esc(stay.name)+'</span>':'')+'</header>';
-      return '<article class="itinerary-day">'+heading+mealsSummary(day)+(places.length?'<div class="itinerary-stops">'+places.map(p=>itineraryStop(p)).join('')+'</div>':'<div class="itinerary-empty">観光・アクティビティは未定</div>')+'</article>';
+      return '<article class="itinerary-day">'+heading+'<button type="button" class="itinerary-day-overview '+(daySummary(day)?'has-overview':'')+'" data-edit-day-summary="'+day+'" aria-label="'+(day+1)+'日目の概要を編集"><span class="day-overview-label">今日のテーマ</span><span class="day-overview-text">'+(daySummary(day)?esc(daySummary(day)):'＋ その日の概要を書く')+'</span><span class="day-overview-edit">'+(daySummary(day)?'編集':'追加')+'</span></button>'+mealsSummary(day)+(places.length?'<div class="itinerary-stops">'+places.map(p=>itineraryStop(p)).join('')+'</div>':'<div class="itinerary-empty">観光・アクティビティは未定</div>')+'</article>';
     }).join('');
   }
   function itineraryStop(p){const c=cat(p.category);const query=p.latitude!=null&&p.longitude!=null?`${p.latitude},${p.longitude}`:[p.name,p.address].filter(Boolean).join(' ');const url=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;return `<div class="itinerary-stop" data-pid="${esc(p.id)}"><time class="stop-time">${fmtTime(p.start)}</time><i class="stop-dot" style="--stop-color:${c.color}"></i><div class="stop-details"><h3><span>${esc(p.name)}</span><button type="button" class="stop-remove" data-unplan="${esc(p.id)}" aria-label="${esc(p.name)}を旅程から外す"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button></h3><p>${esc(p.category)}${validMealType(p.mealType)?' · '+MEAL_NAMES[p.mealType]:''} · ${p.duration||60}分${p.booked?' · 予約済み':p.reservationRequired?' · 要予約':''}${p.notes?`<br>${esc(p.notes)}`:''}</p><a class="map-link" href="${esc(url)}" target="_blank" rel="noopener">${icon('map')}${p.address?'場所を確認':'Googleマップで見る'}</a></div>${p.photos?.[0]?`<img class="stop-photo" src="${esc(p.photos[0])}" alt="">`:''}</div>`;}
@@ -1130,7 +1182,7 @@
     canvas.toBlob(blob=>{if(blob)download(blob,`trip-plan-${state.startDate}.png`);else showToast('画像を書き出せませんでした');},'image/png');}
   function importJSON(file){const reader=new FileReader();reader.onload=()=>{try{const raw=JSON.parse(reader.result);if(!raw||typeof raw!=='object'||!Array.isArray(raw.places))throw new Error();const incoming=normalizeState({...raw,collaboration:state.collaboration});incoming.id=state.id;state=incoming;selectedDay=0;persist();renderAll();showToast('旅程データを読み込みました');}catch{showToast('JSONデータを読み込めませんでした');}};reader.readAsText(file);}
 
-  function bind(){document.body.append($('#sharePanel'));try{const sort=localStorage.getItem('tabi-wishlist-sort-v1');if(WISHLIST_SORTS.includes(sort))selectedPlaceSort=sort;}catch{}initFields();bindPartner();bindSouvenirs();bindTodos();$('#tripDateRange').onclick=openTripDateRange;document.addEventListener('click',e=>{if(e.target.closest('[data-open-trip-settings]')){e.preventDefault();openSettings();}});$('#editGroups').onclick=openGroups;$('#closeGroups').onclick=()=>closeModal($('#groupsBackdrop'));$('#groupForm').onsubmit=addGroup;$('#groupEditList').onclick=e=>{const b=e.target.closest('[data-delete-group]');if(b)deleteGroup(b.dataset.deleteGroup);};$('#groupsBackdrop').addEventListener('click',e=>{if(e.target===$('#groupsBackdrop'))closeModal($('#groupsBackdrop'));});$('#registerPlace').onclick=()=>openPlace();$('#quickAdd').onclick=()=>openPlace();$('#emptyAdd').onclick=()=>openPlace();$('#closeSheet').onclick=()=>closeModal($('#modalBackdrop'));$('#cancelSheet').onclick=()=>closeModal($('#modalBackdrop'));$('#placeForm').onsubmit=savePlace;$('#deletePlace').onclick=deletePlace;$('#settingsButton').onclick=openAppSettings;$('#closeAppSettings').onclick=()=>closeModal($('#appSettingsBackdrop'));$('#doneAppSettings').onclick=()=>closeModal($('#appSettingsBackdrop'));$('#hotelShortcut').onclick=()=>openSettings(true);$('#tripPickerButton').onclick=e=>{if(e.target.closest('#tripSummary')&&!state.destination.trim())openSettings();else openTripPicker();};$('#closeTrips').onclick=()=>closeModal($('#tripsBackdrop'));$('#tripsBackdrop').addEventListener('click',e=>{if(e.target===$('#tripsBackdrop'))closeModal($('#tripsBackdrop'));});$('#tripList').addEventListener('click',e=>{const remove=e.target.closest('[data-delete-trip]');if(remove){e.stopPropagation();deleteTrip(remove.dataset.deleteTrip);return;}const edit=e.target.closest('[data-edit-trip]');const select=e.target.closest('[data-trip]');if(select){const target=trips.find(t=>t.id===select.dataset.trip);selectTrip(select.dataset.trip);if(edit||!target?.destination?.trim())openSettings();}});$('#newTripButton').onclick=createTrip;$('#appToast').addEventListener('click',e=>{if(e.target.closest('#toastUndo'))undo();});$('#closeSettings').onclick=()=>closeModal($('#settingsBackdrop'));$('#cancelSettings').onclick=()=>closeModal($('#settingsBackdrop'));$('#settingsForm').onsubmit=saveSettings;$('#addHotelButton').onclick=()=>{
+  function bind(){document.body.append($('#sharePanel'));bindDaySummaries();try{const sort=localStorage.getItem('tabi-wishlist-sort-v1');if(WISHLIST_SORTS.includes(sort))selectedPlaceSort=sort;}catch{}initFields();bindPartner();bindSouvenirs();bindTodos();$('#tripDateRange').onclick=openTripDateRange;document.addEventListener('click',e=>{if(e.target.closest('[data-open-trip-settings]')){e.preventDefault();openSettings();}});$('#editGroups').onclick=openGroups;$('#closeGroups').onclick=()=>closeModal($('#groupsBackdrop'));$('#groupForm').onsubmit=addGroup;$('#groupEditList').onclick=e=>{const b=e.target.closest('[data-delete-group]');if(b)deleteGroup(b.dataset.deleteGroup);};$('#groupsBackdrop').addEventListener('click',e=>{if(e.target===$('#groupsBackdrop'))closeModal($('#groupsBackdrop'));});$('#registerPlace').onclick=()=>openPlace();$('#quickAdd').onclick=()=>openPlace();$('#emptyAdd').onclick=()=>openPlace();$('#closeSheet').onclick=()=>closeModal($('#modalBackdrop'));$('#cancelSheet').onclick=()=>closeModal($('#modalBackdrop'));$('#placeForm').onsubmit=savePlace;$('#deletePlace').onclick=deletePlace;$('#settingsButton').onclick=openAppSettings;$('#closeAppSettings').onclick=()=>closeModal($('#appSettingsBackdrop'));$('#doneAppSettings').onclick=()=>closeModal($('#appSettingsBackdrop'));$('#hotelShortcut').onclick=()=>openSettings(true);$('#tripPickerButton').onclick=e=>{if(e.target.closest('#tripSummary')&&!state.destination.trim())openSettings();else openTripPicker();};$('#closeTrips').onclick=()=>closeModal($('#tripsBackdrop'));$('#tripsBackdrop').addEventListener('click',e=>{if(e.target===$('#tripsBackdrop'))closeModal($('#tripsBackdrop'));});$('#tripList').addEventListener('click',e=>{const remove=e.target.closest('[data-delete-trip]');if(remove){e.stopPropagation();deleteTrip(remove.dataset.deleteTrip);return;}const edit=e.target.closest('[data-edit-trip]');const select=e.target.closest('[data-trip]');if(select){const target=trips.find(t=>t.id===select.dataset.trip);selectTrip(select.dataset.trip);if(edit||!target?.destination?.trim())openSettings();}});$('#newTripButton').onclick=createTrip;$('#appToast').addEventListener('click',e=>{if(e.target.closest('#toastUndo'))undo();});$('#closeSettings').onclick=()=>closeModal($('#settingsBackdrop'));$('#cancelSettings').onclick=()=>closeModal($('#settingsBackdrop'));$('#settingsForm').onsubmit=saveSettings;$('#addHotelButton').onclick=()=>{
       hotelDraft.push({name:'',start:'',end:''});
       selectedHotelIndex=hotelDraft.length-1;
       renderHotelEditor();
@@ -1180,7 +1232,7 @@
       const field=e.target.closest('[data-meal-custom]');if(field)updateMeal(selectedDay,field.dataset.mealCustom,{name:field.value});
     });
     $('#mealFoodList').onclick=()=>{closeModal($('#mealsBackdrop'));navigate(0);openPlace(undefined,'food');};
-    $('#dayTabs').onclick=e=>{const b=e.target.closest('[data-day]');if(b){selectedPieceId=null;selectedDay=Number(b.dataset.day);renderTimeline();}};$('#timelineInner').addEventListener('pointerdown',e=>{const piece=e.target.closest('.timeline-piece');if(piece)handleTimelinePointerDown(e,piece);else if(!drag&&!resizeSession)selectTimelinePiece(null);});$('#itineraryContent').addEventListener('click',e=>{const edit=e.target.closest('[data-open-day-meal]');if(edit){selectedDay=Number(edit.dataset.openDayMeal);renderDays();openMealEditor();return;}const remove=e.target.closest('[data-unplan]');if(remove){e.stopPropagation();unplanPlace(remove.dataset.unplan,-1);}});$('#itineraryContent').addEventListener('pointerdown',e=>{const stop=e.target.closest('.itinerary-stop[data-pid]');if(stop)watchScheduleSwipe(e,stop.dataset.pid);});// Only desktop mouse drag is supported in the waiting list. Mobile touch is reserved for reliable native scrolling.
+    $('#dayTabs').onclick=e=>{const b=e.target.closest('[data-day]');if(b){selectedPieceId=null;selectedDay=Number(b.dataset.day);renderTimeline();}};$('#timelineInner').addEventListener('pointerdown',e=>{const piece=e.target.closest('.timeline-piece');if(piece)handleTimelinePointerDown(e,piece);else if(!drag&&!resizeSession)selectTimelinePiece(null);});$('#itineraryContent').addEventListener('click',e=>{const overview=e.target.closest('[data-edit-day-summary]');if(overview){openDaySummary(overview.dataset.editDaySummary);return;}const edit=e.target.closest('[data-open-day-meal]');if(edit){selectedDay=Number(edit.dataset.openDayMeal);renderDays();openMealEditor();return;}const remove=e.target.closest('[data-unplan]');if(remove){e.stopPropagation();unplanPlace(remove.dataset.unplan,-1);}});$('#itineraryContent').addEventListener('pointerdown',e=>{const stop=e.target.closest('.itinerary-stop[data-pid]');if(stop)watchScheduleSwipe(e,stop.dataset.pid);});// Only desktop mouse drag is supported in the waiting list. Mobile touch is reserved for reliable native scrolling.
     $('#trayPieces').addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.target.closest('button'))return;const piece=e.target.closest('.tray-piece');if(piece)startDrag(e,piece);});$('#autoArrange').onclick=autoArrange;$('#undoMove').onclick=undo;$('#dayClear').onclick=clearDay;$('#toastClose').onclick=()=>$('#completionToast').classList.remove('visible');$('#fetchUrl').onclick=extractUrl;$('#pasteUrl').onclick=pasteUrl;const urlInput=$('#url'),pasteSuggestion=$('#pasteSuggestion');let clipboardUrl='';urlInput.addEventListener('focus',async()=>{if(urlInput.value||!navigator.clipboard?.readText)return;try{const value=(await navigator.clipboard.readText()).trim();if(/^https?:\/\//i.test(value)){clipboardUrl=value;pasteSuggestion.hidden=false;}}catch{}});$('#useClipboardUrl').onclick=()=>{if(clipboardUrl){urlInput.value=clipboardUrl;pasteSuggestion.hidden=true;showToast('クリップボードのURLを貼り付けました');}};urlInput.addEventListener('input',()=>{pasteSuggestion.hidden=true;});$('#photoGallery').onclick=()=>$('#photoInput').click();$('#photoInput').onchange=e=>addFiles(e.target.files);$('#cameraInput').onchange=e=>addFiles(e.target.files);$('#photoPreview').onclick=e=>{const b=e.target.closest('[data-remove-photo]');if(b){editingPhotos.splice(Number(b.dataset.removePhoto),1);renderPhotos();}};
     const drop=$('#photoDrop');['dragenter','dragover'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.add('drag-over');}));['dragleave','drop'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.remove('drag-over');}));drop.addEventListener('drop',e=>addFiles(e.dataTransfer.files));$('#modalBackdrop').addEventListener('paste',e=>{const files=Array.from(e.clipboardData?.items||[]).filter(x=>x.type.startsWith('image/')).map(x=>x.getAsFile()).filter(Boolean);if(files.length)addFiles(files);});
     $$('.nav-item').forEach(b=>b.onclick=()=>navigate(Number(b.dataset.nav)));$('#packingButton').onclick=()=>{renderPacking();openModal($('#packingBackdrop'));};$('#closePacking').onclick=()=>closeModal($('#packingBackdrop'));$('#packingBackdrop').addEventListener('click',e=>{if(e.target===$('#packingBackdrop'))closeModal($('#packingBackdrop'));});$('#packingList').addEventListener('change',e=>{const input=e.target.closest('[data-pack-toggle]');if(!input)return;const item=state.packingItems.find(x=>x.id===input.dataset.packToggle);if(item){item.checked=input.checked;persist();renderPacking();}});$('#packingList').addEventListener('click',e=>{const button=e.target.closest('[data-pack-remove]');if(button){e.preventDefault();e.stopPropagation();removePackingItem(button.dataset.packRemove);}});$('#packingForm').addEventListener('submit',addPackingItem);$('#shareMenu').onclick=()=>$('#sharePanel').classList.toggle('open');$('#sharePanel').onclick=async e=>{const button=e.target.closest('[data-share]');if(!button)return;const action=button.dataset.share;$('#sharePanel').classList.remove('open');if(action==='partner')openPartner();if(action==='text')await shareText();if(action==='image')exportImage();if(action==='json')exportJSON();if(action==='import')$('#importFile').click();};$('#importFile').onchange=e=>{if(e.target.files?.[0])importJSON(e.target.files[0]);e.target.value='';};

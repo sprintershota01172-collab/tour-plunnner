@@ -36,6 +36,12 @@
     if(before.destination!==after.destination)changes.push('行き先を'+named(after.destination)+'に変更しました');
     if(before.startDate!==after.startDate||before.endDate!==after.endDate)changes.push('旅行日程を'+dayLabel(after.startDate)+(after.endDate?'〜'+dayLabel(after.endDate):'')+'に変更しました');
     if(before.travelers!==after.travelers)changes.push('旅行人数を'+after.travelers+'人に変更しました');
+    const previousOverview=before.daySummaries||{},currentOverview=after.daySummaries||{};
+    for(const key of new Set([...Object.keys(previousOverview),...Object.keys(currentOverview)])){
+      if(previousOverview[key]!==currentOverview[key]){
+        changes.push('旅行'+dayLabel(key)+'の概要を'+(currentOverview[key]?'更新':'削除')+'しました');
+      }
+    }
     const packing=new Map((before.packingItems||[]).map(p=>[p.id,p]));
     for(const p of after.packingItems||[]){const old=packing.get(p.id);if(!old)changes.push('持ち物'+named(p.name)+'を追加しました');else if(old.checked!==p.checked)changes.push('持ち物'+named(p.name)+'を'+(p.checked?'準備済み':'未準備')+'にしました');else if(!equal(old,p))changes.push('持ち物'+named(p.name)+'を編集しました');}
     const currentPacking=new Set((after.packingItems||[]).map(p=>p.id));for(const p of before.packingItems||[])if(!currentPacking.has(p.id))changes.push('持ち物'+named(p.name)+'を削除しました');
