@@ -2390,3 +2390,23 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
     transition:none!important;
   }
 }
+
+/* v117 — Add transport from the itinerary's primary toolbar without searching below meals. */
+.itinerary-quick-actions{
+  max-width:1060px;margin:0 auto 8px;display:flex;min-width:0;
+}
+.itinerary-quick-transfer{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  width:100%;min-height:39px;padding:6px 12px;
+  border:1px solid #bcd5cc;border-radius:10px;
+  background:#e5f1ed;color:#245d4e;
+  font-size:11px;font-weight:750;cursor:pointer;touch-action:manipulation;
+}
+.itinerary-quick-transfer>span:nth-child(2){flex:1;text-align:left}
+.itinerary-quick-icon{font-size:16px;font-weight:500}
+.itinerary-quick-transfer:active{background:#d4e8df}
+.transfer-sheet #transferDaySelect{min-height:42px;width:100%}
+@media(prefers-color-scheme:dark){
+  .itinerary-quick-transfer{background:#304a40;color:#d6f0df;border-color:#527664}
+  .itinerary-quick-transfer:active{background:#3c5c4d}
+}
