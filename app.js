@@ -116,7 +116,7 @@
     return unique;
   }
   function normalizeState(data){const s={...structuredClone(DEFAULTS),...data};s.id=data.id||id();s.hotels=Array.isArray(data.hotels)?data.hotels.map(h=>({...h?.id?{id:h.id}:{},name:h?.name||'',start:h?.start||'',end:h?.end||''})):structuredClone(DEFAULTS.hotels);s.meals=normalizeMeals(data.meals);s.daySummaries=normalizeDaySummaries(data.daySummaries);s.transfers=normalizeTransfers(data.transfers);s.places=Array.isArray(data.places)?data.places.map(p=>({...p,listType:isFood(p)?'food':'place',mealType:validMealType(p.mealType),reservationRequired:p.reservationRequired??!!p.booked})):[];s.groups=cleanGroupNames(Array.isArray(data.groups)?data.groups:[...CATEGORIES.map(c=>c.name),...s.places.map(p=>p.category)]);s.places=s.places.map(p=>({...p,category:s.groups.includes(p.category)?p.category:UNGROUPED}));s.packingItems=Array.isArray(data.packingItems)?data.packingItems:structuredClone(PACKING_DEFAULTS);s.todoItems=normalizeTodoItems(data.todoItems);s.souvenirs=normalizeSouvenirs(data.souvenirs);s.souvenirPeople=normalizeSouvenirPeople(data.souvenirPeople,s.souvenirs);s.souvenirOwners=normalizeSouvenirOwners(data.souvenirOwners);for(const item of s.souvenirs)if(!s.souvenirOwners.some(owner=>owner.id===item.ownerId))item.ownerId='';s.datesConfigured=hasTripDates(s)&&(typeof data.datesConfigured==='boolean'?data.datesConfigured:!!(s.destination?.trim()||s.hotels.some(h=>h.name)||s.places.some(p=>p.start!=null)));if(!s.datesConfigured){s.startDate='';s.endDate='';}return s;}
-  const TRANSFER_MODES={bus:'バス',walk:'徒歩',train:'電車',subway:'地下鉄',taxi:'タクシー',car:'車',shuttle:'シャトル',ferry:'船',other:'その他'};
+  const TRANSFER_MODES={event:'予定',bus:'バス',walk:'徒歩',train:'電車',subway:'地下鉄',taxi:'タクシー',car:'車',shuttle:'シャトル',ferry:'船',other:'その他'};
   function transferMinutes(value){
     if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(String(value||'')))return null;
     const [hour,minute]=value.split(':').map(Number);return hour*60+minute;
@@ -145,7 +145,7 @@
       <time class="transfer-times">${fmtTime(t.start)}<span>↓</span>${fmtTime(t.end)}</time>
       <div class="transfer-copy">
         <strong>${esc(transferLabel(t))}${t.line?' · '+esc(t.line):''}</strong>
-        <span>${esc(route||'移動区間未設定')}</span>
+        <span>${esc(route||(t.mode==='event'?'予定':'移動区間未設定'))}</span>
         ${t.note?`<small>${esc(t.note)}</small>`:''}
         ${conflict?'<em>ほかの予定と時間が重複</em>':''}
       </div>
@@ -168,7 +168,7 @@
       marker.title=transferLabel(transfer)+' '+fmtTime(transfer.start)+'〜'+fmtTime(transfer.end);
       marker.style.top=((start-START_MIN)*PX_PER_MIN)+'px';
       marker.style.height=Math.max(23,(end-start)*PX_PER_MIN-2)+'px';
-      marker.textContent=fmtTime(transfer.start)+' '+transferLabel(transfer)+(transfer.line?' · '+transfer.line:'');
+      marker.textContent=fmtTime(transfer.start)+' '+(transfer.mode==='event'?(transfer.line||'予定'):transferLabel(transfer)+(transfer.line?' · '+transfer.line:''));
       inner.appendChild(marker);
     }
   }
@@ -182,11 +182,11 @@
       return `<option value="${index}">${index+1}日目 · ${esc(label)}</option>`;
     }).join('');
     f.id.value=t?.id||'';f.day.value=String(t?.day??day);
-    f.mode.value=t?.mode||'bus';
+    f.mode.value=t?.mode||'event';
     f.start.value=fmtTime(t?.start??(9*60));
     f.end.value=fmtTime(t?.end??(9*60+30));
     f.from.value=t?.from||'';f.to.value=t?.to||'';f.line.value=t?.line||'';f.note.value=t?.note||'';
-    $('#transferTitle').textContent=t?'移動を編集':'移動を登録';
+    $('#transferTitle').textContent=t?'予定を編集':'予定を登録';
     $('#deleteTransfer').hidden=!t;
     $('#transferDateLabel').textContent=fmtDate(dateAt(t?.day??day),{month:'long',day:'numeric',weekday:'short'});
     $('#transferError').hidden=true;
@@ -207,7 +207,7 @@
     state.transfers=(state.transfers||[]).filter(t=>t.id!==record.id).concat(record);
     selectedDay=record.day;
     closeModal($('#transferBackdrop'));persist();renderTimeline();renderItinerary();
-    showToast('移動を保存しました');
+    showToast('予定を保存しました');
   }
   function deleteTransfer(){
     const idValue=$('#transferForm').elements.id.value;
