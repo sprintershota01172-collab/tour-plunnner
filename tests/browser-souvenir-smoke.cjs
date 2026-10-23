@@ -47,6 +47,22 @@ const visible=async page=>await page.locator('.page.souvenir-page').evaluate(el=
     await form.locator('[name="unitPrice"]').fill('12');
     await form.locator('[name="shop"]').fill('ABCストア');
     await form.locator('button[type="submit"]').click();
+    await page.waitForTimeout(180);
+    const saveDebug=await page.evaluate(()=>{
+      const form=document.querySelector('#souvenirForm');
+      return {
+        souvenirsCount:document.querySelector('#souvenirCount')?.textContent,
+        giftRowCount:document.querySelectorAll('[data-souvenir-swipe]').length,
+        modalOpen:document.querySelector('#souvenirBackdrop')?.classList.contains('open'),
+        invalidFields:[...form.querySelectorAll('input,select')].filter(i=>!i.checkValidity()).map(i=>({id:i.id,name:i.name,reason:i.validationMessage})),
+        owner:form.elements.ownerId?.value,
+        recipient:document.querySelector('#souvenirRecipientName')?.value,
+        selectedTabs:[...document.querySelectorAll('#souvenirGroupSwitch .active')].map(x=>x.textContent),
+        groupContents:document.querySelector('#souvenirOwnerTabs')?.innerText?.slice(0,600),
+        toast:document.querySelector('#appToast')?.innerText,
+      };
+    });
+    if(!saveDebug.giftRowCount)console.log('Gift save diagnostics:',JSON.stringify(saveDebug));
     const wrap=page.locator('[data-souvenir-swipe]').first();
     await wrap.waitFor();
     assert.match(await wrap.innerText(),/テスト株式会社/);
