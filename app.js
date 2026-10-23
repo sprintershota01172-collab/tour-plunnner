@@ -67,7 +67,7 @@
       const existing=trips.find(trip=>trip.collaboration?.roomId===pendingInvite.roomId&&trip.collaboration?.key===pendingInvite.key);
       if(existing){state=existing;activeTripId=existing.id;pendingInvite=null;}
     }
-    renderAll();if(value||needsMigration)persist(false);notifications?.restore();
+    renderStartup();if(value||needsMigration)persist(false);notifications?.restore();
     if(pendingInvite||location.hash==='#invite-partner'){
       openPartner();
       if(pendingInvite&&!pendingInvite.locked&&isHomeApp()&&accountSession)joinPartnerRoom();
@@ -703,7 +703,33 @@
   }
   function dateHotel(day){if(!hasTripDates())return null;const key=dateKey(dateAt(day));return state.hotels.find(h=>h.name&&h.start&&h.end&&key>=h.start&&key<h.end)||null;}
   function sortPlaces(a,b){return (a.start==null?1:b.start==null?-1:a.start-b.start)||a.name.localeCompare(b.name,'ja');}
-  function renderAll(){renderCategoryField();renderGroupManager();renderHeader();renderWishlist();renderTodos();renderDays();renderTimeline();renderItinerary();renderPacking();renderSouvenirs();renderNavDot();renderTrips();}
+  let startupHydrating=false;
+  let startupRendered=new Set();
+  function renderStartupPage(index){
+    if(startupRendered.has(index))return;
+    startupRendered.add(index);
+    if(index===1)renderTimeline();
+    else if(index===2){renderItinerary();renderPacking();}
+    else if(index===3)renderSouvenirs();
+    else if(index===4)renderTodos();
+  }
+  function renderStartup(){
+    // Prioritize the visible collection page. Build the other expensive tabs
+    // incrementally after the first paint, or immediately when selected.
+    startupHydrating=true;startupRendered=new Set([0]);
+    renderCategoryField();renderHeader();renderWishlist();renderNavDot();renderTrips();
+    const advance=()=>{
+      if(!startupHydrating)return;
+      const next=[1,2,3,4].find(index=>!startupRendered.has(index));
+      if(next===undefined){startupHydrating=false;return;}
+      renderStartupPage(next);
+      if(typeof requestIdleCallback==='function')requestIdleCallback(advance,{timeout:1000});
+      else setTimeout(advance,45);
+    };
+    if(typeof requestIdleCallback==='function')requestIdleCallback(advance,{timeout:1100});
+    else setTimeout(advance,80);
+  }
+  function renderAll(){startupHydrating=false;renderCategoryField();renderGroupManager();renderHeader();renderWishlist();renderTodos();renderDays();renderTimeline();renderItinerary();renderPacking();renderSouvenirs();renderNavDot();renderTrips();}
   function renderHeader(){
     const english=window.TabiLocale?.getLanguage()==='en',registered=!!state.destination.trim();
     const missing=english?'Add a destination':'行き先を登録';
@@ -1439,7 +1465,7 @@
   function deleteTrip(tripId){if(trips.length<2)return;const trip=trips.find(t=>t.id===tripId);if(!trip)return;const title=trip.destination||'行き先未設定';if(!confirm(`「${title}」と登録したスポット・旅程を削除しますか？`))return;const wasActive=state.id===tripId;if(trip.collaboration)window.TabiAccountUI?.notifyTripDeleted?.(trip.collaboration.roomId);trips=trips.filter(t=>t.id!==tripId);if(wasActive){state=trips[0];activeTripId=state.id;selectedDay=0;selectedCategory='すべて';$('#searchPlaces').value='';undoSnapshot=null;completionShown=false;}persist();renderAll();showToast('旅行を削除しました');}
 
   function syncPageAccess(){$('#quickAdd').hidden=pageIndex!==0;$$('.page',pages).forEach((page,i)=>{const active=i===pageIndex;page.classList.toggle('is-active',active);page.inert=!active;page.setAttribute('aria-hidden',active?'false':'true');});if(viewport.scrollLeft)viewport.scrollLeft=0;}
-  function navigate(index){index=Math.max(0,Math.min(4,index));if(index===pageIndex)return;pageIndex=index;$$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===index));syncPageAccess();const dest=$$('.page',pages)[index];if(dest){dest.classList.remove('page-reveal');void dest.offsetWidth;dest.classList.add('page-reveal');}}
+  function navigate(index){index=Math.max(0,Math.min(4,index));if(index===pageIndex)return;if(startupHydrating)renderStartupPage(index);pageIndex=index;$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===index));syncPageAccess();}
   function setVisualHeight(){window.TabiViewport?.refresh();}
   function updateConnectionStatus(){const status=$('#connectionStatus');if(status)status.hidden=navigator.onLine;}
 
