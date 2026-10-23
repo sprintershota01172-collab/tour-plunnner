@@ -12,7 +12,7 @@ test('page navigation crossfades in place instead of sliding horizontally',()=>{
   assert.match(css,/#pages\.pages\{[\s\S]*?transform:none!important/);
   assert.match(css,/#pages\.pages>\.page\{[\s\S]*?position:absolute/);
   assert.match(css,/#pages\.pages>\.page\.is-active\{[\s\S]*?opacity:1/);
-  assert.match(css,/transition:opacity 1000ms cubic-bezier/);
+  assert.match(css,/transition:opacity 190ms ease-out/);
   assert.doesNotMatch(css,/tabi-text-reveal|\.page\.page-reveal :is\(/);
   assert.match(html,/class="page wishlist-page is-active" data-page="0"/);
 });
