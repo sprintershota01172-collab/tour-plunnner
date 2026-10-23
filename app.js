@@ -1452,7 +1452,7 @@
     creatingTrip=true;draftPreviousTripId=previous;
     state=trip;activeTripId=trip.id;selectedDay=0;selectedCategory='すべて';undoSnapshot=null;
     $('#searchPlaces').value='';pageIndex=0;
-    $('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===0));
+    $$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===0));
     closeModal($('#tripsBackdrop'));renderAll();openSettings();
   }
   function discardTripDraft(){
@@ -1464,7 +1464,7 @@
   function deleteTrip(tripId){if(trips.length<2)return;const trip=trips.find(t=>t.id===tripId);if(!trip)return;const title=trip.destination||'行き先未設定';if(!confirm(`「${title}」と登録したスポット・旅程を削除しますか？`))return;const wasActive=state.id===tripId;if(trip.collaboration)window.TabiAccountUI?.notifyTripDeleted?.(trip.collaboration.roomId);trips=trips.filter(t=>t.id!==tripId);if(wasActive){state=trips[0];activeTripId=state.id;selectedDay=0;selectedCategory='すべて';$('#searchPlaces').value='';undoSnapshot=null;completionShown=false;}persist();renderAll();showToast('旅行を削除しました');}
 
   function syncPageAccess(){$('#quickAdd').hidden=pageIndex!==0;$$('.page',pages).forEach((page,i)=>{const active=i===pageIndex;page.classList.toggle('is-active',active);page.inert=!active;page.setAttribute('aria-hidden',active?'false':'true');});if(viewport.scrollLeft)viewport.scrollLeft=0;}
-  function navigate(index){index=Math.max(0,Math.min(4,index));if(index===pageIndex)return;if(startupHydrating)renderStartupPage(index);pageIndex=index;$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===index));syncPageAccess();}
+  function navigate(index){index=Math.max(0,Math.min(4,index));if(index===pageIndex)return;if(startupHydrating)renderStartupPage(index);pageIndex=index;$$('.nav-item').forEach((n,i)=>n.classList.toggle('active',i===index));syncPageAccess();}
   function setVisualHeight(){window.TabiViewport?.refresh();}
   function updateConnectionStatus(){const status=$('#connectionStatus');if(status)status.hidden=navigator.onLine;}
 
@@ -1864,7 +1864,7 @@
   }
   function returnToHome(){
     clearInviteSecrets();
-    $('.modal-backdrop.open').forEach(closeModal);
+    $$('.modal-backdrop.open').forEach(closeModal);
     $('#sharePanel').classList.remove('open');navigate(0);syncPageAccess();
     $('.wishlist-page').scrollTop=0;
   }
