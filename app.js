@@ -144,7 +144,7 @@
     return `<div class="itinerary-transfer ${conflict?'has-conflict':''}">
       <time class="transfer-times">${fmtTime(t.start)}<span>↓</span>${fmtTime(t.end)}</time>
       <div class="transfer-copy">
-        <strong>${esc(transferLabel(t))}${t.line?' · '+esc(t.line):''}</strong>
+        <strong>${esc(t.mode==='event'?(t.line||'予定'):transferLabel(t)+(t.line?' · '+t.line:''))}</strong>
         <span>${esc(route||(t.mode==='event'?'予定':'移動区間未設定'))}</span>
         ${t.note?`<small>${esc(t.note)}</small>`:''}
         ${conflict?'<em>ほかの予定と時間が重複</em>':''}
@@ -161,16 +161,177 @@
     for(const transfer of transfersOn(selectedDay)){
       const start=Math.max(START_MIN,transfer.start),end=Math.min(END_MIN,transfer.end);
       if(end<=start)continue;
-      const marker=document.createElement('button');
-      marker.type='button';marker.className='timeline-transfer';
+      const marker=document.createElement('div');
+      marker.className='timeline-transfer';marker.tabIndex=0;marker.setAttribute('role','button');
       if(transferConflictForDisplay(transfer))marker.classList.add('has-conflict');
       marker.dataset.editTransfer=transfer.id;
       marker.title=transferLabel(transfer)+' '+fmtTime(transfer.start)+'〜'+fmtTime(transfer.end);
       marker.style.top=((start-START_MIN)*PX_PER_MIN)+'px';
       marker.style.height=Math.max(23,(end-start)*PX_PER_MIN-2)+'px';
-      marker.textContent=fmtTime(transfer.start)+' '+(transfer.mode==='event'?(transfer.line||'予定'):transferLabel(transfer)+(transfer.line?' · '+transfer.line:''));
+      const label=transfer.mode==='event'?(transfer.line||'予定'):transferLabel(transfer)+(transfer.line?' · '+transfer.line:'');
+      marker.innerHTML='<span class="transfer-marker-title">'+esc(fmtTime(transfer.start)+'  '+label)+'</span>'+
+        '<button type="button" class="transfer-resize-grip transfer-resize-grip--start" data-transfer-edge="start" aria-label="開始時刻を変更" hidden></button>'+
+        '<button type="button" class="transfer-resize-grip transfer-resize-grip--end" data-transfer-edge="end" aria-label="終了時刻を変更" hidden></button>';
       inner.appendChild(marker);
     }
+    refreshTransferSelection();
+    }
+  }
+
+  // Ordinary events and transport share the same move/resize interaction.
+  // Persist only on pointerup so syncing never receives intermediate values.
+  let selectedTransferId='',transferGesture=null,transferPending=null,transferAutoFrame=0,transferSuppressClickUntil=0;
+  function refreshTransferSelection(){
+    $('.timeline-transfer').forEach(marker=>{
+      const active=marker.dataset.editTransfer===selectedTransferId;
+      marker.classList.toggle('is-selected',active);
+      marker.querySelectorAll('[data-transfer-edge]').forEach(handle=>{handle.hidden=!active;});
+    });
+  }
+  function clearTransferPending(){
+    if(!transferPending)return;
+    clearTimeout(transferPending.timer);
+    window.removeEventListener('pointermove',onTransferPendingMove);
+    window.removeEventListener('pointerup',onTransferPendingEnd);
+    window.removeEventListener('pointercancel',onTransferPendingEnd);
+    transferPending=null;
+  }
+  function onTransferPointerDown(e){
+    const marker=e.target.closest('.timeline-transfer');
+    if(!marker||drag||resizeSession||transferGesture||e.button!=null&&e.button!==0)return;
+    e.stopPropagation();
+    const record=(state.transfers||[]).find(t=>t.id===marker.dataset.editTransfer);
+    if(!record)return;
+    selectedTransferId=record.id;refreshTransferSelection();
+    const edge=e.target.closest('[data-transfer-edge]')?.dataset.transferEdge||'move';
+    if(edge!=='move'){e.preventDefault();startTransferGesture(e,marker,record,edge);return;}
+    // A normal tap still opens the edit form; a deliberate hold starts moving.
+    const pending={marker,record,pointerId:e.pointerId,x:e.clientX,y:e.clientY,timer:0,last:e};
+    transferPending=pending;
+    pending.timer=setTimeout(()=>{
+      if(transferPending!==pending)return;
+      const point=pending.last;
+      clearTransferPending();
+      startTransferGesture(point,marker,record,'move');
+    },270);
+    window.addEventListener('pointermove',onTransferPendingMove,{passive:false});
+    window.addEventListener('pointerup',onTransferPendingEnd);
+    window.addEventListener('pointercancel',onTransferPendingEnd);
+  }
+  function onTransferPendingMove(e){
+    const p=transferPending;if(!p||p.pointerId!==e.pointerId)return;
+    p.last=e;
+    const dx=e.clientX-p.x,dy=e.clientY-p.y;
+    if(e.pointerType==='mouse'&&Math.hypot(dx,dy)>5){
+      clearTransferPending();startTransferGesture(e,p.marker,p.record,'move');return;
+    }
+    // Touch scrolling outside an intentional long press remains native.
+    if(Math.hypot(dx,dy)>11)clearTransferPending();
+  }
+  function onTransferPendingEnd(e){
+    if(transferPending&&transferPending.pointerId===e.pointerId)clearTransferPending();
+  }
+  function startTransferGesture(e,marker,record,edge){
+    if(transferGesture)return;
+    const start=Math.max(START_MIN,Math.min(END_MIN-15,record.start));
+    const end=Math.max(start+15,Math.min(END_MIN,record.end));
+    transferGesture={
+      marker,id:record.id,edge,pointerId:e.pointerId,pointerX:e.clientX,pointerY:e.clientY,
+      initialY:e.clientY,initialScroll:timelineScroll.scrollTop,day:record.day,
+      initialStart:start,initialEnd:end,start,end,blocked:false,moved:false
+    };
+    marker.classList.add('is-interacting');
+    try{marker.setPointerCapture(e.pointerId);}catch{}
+    transferSuppressClickUntil=Date.now()+500;
+    window.addEventListener('pointermove',onTransferGestureMove,{passive:false});
+    window.addEventListener('pointerup',finishTransferGesture);
+    window.addEventListener('pointercancel',cancelTransferGesture);
+    if(navigator.vibrate)navigator.vibrate(7);
+  }
+  function computeTransferPreview(){
+    const g=transferGesture;if(!g)return;
+    const delta=Math.round((g.pointerY-g.initialY+timelineScroll.scrollTop-g.initialScroll)/(15*PX_PER_MIN))*15;
+    let start=g.initialStart,end=g.initialEnd;
+    if(g.edge==='move'){
+      start=Math.max(START_MIN,Math.min(END_MIN-(g.initialEnd-g.initialStart),g.initialStart+delta));
+      end=start+g.initialEnd-g.initialStart;
+    }else if(g.edge==='start'){
+      start=Math.max(START_MIN,Math.min(end-15,start+delta));
+    }else{
+      end=Math.max(start+15,Math.min(END_MIN,end+delta));
+    }
+    const dayTarget=document.elementFromPoint(g.pointerX,g.pointerY)?.closest('.day-tab');
+    const day=dayTarget?Number(dayTarget.dataset.day):g.day;
+    g.blocked=transferConflict(day,start,end,g.id);
+    g.moved=g.moved||start!==g.initialStart||end!==g.initialEnd||day!==g.day;
+    g.start=start;g.end=end;g.previewDay=day;
+    g.marker.classList.toggle('resize-blocked',g.blocked);
+    g.marker.style.top=((start-START_MIN)*PX_PER_MIN)+'px';
+    g.marker.style.height=Math.max(23,(end-start)*PX_PER_MIN-2)+'px';
+    const record=state.transfers.find(t=>t.id===g.id);
+    const label=record?(record.mode==='event'?(record.line||'予定'):transferLabel(record)+(record.line?' · '+record.line:'')):'予定';
+    g.marker.querySelector('.transfer-marker-title').textContent=fmtTime(start)+'–'+fmtTime(end)+'  '+label;
+    $('.day-tab').forEach(t=>t.classList.toggle('drag-hover',t===dayTarget));
+  }
+  function onTransferGestureMove(e){
+    const g=transferGesture;if(!g||e.pointerId!==g.pointerId)return;
+    e.preventDefault();g.pointerX=e.clientX;g.pointerY=e.clientY;
+    computeTransferPreview();scheduleTransferAutoScroll();
+  }
+  function scheduleTransferAutoScroll(){
+    if(!transferGesture||transferAutoFrame)return;
+    const velocity=timelineEdgeVelocity(transferGesture);
+    if(!velocity)return;
+    let last=performance.now();
+    const tick=now=>{
+      transferAutoFrame=0;
+      if(!transferGesture)return;
+      const speed=timelineEdgeVelocity(transferGesture);
+      if(!speed)return;
+      const before=timelineScroll.scrollTop;
+      timelineScroll.scrollTop+=speed*Math.min(32,now-last)/1000;
+      last=now;
+      if(before===timelineScroll.scrollTop)return;
+      computeTransferPreview();
+      transferAutoFrame=requestAnimationFrame(tick);
+    };
+    transferAutoFrame=requestAnimationFrame(tick);
+  }
+  function cleanupTransferGesture(){
+    const g=transferGesture;if(!g)return null;
+    if(transferAutoFrame)cancelAnimationFrame(transferAutoFrame);transferAutoFrame=0;
+    window.removeEventListener('pointermove',onTransferGestureMove);
+    window.removeEventListener('pointerup',finishTransferGesture);
+    window.removeEventListener('pointercancel',cancelTransferGesture);
+    try{g.marker.releasePointerCapture(g.pointerId);}catch{}
+    g.marker.classList.remove('is-interacting','resize-blocked');
+    $('.day-tab').forEach(t=>t.classList.remove('drag-hover'));
+    transferGesture=null;
+    transferSuppressClickUntil=Date.now()+500;
+    return g;
+  }
+  function finishTransferGesture(e){
+    const g=transferGesture;if(!g||g.pointerId!==e.pointerId)return;
+    g.pointerX=e.clientX;g.pointerY=e.clientY;
+    computeTransferPreview();
+    const source=state.transfers.find(t=>t.id===g.id),blocked=g.blocked;
+    const changed=source&&(g.start!==source.start||g.end!==source.end||g.previewDay!==source.day);
+    cleanupTransferGesture();
+    if(blocked){renderTimeline();showToast('ほかの予定と重なる時間には移動できません');return;}
+    if(changed){
+      undoSnapshot=structuredClone(state);undoMessage='予定の時間変更を戻しました';
+      source.start=g.start;source.end=g.end;source.day=g.previewDay;
+      selectedDay=source.day;
+      persist();renderTimeline();renderItinerary();
+      if(navigator.vibrate)navigator.vibrate(8);
+    }else{renderBoardTransferStateAfterGesture();}
+  }
+  function renderBoardTransferStateAfterGesture(){
+    renderTimeline();
+  }
+  function cancelTransferGesture(){
+    if(!cleanupTransferGesture())return;
+    renderTimeline();
   }
   function openTransfer(dayValue=selectedDay,idValue=''){
     if(!hasTripDates()){requestTripDates();return;}
@@ -234,9 +395,18 @@
       const edit=e.target.closest('[data-edit-transfer]');
       if(edit){const t=state.transfers.find(item=>item.id===edit.dataset.editTransfer);if(t)openTransfer(t.day,t.id);}
     });
+    $('#timelineInner').addEventListener('pointerdown',onTransferPointerDown);
+    $('#timelineInner').addEventListener('keydown',e=>{
+      const marker=e.target.closest('.timeline-transfer');
+      if(marker&&e.target===marker&&(e.key==='Enter'||e.key===' ')){
+        e.preventDefault();const t=state.transfers.find(item=>item.id===marker.dataset.editTransfer);
+        if(t)openTransfer(t.day,t.id);
+      }
+    });
     $('#timelineInner').addEventListener('click',e=>{
       const edit=e.target.closest('[data-edit-transfer]');
       if(!edit)return;
+      if(e.target.closest('[data-transfer-edge]')||Date.now()<transferSuppressClickUntil)return;
       const t=state.transfers.find(item=>item.id===edit.dataset.editTransfer);
       if(t)openTransfer(t.day,t.id);
     });
