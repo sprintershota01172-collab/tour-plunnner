@@ -181,7 +181,7 @@
   // Persist only on pointerup so syncing never receives intermediate values.
   let selectedTransferId='',transferGesture=null,transferPending=null,transferAutoFrame=0,transferSuppressClickUntil=0;
   function refreshTransferSelection(){
-    $('.timeline-transfer').forEach(marker=>{
+    $$('.timeline-transfer').forEach(marker=>{
       const active=marker.dataset.editTransfer===selectedTransferId;
       marker.classList.toggle('is-selected',active);
       marker.querySelectorAll('[data-transfer-edge]').forEach(handle=>{handle.hidden=!active;});
@@ -270,7 +270,7 @@
     const record=state.transfers.find(t=>t.id===g.id);
     const label=record?(record.mode==='event'?(record.line||'予定'):transferLabel(record)+(record.line?' · '+record.line:'')):'予定';
     g.marker.querySelector('.transfer-marker-title').textContent=fmtTime(start)+'–'+fmtTime(end)+'  '+label;
-    $('.day-tab').forEach(t=>t.classList.toggle('drag-hover',t===dayTarget));
+    $$('.day-tab').forEach(t=>t.classList.toggle('drag-hover',t===dayTarget));
   }
   function onTransferGestureMove(e){
     const g=transferGesture;if(!g||e.pointerId!==g.pointerId)return;
@@ -304,7 +304,7 @@
     window.removeEventListener('pointercancel',cancelTransferGesture);
     try{g.marker.releasePointerCapture(g.pointerId);}catch{}
     g.marker.classList.remove('is-interacting','resize-blocked');
-    $('.day-tab').forEach(t=>t.classList.remove('drag-hover'));
+    $$('.day-tab').forEach(t=>t.classList.remove('drag-hover'));
     transferGesture=null;
     transferSuppressClickUntil=Date.now()+500;
     return g;
