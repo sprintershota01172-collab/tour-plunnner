@@ -45,17 +45,17 @@
           <div class="empty-state" id="emptyWishlist"><div class="empty-flight-art" aria-hidden="true"><img src="flight-mark.svg?v=20261019-117" alt="" width="340" height="153"></div><button class="empty-add" id="emptyAdd" aria-label="リストに追加"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>ADD ITEM</span></button></div>
         </section>
         <section class="page board-page" data-page="1" aria-label="パズルボード">
-          <div class="page-heading board-heading"><div><p class="eyebrow">THE COMPOSITION</p><h1>旅を仕立てる</h1></div><div class="board-actions"><button class="quiet-button" id="undoMove" title="元に戻す"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h9a7 7 0 0 1 0 14h-2"/></svg></button><button class="quiet-button" id="autoArrange" title="空き時間に並べる"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h6"/><path d="m17 15 3 3 3-3"/></svg></button></div></div>
+          <div class="page-heading board-heading"><div><p class="eyebrow">THE COMPOSITION</p><h1>スケジュール</h1></div><div class="board-actions"><button class="quiet-button" id="undoMove" title="元に戻す"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h9a7 7 0 0 1 0 14h-2"/></svg></button><button class="quiet-button" id="autoArrange" title="空き時間に並べる"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h6"/><path d="m17 15 3 3 3-3"/></svg></button></div></div>
           <div class="day-tabs" id="dayTabs" role="tablist" aria-label="日付"></div>
           <div class="day-context" id="dayContext"></div><div class="day-meals" id="dayMeals" aria-label="当日の朝昼夕の食事" hidden></div>
-          <div class="board-layout"><div class="timeline-card"><div class="timeline-toolbar"><div><span class="timeline-date" id="selectedDateLabel"></span><span class="timeline-meta" id="placedCount"></span></div><div class="timeline-toolbar-actions"><button type="button" class="board-transfer-add" id="addBoardTransfer">＋ 移動</button><button class="small-link" id="dayClear">この日のピースを戻す</button></div></div><div class="timeline-adjuster" id="timelineAdjuster" hidden><div class="adjuster-details"><b id="adjusterName"></b><span id="adjusterTime" aria-live="polite"></span></div><div class="adjuster-buttons"><button type="button" data-duration-delta="-15" aria-label="予定を15分短くする">−15分</button><button type="button" data-duration-delta="15" aria-label="予定を15分長くする">＋15分</button><button type="button" class="adjuster-close" data-deselect aria-label="時間調整を閉じる">×</button></div></div><div class="timeline-scroll" id="timelineScroll"><div class="timeline-inner" id="timelineInner"></div></div></div>
+          <div class="board-layout"><div class="timeline-card"><div class="timeline-toolbar"><div><span class="timeline-date" id="selectedDateLabel"></span><span class="timeline-meta" id="placedCount"></span></div><div class="timeline-toolbar-actions"><button type="button" class="board-transfer-add" id="addBoardTransfer">＋ 予定・移動</button><button class="small-link" id="dayClear">この日のピースを戻す</button></div></div><div class="timeline-adjuster" id="timelineAdjuster" hidden><div class="adjuster-details"><b id="adjusterName"></b><span id="adjusterTime" aria-live="polite"></span></div><div class="adjuster-buttons"><button type="button" data-duration-delta="-15" aria-label="予定を15分短くする">−15分</button><button type="button" data-duration-delta="15" aria-label="予定を15分長くする">＋15分</button><button type="button" class="adjuster-close" data-deselect aria-label="時間調整を閉じる">×</button></div></div><div class="timeline-scroll" id="timelineScroll"><div class="timeline-inner" id="timelineInner"></div></div></div>
             <aside class="tray-card"><div class="tray-head"><div><h2>ピース</h2><p>上下にスクロール・「置く」で配置</p></div><div class="tray-head-actions"><button type="button" class="tray-expand-button" id="trayExpand" aria-controls="trayPieces" aria-expanded="false" hidden>すべて見る</button><span class="tray-count" id="trayCount">0</span></div></div><div class="tray-pieces" id="trayPieces"></div></aside>
           </div>
           <div class="completion-toast" id="completionToast"><span class="toast-spark">✦</span><span>優先スポットをすべて配置しました</span><button id="toastClose" aria-label="閉じる">×</button></div>
         </section>
         <section class="page itinerary-page" data-page="2" aria-label="旅程">
           <div class="page-heading itinerary-heading"><div><p class="eyebrow">ITINERARY</p><h1>旅程</h1><p class="page-subtitle" id="itinerarySubtitle">旅行先と日付</p></div><div class="itinerary-tools"><button class="packing-button" id="packingButton"><svg viewBox="0 0 24 24"><path d="M5 8h14l1 13H4L5 8Z"/><path d="M9 8V5a3 3 0 0 1 6 0v3m-3 4v4m-2-2h4"/></svg><span>持ち物</span></button><button class="share-button" id="shareMenu"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.6 6.8-4.2m-6.8 7 6.8 4.2"/></svg><span>共有</span></button></div></div>
-          <div class="itinerary-quick-actions"><button type="button" id="quickAddTransfer" class="itinerary-quick-transfer"><span class="itinerary-quick-icon" aria-hidden="true">＋</span><span>移動・バスの時間を登録</span><span aria-hidden="true">→</span></button></div>
+          <div class="itinerary-quick-actions"><button type="button" id="quickAddTransfer" class="itinerary-quick-transfer"><span class="itinerary-quick-icon" aria-hidden="true">＋</span><span>予定・移動を登録</span><span aria-hidden="true">→</span></button></div>
           <div class="itinerary-content" id="itineraryContent"></div>
           <div class="share-panel" id="sharePanel"><button data-share="partner">パートナーを招待</button><button data-share="text">テキストをコピー</button><button data-share="image">画像として保存</button><button data-share="json">JSONを書き出す</button><button data-share="import">JSONを読み込む</button><input id="importFile" type="file" accept="application/json,.json" hidden></div>
         </section>
@@ -242,9 +242,9 @@
       <form id="transferForm">
         <input type="hidden" name="id">
         <label class="field full"><span>日付</span><select name="day" id="transferDaySelect" required></select></label>
-        <label class="field full"><span>移動手段</span>
+        <label class="field full"><span>予定の種類</span>
           <select name="mode" required>
-            <option value="bus">バス</option><option value="walk">徒歩</option><option value="train">電車</option>
+            <option value="event">通常の予定</option><option value="bus">バス</option><option value="walk">徒歩</option><option value="train">電車</option>
             <option value="subway">地下鉄</option><option value="taxi">タクシー</option><option value="car">車</option>
             <option value="shuttle">シャトル</option><option value="ferry">船</option><option value="other">その他</option>
           </select>
@@ -257,7 +257,7 @@
           <label class="field"><span>出発地</span><input name="from" type="text" maxlength="100" placeholder="例：ホテル"></label>
           <label class="field"><span>到着地</span><input name="to" type="text" maxlength="100" placeholder="例：ワイキキビーチ"></label>
         </div>
-        <label class="field full"><span>路線・便名（任意）</span><input name="line" type="text" maxlength="100" placeholder="例：TheBus 2番／シャトル便"></label>
+        <label class="field full"><span>予定名・路線名</span><input name="line" type="text" maxlength="100" placeholder="例：ディナー予約／TheBus 2番"></label>
         <label class="field full"><span>メモ（任意）</span><input name="note" type="text" maxlength="240" placeholder="例：停留所はホテル向かい側"></label>
         <p id="transferError" class="transfer-error" role="alert" hidden></p>
         <div class="sheet-footer transfer-footer">
