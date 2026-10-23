@@ -1,5 +1,5 @@
-const CACHE='tabi-planner-v117';
-const SHELL=['./flight-mark.svg?v=20261019-117','./invite-card-art.svg?v=20261019-117','./mobile-input.js?v=20261019-117','./line-share.html','./line-share.js?v=20261019-117','./line-invite.js?v=20261019-117','./index.html','./styles.css?v=20261019-117','./i18n.js?v=20261019-117','./app.js?v=20261019-117','./notifications.js?v=20261019-117','./date-range.js?v=20261019-117','./sync.js?v=20261019-117','./accounts.js?v=20261019-117','./account-ui.js?v=20261019-117','./account.css?v=20261019-117','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
+const CACHE='tabi-planner-v118';
+const SHELL=['./flight-mark.svg?v=20261023-118','./invite-card-art.svg?v=20261023-118','./mobile-input.js?v=20261023-118','./line-share.html','./line-share.js?v=20261023-118','./line-invite.js?v=20261023-118','./index.html','./styles.css?v=20261023-118','./i18n.js?v=20261023-118','./app.js?v=20261023-118','./notifications.js?v=20261023-118','./date-range.js?v=20261023-118','./sync.js?v=20261023-118','./accounts.js?v=20261023-118','./account-ui.js?v=20261023-118','./account.css?v=20261023-118','./manifest.webmanifest?v=20261012-41','./icon.svg?v=20261012-41','./icon-192.png?v=20261012-41','./icon-512.png?v=20261012-41','./apple-touch-icon.png?v=20261012-41'];
 // Only the essential offline app must succeed for activation. Optional image
 // files cannot make the whole offline installation fail.
 const OPTIONAL=SHELL.filter(file=>/flight-mark\.svg|invite-card-art\.svg|line-share\.html|line-share\.js|manifest\.webmanifest|icon\.svg|icon-192\.png|icon-512\.png|apple-touch-icon\.png/.test(file));
@@ -23,21 +23,27 @@ self.addEventListener('fetch',event=>{
     event.respondWith((async()=>{
       const cache=await caches.open(CACHE);
       const page=new URL(url.pathname.endsWith('/line-share.html')?'./line-share.html':'./index.html',self.registration.scope);
-      if(typeof navigator!=='undefined'&&navigator.onLine===false){
-        return (await cache.match(page))||Response.error();
+      const cached=await cache.match(page);
+      if(cached){
+        // Cache-first makes repeat iPhone home-screen launches instant.
+        // Refresh asynchronously for the next visit without blocking the UI.
+        if(navigator.onLine!==false){
+          event.waitUntil((async()=>{
+            try{
+              const response=await fetch(request,{cache:'no-store'});
+              if(response.ok&&response.type==='basic')await cache.put(page,response.clone());
+            }catch{}
+          })());
+        }
+        return cached;
       }
-      // Online: fetch the newest HTML first so installed iPhones do not keep old UI.
-      const controller=new AbortController();
-      const timer=setTimeout(()=>controller.abort(),1800);
       try{
-        const response=await fetch(request,{signal:controller.signal,cache:'no-store'});
-        if(!response.ok)throw new Error('network navigation failed');
+        const response=await fetch(request);
+        if(!response.ok)throw new Error('navigation failed');
         if(response.type==='basic')await cache.put(page,response.clone());
         return response;
       }catch{
         return (await cache.match(page))||Response.error();
-      }finally{
-        clearTimeout(timer);
       }
     })());
     return;
