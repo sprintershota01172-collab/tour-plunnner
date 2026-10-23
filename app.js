@@ -175,7 +175,6 @@
       inner.appendChild(marker);
     }
     refreshTransferSelection();
-    }
   }
 
   // Ordinary events and transport share the same move/resize interaction.
