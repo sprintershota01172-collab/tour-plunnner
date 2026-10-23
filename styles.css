@@ -2410,3 +2410,45 @@ input:not([type="radio"]):not([type="checkbox"]),textarea,select{font-size:16px!
   .itinerary-quick-transfer{background:#304a40;color:#d6f0df;border-color:#527664}
   .itinerary-quick-transfer:active{background:#3c5c4d}
 }
+
+/* v118 — schedule gestures and short composited transitions */
+.timeline-transfer{
+  touch-action:none;
+  user-select:none;-webkit-user-select:none;
+  overflow:visible;
+  transition:box-shadow 160ms cubic-bezier(.22,1,.36,1),background-color 140ms ease;
+}
+.timeline-transfer .transfer-marker-title{
+  display:block;width:100%;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;padding:2px 0;pointer-events:none;
+}
+.timeline-transfer.is-selected{
+  z-index:5;border-style:solid;border-color:#3b857a;
+  box-shadow:0 5px 14px rgba(20,70,64,.17);
+}
+.timeline-transfer.is-interacting{z-index:9;box-shadow:0 9px 21px rgba(20,70,64,.22);cursor:grabbing}
+.timeline-transfer.resize-blocked{background:#ffe7df!important;border-color:#c36a59!important;color:#913c30!important}
+.timeline-transfer .transfer-resize-grip{
+  position:absolute;left:33%;right:33%;width:34%;height:12px;
+  border:0;border-radius:9px;background:rgba(38,110,95,.5);
+  touch-action:none;cursor:ns-resize;padding:0;z-index:2;
+}
+.timeline-transfer .transfer-resize-grip--start{top:-5px}
+.timeline-transfer .transfer-resize-grip--end{bottom:-5px}
+.timeline-transfer .transfer-resize-grip[hidden]{display:none!important}
+.timeline-transfer.is-selected .transfer-marker-title{padding:5px 0}
+.timeline-transfer:focus-visible{outline:2px solid #3b857a;outline-offset:3px}
+#pages.pages>.page{
+  transform:translate3d(0,7px,0);
+  transition:opacity 190ms ease-out,transform 190ms cubic-bezier(.22,1,.36,1),visibility 190ms step-end;
+}
+#pages.pages>.page.is-active{
+  transform:translate3d(0,0,0);
+  transition:opacity 190ms ease-out,transform 190ms cubic-bezier(.22,1,.36,1),visibility 0s;
+}
+.nav-item .nav-icon{transition:transform 180ms cubic-bezier(.22,1,.36,1),background-color 180ms ease}
+.nav-item.active .nav-icon{transform:scale(1.055)}
+@media(prefers-reduced-motion:reduce){
+  #pages.pages>.page,#pages.pages>.page.is-active,.nav-item .nav-icon,
+  .timeline-transfer{transition:none!important;animation:none!important}
+}
